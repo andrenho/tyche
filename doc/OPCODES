@@ -1,0 +1,125 @@
+Operations
+----------
+
+Stack operations: (0x00~0x1f)
+   pushn [int]          Push int
+   pushr [float]        Push float (real)
+   pushs [string]       Push string
+   pshcn [index]        Push int from constant list
+   pshcr [index]        Push float from constant list
+   pshcs [index]        Push string from constant list
+   pushf [function]     Push function id
+   pushz                Push zero (or false)
+   pusht                Push true
+   newa [array]         Push (create) empty array
+   newt [table]         Push (create) empty table
+   pop
+   dup
+
+Local variables: (0x20~0x2f)
+   setl [int]           Set stack top as indexed local variable
+   getl [int]           Get indexed local variable and place on stack
+   setg [int]           Set global variable
+   getg [int]           Get global variable
+
+Function operations: (0x30~0x3f)
+   call [n_pars]        Enter function on stack toplevel (passing n next stack values as parameters)
+   ret                  Leave a function (return value in stack)
+   retn                 Leave a function (return nil)
+
+Control flow: (0x40~0x4f)
+   bz [pc]              Branch if zero
+   bnz [pc]             Branch if not zero
+   jmp [pc]             Unconditional jump
+* Jumps can only happen within the same function.
+
+Logical/arithmetic: (0x50~0x6f)
+   sum                  Sum top 2 values in stack
+   sub                  Subtract top 2 values in stack
+   mul                  Multiply top 2 values in stack
+   div                  Float division
+   idiv                 Integer division
+   eq                   Equality
+   neq                  Inequality
+   lt                   Less than
+   lte                  Less than or equals
+   gt                   Greater than
+   gte                  Greater than or equals
+   and                  Bitwise AND
+   or                   Bitwise OR
+   xor                  Bitwise XOR
+
+Table and array operations: (0x70~07xf)
+   getkv                Get table's value based on key (pull 1 value, push 1 value)
+   setkv                Set table's key and value (pull 2 values from stack)
+   geta                 Get array's position value
+   seta                 Set array's position value (pull 2 values from stack)
+   appnd                Add value to the end of array
+   next                 Push the next pair into the stack (for loops)
+   smt                  Set value metatable
+   mt                   Get value metatable
+
+Other value operations: (0x80~0x8f)
+   len                  Get table, array or string size
+   type                 Get type from value at the top of the stack
+   cast [type]          Cast type to another type
+   ver                  Return VM version
+
+External code: (0x90~0x9f)
+   cmpl                 Compile code to assembly
+   asmbl                Assemble code to bytecode format
+   load                 Load bytecode as function (will place function on stack)
+
+Error handling: (0xa0~0xaf)
+   ???
+
+
+Bytecode format
+---------------
+
+The bytecode file is composed of the following sections:
+
+ * [0x0] 16-byte header
+            [00]: VM format
+            [??]: reserved
+ * [0x1] Index: pointers to each one of the sections, up to 8
+            Each pointer: 4 bits
+ * [0x2] Constants: all constants (such as strings) used in the code
+            * Table of 4-bit constant indexes with pointer to constant
+            * Raw constant data
+ * [0x3] Functions: Pointer to functions within the code
+            [0:3]: function pointer
+            [4:5]: number of parameters
+            [6:7]: number of local variables
+ * [0x4] Code: executable code
+            [1-byte]:   operation
+            [variable]: operand (see value encoding below)
+ * [0x5] Debugging info
+            ???
+
+The max file size is 2 Gb.
+
+## Values can be encoded in the following ways:
+ * The type is defined by the operator.
+ * Encoding varies according to the type:
+    int:    use protobuf format
+    float:  4-bit floating point
+    string: int-defined length, followed by the string proper - no null terminator
+ * Constant indexes and function ids are encoded as ints
+
+
+Internal handling of values
+---------------------------
+
+## Supported types
+  Nil             0
+  Integer         1
+  Float           2
+  String          3
+  Array           4
+  Table           5
+  Function        6
+  NativePointer   7
+
+## Internal format
+  ???
