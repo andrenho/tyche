@@ -1,5 +1,4 @@
 #include "gtest/gtest.h"
-#include "gmock/gmock.h"
 
 #include <cstring>
 #include <functional>
@@ -141,6 +140,8 @@ TEST(Bytecode, Parsing)
 
     ASSERT_EQ(bc.n_constants(), 2);
     ASSERT_EQ(bc.n_functions(), 2);
+    ASSERT_EQ(bc.get_function_sz(0), 2);
+    ASSERT_EQ(bc.get_function_sz(1), 1);
 
     ASSERT_FLOAT_EQ(std::get<float>(bc.get_constant(0)), 3.14f);
     ASSERT_EQ(std::get<std::string>(bc.get_constant(1)), "HELLO");

@@ -20,9 +20,9 @@ After some additional development:
 ## VM
 
 - [ ] VM
-  - [ ] Code
-    - [ ] Simple bytecode loader
-      - [ ] Output bytecode format
+  - [x] Code
+    - [x] Simple bytecode loader
+      - [x] Output bytecode format
   - [ ] Value object
   - [ ] Stack object
   - [ ] Function context

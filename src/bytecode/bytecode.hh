@@ -8,6 +8,7 @@ namespace tyche {
 
 class Bytecode {
 public:
+    Bytecode() = default;
     explicit Bytecode(ByteArray ba);
 
     [[nodiscard]] uint32_t n_constants() const;

@@ -25,7 +25,7 @@ Bytecode::Bytecode(ByteArray ba)
     uint32_t code_start = byte_array_.get_uint32(TOC_START + (3 * TOC_RECORD_SZ));
     for (uint32_t i = 0; i < cache_.n_functions; ++i) {
         cache_.function_addr.emplace_back(code_start + byte_array_.get_uint32(cache_.functions_idx_addr + (i * FUNCTION_RECORD_SZ)));
-        cache_.function_sz.emplace_back(code_start + byte_array_.get_uint32(cache_.functions_idx_addr + (i * FUNCTION_RECORD_SZ) + 8));
+        cache_.function_sz.emplace_back(byte_array_.get_uint32(cache_.functions_idx_addr + (i * FUNCTION_RECORD_SZ) + 8));
     }
 }
 

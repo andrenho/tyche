@@ -65,6 +65,11 @@ add_library(lib${PROJECT_NAME} SHARED
         src/bytecode/bytecode.hh
         src/bytecode/bytecodeprototype.hh
         src/common/overloaded.hh
+        src/vm/code.cc
+        src/vm/code.hh
+        src/bytecode/constant.hh
+        src/vm/instruction.hh
+        src/vm/instruction.cc
 )
 
 target_compile_options(lib${PROJECT_NAME} PRIVATE ${warnings})
@@ -73,21 +78,24 @@ target_compile_options(lib${PROJECT_NAME} PRIVATE ${warnings})
 # tests
 #
 
-add_executable(${PROJECT_NAME}-bytecode-test src/bytecode/tests.cc
-        src/bytecode/constant.hh)
+add_executable(${PROJECT_NAME}-bytecode-test src/bytecode/tests.cc)
 target_link_libraries(${PROJECT_NAME}-bytecode-test lib${PROJECT_NAME} gtest_main)
 add_test(NAME tyche_bytecode_test COMMAND ${PROJECT_NAME}-bytecode-test)
+
+add_executable(${PROJECT_NAME}-vm-test src/vm/tests.cc)
+target_link_libraries(${PROJECT_NAME}-vm-test lib${PROJECT_NAME} gtest_main)
+add_test(NAME tyche_vm_test COMMAND ${PROJECT_NAME}-vm-test)
 
 #
 # check for leaks
 #
 
-add_custom_target(leaks)
-add_custom_command(TARGET leaks
+add_custom_target(leaks-vm-test)
+add_custom_command(TARGET leaks-vm-test
         POST_BUILD
         COMMENT "Check for leaks using valgrind."
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        COMMAND valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --suppressions=${CMAKE_SOURCE_DIR}/valgrind.supp ./${PROJECT_NAME}
+        COMMAND valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --suppressions=${CMAKE_SOURCE_DIR}/valgrind.supp ./${PROJECT_NAME}-vm-test
 )
 
 #

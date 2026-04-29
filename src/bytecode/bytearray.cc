@@ -7,12 +7,9 @@ namespace tyche {
 
 void ByteArray::set_byte(uint32_t addr, uint8_t byte)
 {
-    try {
-        data_.at(addr) = byte;
-    } catch (std::out_of_range&) {
+    if (data_.size() < (addr + 1))
         data_.resize(addr + 1, 0);
-        data_.at(addr) = byte;
-    }
+    data_.at(addr) = byte;
 }
 
 void ByteArray::set_int8(uint32_t addr, int8_t value)

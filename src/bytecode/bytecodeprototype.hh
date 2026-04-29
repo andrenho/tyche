@@ -6,6 +6,7 @@
 #include <variant>
 #include <vector>
 #include "constant.hh"
+#include "bytearray.hh"
 
 namespace tyche {
 

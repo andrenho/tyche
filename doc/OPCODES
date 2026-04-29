@@ -3,77 +3,86 @@ Operations
 
 Operations take either 0 or 1 parameter. The ones that take a parameter, it can be either a int8, int16 or int32.
 
-The binary of the opcode is: XXYY.YYYY, where XX defines the parameter type, and YY.YYYY is the instruction. For the XX values:
+Instructions follow this logic:
 
-00 - no parameter
-01 - int8
-10 - int16
-11 - int32
+00 ~ 9F : no parameter
+A0 ~ BF : int8 (1 byte)
+C0 ~ DF : int16 (2 bytes)
+E0 ~ FF : int32 (4 bytes)
 
-Stack operations: (0x00~0x1f)
-   pushn [int]          Push int
-   pushc [index]        Push constant
-   pushf [function]     Push function id
-   pushz                Push zero (or false)
-   pusht                Push true
-   newa                 Push (create) empty array
-   newt                 Push (create) empty table
-   pop
-   dup
+The operations of 1, 2 and 4 bytes are always interchangeable by adding/subtracting 0x20.
 
-Local variables: (0x20~0x2f)
-   setl [int]           Set stack top as indexed local variable
-   getl [int]           Get indexed local variable and place on stack
-   setg [int]           Set global variable
-   getg [int]           Get global variable
+ ,----------- no parameter
+ |  ,-------- int8
+ |  |  ,----- int16
+ |  |  |   ,-- int32
+NP I8 I16 I32   Opc  Instruction          Description
 
-Function operations: (0x30~0x3f)
-   call [n_pars]        Enter function on stack toplevel (passing n next stack values as parameters)
-   ret                  Leave a function (return value in stack)
-   retn                 Leave a function (return nil)
+Stack operations:
+   a0  c0 e0    pushi [int]          Push int
+   a1  c1 e1    pushc [index]        Push constant
+   a2  c2 e2    pushf [function]     Push function id
+00              pushz                Push zero (or false)
+01              pusht                Push true
+02              newa                 Push (create) empty array
+03              newt                 Push (create) empty table
+04              pop
+05              dup
 
-Control flow: (0x40~0x4f)
-   bz [pc]              Branch if zero
-   bnz [pc]             Branch if not zero
-   jmp [pc]             Unconditional jump
+Local variables:
+   a3  c3 e3    setl [int]           Set stack top as indexed local variable
+   a4  c4 e4    getl [int]           Get indexed local variable and place on stack
+   a5  c5 e5    setg [int]           Set global variable
+   a6  c6 e6    getg [int]           Get global variable
+
+Function operations:
+   a7  c7 e7    call [n_pars]        Enter function on stack toplevel (passing n next stack values as parameters)
+10              ret                Leave a function (return value in stack)
+11              retn                 Leave a function (return nil)
+
+Table and array operations:
+16              getkv                Get table's value based on key (pull 1 value, push 1 value)
+17              setkv                Set table's key and value (pull 2 values from stack)
+18              geta                 Get array's position value
+19              seta                 Set array's position value (pull 2 values from stack)
+1a              appnd                Add value to the end of array
+1b              next                 Push the next pair into the stack (for loops)
+1c              smt                  Set value metatable
+1d              mt                   Get value metatable
+
+Logical/arithmetic:
+20              sum                  Sum top 2 values in stack
+21              sub                  Subtract top 2 values in stack
+22              mul                  Multiply top 2 values in stack
+23              div                  Float division
+24              idiv                 Integer division
+25              eq                   Equality
+26              neq                  Inequality
+27              lt                   Less than
+28              lte                  Less than or equals
+29              gt                   Greater than
+2a              gte                  Greater than or equals
+2b              and                  Bitwise AND
+2c              or                   Bitwise OR
+2d              xor                  Bitwise XOR
+
+Other value operations:
+30              len                  Get table, array or string size
+31              type                 Get type from value at the top of the stack
+   b0           cast [type]          Cast type to another type
+32              ver                  Return VM version
+
+External code:
+38              cmpl                 Compile code to assembly
+39              asmbl                Assemble code to bytecode format
+3a              load                 Load bytecode as function (will place function on stack)
+
+Control flow:
+   a8 c8 e8     bz [pc]              Branch if zero
+   a9 c9 e9     bnz [pc]             Branch if not zero
+   aa ca ea     jmp [pc]             Unconditional jump
 * Jumps can only happen within the same function.
 
-Logical/arithmetic: (0x50~0x6f)
-   sum                  Sum top 2 values in stack
-   sub                  Subtract top 2 values in stack
-   mul                  Multiply top 2 values in stack
-   div                  Float division
-   idiv                 Integer division
-   eq                   Equality
-   neq                  Inequality
-   lt                   Less than
-   lte                  Less than or equals
-   gt                   Greater than
-   gte                  Greater than or equals
-   and                  Bitwise AND
-   or                   Bitwise OR
-   xor                  Bitwise XOR
-
-Table and array operations: (0x70~07xf)
-   getkv                Get table's value based on key (pull 1 value, push 1 value)
-   setkv                Set table's key and value (pull 2 values from stack)
-   geta                 Get array's position value
-   seta                 Set array's position value (pull 2 values from stack)
-   appnd                Add value to the end of array
-   next                 Push the next pair into the stack (for loops)
-   smt                  Set value metatable
-   mt                   Get value metatable
-
-Other value operations: (0x80~0x8f)
-   len                  Get table, array or string size
-   type                 Get type from value at the top of the stack
-   cast [type]          Cast type to another type
-   ver                  Return VM version
-
-External code: (0x90~0x9f)
-   cmpl                 Compile code to assembly
-   asmbl                Assemble code to bytecode format
-   load                 Load bytecode as function (will place function on stack)
 
 Error handling: (0xa0~0xaf)
    ???
