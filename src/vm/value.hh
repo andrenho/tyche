@@ -13,6 +13,8 @@ enum class Type : uint8_t
 
 class Value {
 public:
+    Value() : value_(std::monostate()) {}
+
     static Value CreateNil() { return Value(std::monostate()); }
     static Value CreateInteger(int32_t v) { return Value(v); }
     static Value CreateFloat(float f) { return Value(f); }

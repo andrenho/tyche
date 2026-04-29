@@ -51,7 +51,11 @@ void Stack::push_fp()
 
 void Stack::pop_fp()
 {
+    if (fps_.size() == 1)
+        throw VMStackUnderflow();
 
+    stack_.resize(fps_.top());
+    fps_.pop();
 }
 
 } // tyche
