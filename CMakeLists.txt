@@ -70,6 +70,8 @@ add_library(lib${PROJECT_NAME} SHARED
         src/bytecode/constant.hh
         src/vm/instruction.hh
         src/vm/instruction.cc
+        src/vm/value.cc
+        src/vm/value.hh
 )
 
 target_compile_options(lib${PROJECT_NAME} PRIVATE ${warnings})
