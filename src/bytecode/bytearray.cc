@@ -4,7 +4,7 @@
 
 namespace tyche {
 
-void ByteArray::add_byte(uint32_t addr, uint8_t byte)
+void ByteArray::set_byte(uint32_t addr, uint8_t byte)
 {
     try {
         data_.at(addr) = byte;
@@ -14,36 +14,70 @@ void ByteArray::add_byte(uint32_t addr, uint8_t byte)
     }
 }
 
-void ByteArray::add_int(uint32_t addr, int32_t value)
+void ByteArray::set_int(uint32_t addr, int32_t value)
 {
     uint32_t zz = ((uint32_t)(value << 1)) ^ ((uint32_t)(value >> 31));
     while (zz > 0x7F) {
-        add_byte(addr++, (zz & 0x7F) | 0x80);
+        set_byte(addr++, (zz & 0x7F) | 0x80);
         zz >>= 7;
     }
-    add_byte(addr, zz & 0x7F);
+    set_byte(addr, zz & 0x7F);
 }
 
-void ByteArray::add_float(uint32_t addr, float value)
+void ByteArray::set_uint16(uint32_t addr, uint16_t value)
+{
+    set_byte(addr, (uint8_t) (value));
+    set_byte(addr+1, (uint8_t) (value >> 8));
+}
+
+void ByteArray::set_uint32(uint32_t addr, uint32_t value)
+{
+    set_byte(addr, (uint8_t) (value));
+    set_byte(addr+1, (uint8_t) (value >> 8));
+    set_byte(addr+2, (uint8_t) (value >> 16));
+    set_byte(addr+3, (uint8_t) (value >> 24));
+}
+
+void ByteArray::set_float(uint32_t addr, float value)
 {
     uint32_t bits;
     std::memcpy(&bits, &value, 4);
-    add_byte(addr, (uint8_t)(bits));
-    add_byte(addr+1, (uint8_t)(bits >> 8));
-    add_byte(addr+2, (uint8_t)(bits >> 16));
-    add_byte(addr+3, (uint8_t)(bits >> 24));
+    set_byte(addr, (uint8_t) (bits));
+    set_byte(addr+1, (uint8_t) (bits >> 8));
+    set_byte(addr+2, (uint8_t) (bits >> 16));
+    set_byte(addr+3, (uint8_t) (bits >> 24));
 }
 
-void ByteArray::add_string(uint32_t addr, std::string const& str)
+void ByteArray::set_string(uint32_t addr, std::string const& str)
 {
     for (uint8_t c: str)
-        add_byte(addr++, c);
-    add_byte(addr, 0);
+        set_byte(addr++, c);
+    set_byte(addr, 0);
+}
+
+void ByteArray::set_bytearray(uint32_t addr, ByteArray const& bytearray)
+{
+    for (uint8_t byte: bytearray.data())
+        set_byte(addr++, byte);
 }
 
 uint8_t ByteArray::get_byte(uint32_t addr) const
 {
     return data_.at(addr);
+}
+
+uint16_t ByteArray::get_uint16(uint32_t addr) const
+{
+    return (uint32_t) get_byte(addr)
+            | (uint32_t) get_byte(addr+1) << 8;
+}
+
+uint32_t ByteArray::get_uint32(uint32_t addr) const
+{
+    return (uint32_t) get_byte(addr)
+            | (uint32_t) get_byte(addr+1) << 8
+            | (uint32_t) get_byte(addr+2) << 16
+            | (uint32_t) get_byte(addr+3) << 24;
 }
 
 std::pair<int32_t, size_t> ByteArray::get_int(uint32_t addr) const
@@ -62,7 +96,7 @@ std::pair<int32_t, size_t> ByteArray::get_int(uint32_t addr) const
     throw BytecodeParsingError("Error parsing int32 at position " + std::to_string(addr));
 }
 
-std::pair<float, size_t> ByteArray::get_float(uint32_t addr) const
+float ByteArray::get_float(uint32_t addr) const
 {
     uint32_t bits = (uint32_t) get_byte(addr)
             | (uint32_t) get_byte(addr+1) << 8
@@ -70,7 +104,7 @@ std::pair<float, size_t> ByteArray::get_float(uint32_t addr) const
             | (uint32_t) get_byte(addr+3) << 24;
     float value;
     std::memcpy(&value, &bits, 4);
-    return { value, 4 };
+    return value;
 }
 
 std::pair<std::string, size_t> ByteArray::get_string(uint32_t addr) const
@@ -79,6 +113,11 @@ std::pair<std::string, size_t> ByteArray::get_string(uint32_t addr) const
     while (char c = (char) get_byte(addr++))
         data += c;
     return { data, data.size() + 1 };
+}
+
+void ByteArray::append_bytearray(ByteArray const& bytearray)
+{
+    data_.insert(data_.end(), bytearray.data().begin(), bytearray.data().end());
 }
 
 }

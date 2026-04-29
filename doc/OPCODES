@@ -4,7 +4,6 @@ Operations
 Stack operations: (0x00~0x1f)
    pushn [int]          Push int
    pushr [float]        Push float (real)
-   pushs [string]       Push string
    pshcn [index]        Push int from constant list
    pshcr [index]        Push float from constant list
    pshcs [index]        Push string from constant list
@@ -74,38 +73,6 @@ Error handling: (0xa0~0xaf)
    ???
 
 
-Bytecode format
----------------
-
-The bytecode file is composed of the following sections:
-
- * [0x0] 16-byte header
-            [00]: VM format
-            [??]: reserved
- * [0x1] Index: pointers to each one of the sections, up to 8
-            Each pointer: 4 bits
- * [0x2] Constants: all constants (such as strings) used in the code
-            * Table of 4-bit constant indexes with pointer to constant
-            * Raw constant data
- * [0x3] Functions: Pointer to functions within the code
-            [0:3]: function pointer
-            [4:5]: number of parameters
-            [6:7]: number of local variables
- * [0x4] Code: executable code
-            [1-byte]:   operation
-            [variable]: operand (see value encoding below)
- * [0x5] Debugging info
-            ???
-
-The max file size is 2 Gb.
-
-## Values can be encoded in the following ways:
- * The type is defined by the operator.
- * Encoding varies according to the type:
-    int:    use protobuf format
-    float:  4-bit floating point
-    string: int-defined length, followed by the string proper - no null terminator
- * Constant indexes and function ids are encoded as ints
 
 
 Internal handling of values

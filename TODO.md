@@ -4,9 +4,27 @@
   - Auto-expand
   - Add/retrive byte/int/float/string
   - Should not be larger than the byte array itself
-- [ ] Chunk
+- [x] Bytecode
   - Add/retrive all types of data
   - Keeps no memory except for caching
-- [ ] Chunk loader
+  - [x] Refactor bytecode code
+- [ ] Output bytecode format
+
+After some additional development:
+- [ ] Bytecode debugging info
+
+
+## VM
+
+- [ ] VM
+  - [ ] Code
+    - [ ] Simple bytecode loader
+      - [ ] Output bytecode format
+  - [ ] Value object
+  - [ ] Stack object
+  - [ ] Function context
+
+After some additional development:
+- [ ] Bytecode loader
   - Combine multiple chunks
   - Resolve function ids, constant ids, etc

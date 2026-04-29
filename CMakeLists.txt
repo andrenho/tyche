@@ -59,8 +59,12 @@ FetchContent_MakeAvailable(googletest)
 #
 
 add_library(lib${PROJECT_NAME} STATIC
-    src/bytecode/bytearray.hh
-    src/bytecode/bytearray.cc
+        src/bytecode/bytearray.hh
+        src/bytecode/bytearray.cc
+        src/bytecode/bytecode.cc
+        src/bytecode/bytecode.hh
+        src/bytecode/bytecodeprototype.hh
+        src/common/overloaded.hh
 )
 
 target_compile_options(lib${PROJECT_NAME} PRIVATE ${warnings})
