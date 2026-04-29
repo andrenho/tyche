@@ -13,17 +13,16 @@ public:
     [[nodiscard]] uint32_t n_constants() const;
     [[nodiscard]] uint32_t n_functions() const;
 
-    [[nodiscard]] int32_t     get_constant_int(uint32_t idx) const;
-    [[nodiscard]] float       get_constant_float(uint32_t idx) const;
-    [[nodiscard]] std::string get_constant_string(uint32_t idx) const;
+    [[nodiscard]] ConstantValue get_constant(uint32_t idx) const;
 
     struct FunctionDef { uint16_t n_params, locals; };
     [[nodiscard]] FunctionDef get_function_def(uint32_t function_id) const;
     [[nodiscard]] uint32_t    get_function_sz(uint32_t function_id) const;
 
-    [[nodiscard]] uint8_t                    get_code_byte(uint32_t function_id, uint32_t idx) const;
-    [[nodiscard]] std::pair<int32_t, size_t> get_code_int(uint32_t function_id, uint32_t idx) const;
-    [[nodiscard]] float                      get_code_float(uint32_t function_id, uint32_t idx) const;
+    [[nodiscard]] uint8_t get_code_byte(uint32_t function_id, uint32_t idx) const;
+    [[nodiscard]] int8_t  get_code_int8(uint32_t function_id, uint32_t idx) const;
+    [[nodiscard]] int16_t get_code_int16(uint32_t function_id, uint32_t idx) const;
+    [[nodiscard]] int32_t get_code_int32(uint32_t function_id, uint32_t idx) const;
 
     // TODO - debugging info
 

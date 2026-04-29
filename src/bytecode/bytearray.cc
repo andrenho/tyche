@@ -1,6 +1,7 @@
 #include "bytearray.hh"
 
 #include <cstring>
+#include <cstdio>
 
 namespace tyche {
 
@@ -14,14 +15,23 @@ void ByteArray::set_byte(uint32_t addr, uint8_t byte)
     }
 }
 
-void ByteArray::set_int(uint32_t addr, int32_t value)
+void ByteArray::set_int8(uint32_t addr, int8_t value)
 {
-    uint32_t zz = ((uint32_t)(value << 1)) ^ ((uint32_t)(value >> 31));
-    while (zz > 0x7F) {
-        set_byte(addr++, (zz & 0x7F) | 0x80);
-        zz >>= 7;
-    }
-    set_byte(addr, zz & 0x7F);
+    set_byte(addr, (uint8_t) value);
+}
+
+void ByteArray::set_int16(uint32_t addr, int16_t value)
+{
+    set_byte(addr, (uint8_t) (value));
+    set_byte(addr+1, (uint8_t) (value >> 8));
+}
+
+void ByteArray::set_int32(uint32_t addr, int32_t value)
+{
+    set_byte(addr, (uint8_t) (value));
+    set_byte(addr+1, (uint8_t) (value >> 8));
+    set_byte(addr+2, (uint8_t) (value >> 16));
+    set_byte(addr+3, (uint8_t) (value >> 24));
 }
 
 void ByteArray::set_uint16(uint32_t addr, uint16_t value)
@@ -80,20 +90,23 @@ uint32_t ByteArray::get_uint32(uint32_t addr) const
             | (uint32_t) get_byte(addr+3) << 24;
 }
 
-std::pair<int32_t, size_t> ByteArray::get_int(uint32_t addr) const
+int8_t ByteArray::get_int8(uint32_t addr) const
 {
-    uint32_t zz = 0;
-    int shift = 0;
-    for (size_t i = 0; shift < 35; i++) {
-        uint8_t byte = get_byte(addr++);
-        zz |= (uint32_t)(byte & 0x7F) << shift;
-        if (!(byte & 0x80)) {
-            int32_t value = (int32_t)((zz >> 1) ^ -(zz & 1));
-            return std::make_pair(value, (int)(i + 1));
-        }
-        shift += 7;
-    }
-    throw BytecodeParsingError("Error parsing int32 at position " + std::to_string(addr));
+    return std::bit_cast<int8_t>(get_byte(addr));
+}
+
+int16_t ByteArray::get_int16(uint32_t addr) const
+{
+    return (uint16_t) get_byte(addr)
+            | (uint16_t) get_byte(addr+1) << 8;
+}
+
+int32_t ByteArray::get_int32(uint32_t addr) const
+{
+    return std::bit_cast<int32_t>((uint32_t) get_byte(addr)
+            | (uint32_t) get_byte(addr+1) << 8
+            | (uint32_t) get_byte(addr+2) << 16
+            | (uint32_t) get_byte(addr+3) << 24);
 }
 
 float ByteArray::get_float(uint32_t addr) const
@@ -118,6 +131,25 @@ std::pair<std::string, size_t> ByteArray::get_string(uint32_t addr) const
 void ByteArray::append_bytearray(ByteArray const& bytearray)
 {
     data_.insert(data_.end(), bytearray.data().begin(), bytearray.data().end());
+}
+
+std::string ByteArray::hexdump() const
+{
+    auto to_hex = [](uint32_t value, size_t n_chars) -> std::string {
+        char buf[15];
+        snprintf(buf, sizeof buf, (std::string("%0") + std::to_string(n_chars) + "X").c_str(), value);
+        return { buf };
+    };
+
+    std::string out;
+    for (size_t i = 0; i < data_.size(); ++i) {
+        if (i % 16 == 0)
+            out += to_hex(i, 4) + " | ";
+        out += to_hex(data_.at(i), 2) + " ";
+        if (i % 16 == 15)
+            out += "\n";
+    }
+    return out + "\n";
 }
 
 }

@@ -26,11 +26,11 @@ TEST(ByteArray, ByteArray)
     ByteArray ba;
     ba.set_byte(1, 0xab); ASSERT_EQ(ba.get_byte(1), 0xab);
 
-    ba.set_int(1, 12); ASSERT_EQ(ba.get_int(1), std::make_pair(12, 1));
-    ba.set_int(1, -12); ASSERT_EQ(ba.get_int(1), std::make_pair(-12, 1));
-    ba.set_int(1, 5000); ASSERT_EQ(ba.get_int(1), std::make_pair(5000, 2));
-    ba.set_int(1, 5000300); ASSERT_EQ(ba.get_int(1), std::make_pair(5000300, 4));
-    ba.set_int(1, -5000300); ASSERT_EQ(ba.get_int(1), std::make_pair(-5000300, 4));
+    ba.set_int8(1, 12); ASSERT_EQ(ba.get_int8(1), 12);
+    ba.set_int8(1, -12); ASSERT_EQ(ba.get_int8(1), -12);
+    ba.set_int16(1, 5000); ASSERT_EQ(ba.get_int16(1), 5000);
+    ba.set_int32(1, 5000300); ASSERT_EQ(ba.get_int32(1), 5000300);
+    ba.set_int32(1, -5000300); ASSERT_EQ(ba.get_int32(1), -5000300);
 
     ba.set_float(1, 3.14); ASSERT_FLOAT_EQ(ba.get_float(1), 3.14);
     ba.set_float(1, -3.14); ASSERT_FLOAT_EQ(ba.get_float(1), -3.14);
@@ -44,7 +44,7 @@ TEST(ByteArray, ByteArray)
 TEST(Bytecode, Constants)
 {
     BytecodePrototype bp;
-    bp.constants.emplace_back(42);
+    bp.constants.emplace_back(42.3f);
     bp.constants.emplace_back("HELLO");
 
     std::vector<uint8_t> expected = {
@@ -57,7 +57,7 @@ TEST(Bytecode, Constants)
             // index
             0x50, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, // constant index
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // function undex
-            0x58, 0x00, 0x00, 0x00, 0x07, 0x00, 0x00, 0x00, // raw constants
+            0x58, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x00, // raw constants
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // raw code
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -66,14 +66,14 @@ TEST(Bytecode, Constants)
 
             // constant indexes
             0x00, 0x00, 0x00, 0x00,
-            0x01, 0x00, 0x00, 0x00,
+            0x05, 0x00, 0x00, 0x00,
 
             // constant values
-            0x54, 'H', 'E', 'L', 'L', 'O', 0x00
+            CONST_TYPE_FLOAT, 0x33, 0x33, 0x29, 0x42,         // float: 42.3f
+            CONST_TYPE_STRING, 'H', 'E', 'L', 'L', 'O', 0x00
     };
 
     ByteArray ba = Bytecode::generate(bp);
-    // print(ba.data()); print(expected);
     ASSERT_EQ(ba.data(), expected);
 }
 
@@ -82,7 +82,7 @@ TEST(Bytecode, Code)
     BytecodePrototype bp;
     auto& f = bp.functions.emplace_back(0, 0);
     f.code.append_byte(0x68);
-    f.code.append_int(42);
+    f.code.append_int8(42);
 
     auto& f2 = bp.functions.emplace_back(2, 1);
     f2.code.append_byte(0x42);
@@ -109,7 +109,7 @@ TEST(Bytecode, Code)
             0x02, 0x00, 0x00, 0x00, 0x02, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00,
 
             // code
-            0x68, 0x54, 0x42,
+            0x68, 42, 0x42,
     };
 
     ByteArray ba = Bytecode::generate(bp);
@@ -122,13 +122,12 @@ TEST(Bytecode, Parsing)
 
     BytecodePrototype bp;
 
-    bp.constants.emplace_back(42);
     bp.constants.emplace_back(3.14f);
     bp.constants.emplace_back("HELLO");
 
     auto& f = bp.functions.emplace_back(0, 0);
     f.code.append_byte(0x68);
-    f.code.append_int(42);
+    f.code.append_int8(42);
 
     auto& ff = bp.functions.emplace_back(2, 1);
     ff.code.append_byte(0x42);
@@ -140,12 +139,11 @@ TEST(Bytecode, Parsing)
 
     Bytecode bc(std::move(ba));
 
-    ASSERT_EQ(bc.n_constants(), 3);
+    ASSERT_EQ(bc.n_constants(), 2);
     ASSERT_EQ(bc.n_functions(), 2);
 
-    ASSERT_EQ(bc.get_constant_int(0), 42);
-    ASSERT_FLOAT_EQ(bc.get_constant_float(1), 3.14f);
-    ASSERT_EQ(bc.get_constant_string(2), "HELLO");
+    ASSERT_FLOAT_EQ(std::get<float>(bc.get_constant(0)), 3.14f);
+    ASSERT_EQ(std::get<std::string>(bc.get_constant(1)), "HELLO");
 
     Bytecode::FunctionDef f1 = bc.get_function_def(0);
     ASSERT_EQ(f1.n_params, 0);
@@ -156,7 +154,7 @@ TEST(Bytecode, Parsing)
     ASSERT_EQ(f2.locals, 1);
 
     ASSERT_EQ(bc.get_code_byte(0, 0), 0x68);
-    ASSERT_EQ(bc.get_code_int(0, 1), std::make_pair(42, 1));
+    ASSERT_EQ(bc.get_code_int8(0, 1), 42);
     ASSERT_EQ(bc.get_code_byte(1, 0), 0x42);
 }
 

@@ -8,7 +8,10 @@
   - Add/retrive all types of data
   - Keeps no memory except for caching
   - [x] Refactor bytecode code
-- [ ] Output bytecode format
+
+Improvements:
+- [x] Fixed int type (based on opcode)
+- [x] Constant type (only floats and strings for now)
 
 After some additional development:
 - [ ] Bytecode debugging info

@@ -5,12 +5,11 @@
 #include <string>
 #include <variant>
 #include <vector>
+#include "constant.hh"
 
 namespace tyche {
 
 struct BytecodePrototype {
-    using ConstantValue = std::variant<int32_t, float, std::string>;
-
     struct Function {
         uint16_t  n_pars;
         uint16_t  n_locals;

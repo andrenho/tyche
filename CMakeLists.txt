@@ -58,7 +58,7 @@ FetchContent_MakeAvailable(googletest)
 # library
 #
 
-add_library(lib${PROJECT_NAME} STATIC
+add_library(lib${PROJECT_NAME} SHARED
         src/bytecode/bytearray.hh
         src/bytecode/bytearray.cc
         src/bytecode/bytecode.cc
@@ -73,7 +73,8 @@ target_compile_options(lib${PROJECT_NAME} PRIVATE ${warnings})
 # tests
 #
 
-add_executable(${PROJECT_NAME}-bytecode-test src/bytecode/tests.cc)
+add_executable(${PROJECT_NAME}-bytecode-test src/bytecode/tests.cc
+        src/bytecode/constant.hh)
 target_link_libraries(${PROJECT_NAME}-bytecode-test lib${PROJECT_NAME} gtest_main)
 add_test(NAME tyche_bytecode_test COMMAND ${PROJECT_NAME}-bytecode-test)
 

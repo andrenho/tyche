@@ -1,17 +1,23 @@
 Operations
 ----------
 
+Operations take either 0 or 1 parameter. The ones that take a parameter, it can be either a int8, int16 or int32.
+
+The binary of the opcode is: XXYY.YYYY, where XX defines the parameter type, and YY.YYYY is the instruction. For the XX values:
+
+00 - no parameter
+01 - int8
+10 - int16
+11 - int32
+
 Stack operations: (0x00~0x1f)
    pushn [int]          Push int
-   pushr [float]        Push float (real)
-   pshcn [index]        Push int from constant list
-   pshcr [index]        Push float from constant list
-   pshcs [index]        Push string from constant list
+   pushc [index]        Push constant
    pushf [function]     Push function id
    pushz                Push zero (or false)
    pusht                Push true
-   newa [array]         Push (create) empty array
-   newt [table]         Push (create) empty table
+   newa                 Push (create) empty array
+   newt                 Push (create) empty table
    pop
    dup
 

@@ -39,22 +39,17 @@ uint32_t Bytecode::n_functions() const
     return cache_.n_functions;
 }
 
-int32_t Bytecode::get_constant_int(uint32_t idx) const
+ConstantValue Bytecode::get_constant(uint32_t idx) const
 {
     uint32_t constant_idx = byte_array_.get_uint32(cache_.constants_idx_addr + (idx * CONST_RECORD_SZ));
-    return byte_array_.get_int(cache_.constants_start_addr + constant_idx).first;
-}
-
-float Bytecode::get_constant_float(uint32_t idx) const
-{
-    uint32_t constant_idx = byte_array_.get_uint32(cache_.constants_idx_addr + (idx * CONST_RECORD_SZ));
-    return byte_array_.get_float(cache_.constants_start_addr + constant_idx);
-}
-
-std::string Bytecode::get_constant_string(uint32_t idx) const
-{
-    uint32_t constant_idx = byte_array_.get_uint32(cache_.constants_idx_addr + (idx * CONST_RECORD_SZ));
-    return byte_array_.get_string(cache_.constants_start_addr + constant_idx).first;
+    switch ((ConstantType) byte_array_.get_byte(cache_.constants_start_addr + constant_idx)) {
+        case CONST_TYPE_FLOAT:
+            return byte_array_.get_float(cache_.constants_start_addr + constant_idx + 1);
+        case CONST_TYPE_STRING:
+            return byte_array_.get_string(cache_.constants_start_addr + constant_idx + 1).first;
+        default:
+            throw BytecodeParsingError("Invalid bytecode format (invalid constant type)");
+    }
 }
 
 Bytecode::FunctionDef Bytecode::get_function_def(uint32_t function_id) const
@@ -76,14 +71,19 @@ uint8_t Bytecode::get_code_byte(uint32_t function_id, uint32_t idx) const
     return byte_array_.get_byte(cache_.function_addr.at(function_id) + idx);
 }
 
-std::pair<int32_t, size_t> Bytecode::get_code_int(uint32_t function_id, uint32_t idx) const
+int8_t Bytecode::get_code_int8(uint32_t function_id, uint32_t idx) const
 {
-    return byte_array_.get_int(cache_.function_addr.at(function_id) + idx);
+    return byte_array_.get_int8(cache_.function_addr.at(function_id) + idx);
 }
 
-float Bytecode::get_code_float(uint32_t function_id, uint32_t idx) const
+int16_t Bytecode::get_code_int16(uint32_t function_id, uint32_t idx) const
 {
-    return byte_array_.get_float(cache_.function_addr.at(function_id) + idx);
+    return byte_array_.get_int16(cache_.function_addr.at(function_id) + idx);
+}
+
+int32_t Bytecode::get_code_int32(uint32_t function_id, uint32_t idx) const
+{
+    return byte_array_.get_int32(cache_.function_addr.at(function_id) + idx);
 }
 
 ByteArray Bytecode::generate(BytecodePrototype const& bp)
@@ -101,9 +101,14 @@ ByteArray Bytecode::generate(BytecodePrototype const& bp)
     for (auto const& constant: bp.constants) {
         constant_indexes.append_uint32(idx);
         std::visit(overloaded {
-                [&](int32_t i)            { raw_constants.append_int(i); },
-                [&](float f)              { raw_constants.append_float(f); },
-                [&](std::string const& s) { raw_constants.append_string(s); },
+                [&](float f) {
+                    raw_constants.append_byte(CONST_TYPE_FLOAT);
+                    raw_constants.append_float(f);
+                },
+                [&](std::string const& s) {
+                    raw_constants.append_byte(CONST_TYPE_STRING);
+                    raw_constants.append_string(s);
+                },
         }, constant);
         idx = raw_constants.size();
     }
