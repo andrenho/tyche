@@ -23,9 +23,11 @@ After some additional development:
   - [x] Code
     - [x] Simple bytecode loader
       - [x] Output bytecode format
-  - [ ] Value object
-  - [ ] Stack object
-  - [ ] Function context
+  - [x] Value object
+  - [x] Stack object
+  - [ ] External interface
+  - [ ] Code execution (except functions)
+  - [ ] Functions
 
 After some additional development:
 - [ ] Bytecode loader
