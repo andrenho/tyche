@@ -43,6 +43,31 @@ TEST(Stack, PushPullGet)
     ASSERT_EQ(stack.at(-2).as_integer(), 20);
 }
 
+TEST(Stack, FramePointer)
+{
+    Stack stack;
+    stack.push(Value::CreateInteger(10));
+    stack.push(Value::CreateInteger(20));
+    stack.push_fp();
+    stack.push(Value::CreateInteger(30));
+    stack.push(Value::CreateInteger(40));
+    stack.push(Value::CreateInteger(50));
+
+    ASSERT_EQ(stack.size(), 3);
+    ASSERT_EQ(stack.at(0).as_integer(), 30);
+    ASSERT_EQ(stack.at(1).as_integer(), 40);
+    ASSERT_EQ(stack.at(-1).as_integer(), 50);
+    ASSERT_EQ(stack.at(-2).as_integer(), 40);
+
+    stack.pop_fp();
+
+    ASSERT_EQ(stack.size(), 2);
+    ASSERT_EQ(stack.at(0).as_integer(), 10);
+    ASSERT_EQ(stack.at(1).as_integer(), 20);
+    ASSERT_EQ(stack.at(-1).as_integer(), 20);
+    ASSERT_EQ(stack.at(-2).as_integer(), 10);
+}
+
 int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
