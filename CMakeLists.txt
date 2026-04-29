@@ -72,6 +72,9 @@ add_library(lib${PROJECT_NAME} SHARED
         src/vm/instruction.cc
         src/vm/value.cc
         src/vm/value.hh
+        src/vm/stack.cc
+        src/vm/stack.hh
+        src/vm/vm_exceptions.hh
 )
 
 target_compile_options(lib${PROJECT_NAME} PRIVATE ${warnings})
