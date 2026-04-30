@@ -5,6 +5,7 @@
 
 #include "lexer.hh"
 #include "../common/bytearray.hh"
+#include "../bytecode/bytecodeprototype.hh"
 
 namespace tyche::as {
 
@@ -16,6 +17,7 @@ public:
 
 private:
     Lexer lexer_;
+    bc::BytecodePrototype bp_;
 };
 
 } // tyche

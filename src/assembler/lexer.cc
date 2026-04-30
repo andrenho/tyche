@@ -24,6 +24,9 @@ Token Lexer::ingest()
 
 void Lexer::ingest_next_token()
 {
+    size_t current_line_pos = 1;
+    size_t current_line = 1;
+
     if (pos_ >= source_.size()) {
         current_token_ = { TokenType::EOF_, "" };
         return;
@@ -49,7 +52,7 @@ void Lexer::ingest_next_token()
                 ++pos_;
                 break;
             } else if (pos_ >= source_.size()) {
-                throw AssemblyError("Unterminated string");
+                throw AssemblyError("Unterminated string", current_line, pos_ - current_line_pos);
             }
             token += source_.at(pos_++);
         }
@@ -62,7 +65,7 @@ void Lexer::ingest_next_token()
                 if (type == TokenType::Integer)
                     type = TokenType::Float;
                 else
-                    throw AssemblyError("Double point in floating point number");
+                    throw AssemblyError("Double point in floating point number", current_line, pos_ - current_line_pos);
             }
         }
     } else if (isalpha(c)) {
@@ -70,18 +73,23 @@ void Lexer::ingest_next_token()
         token += c;
         while (c = source_.at(++pos_), isalpha(c))
             token += c;
+    } else if (c == ':') {
+        type = TokenType::Colon;
+        ++pos_;
     } else if (c == '\n') {
         type = TokenType::Enter;
         ++pos_;
+        ++current_line;
+        current_line_pos = pos_;
     } else {
-        throw AssemblyError(std::string("Unexpected character '") + c + "' (ascii: " + std::to_string((int) c) + ")");
+        throw AssemblyError(std::string("Unexpected character '") + c + "' (ascii: " + std::to_string((int) c) + ")", current_line, pos_ - current_line_pos);
     }
 
     // skip ignored tokens
     while (pos_ < source_.size() && (source_.at(pos_) == ' ' || source_.at(pos_) == '\t' || source_.at(pos_) == '\r'))
         ++pos_;
 
-    current_token_ = { .type = type, .token = token };
+    current_token_ = { .type = type, .token = token, .line = current_line, .column = pos_ - current_line_pos };
 }
 
 } // tyche

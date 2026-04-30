@@ -7,12 +7,14 @@
 namespace tyche::as {
 
 enum class TokenType {
-    BOF, Directive, Instruction, Integer, Float, String, Enter, EOF_
+    BOF, Directive, Instruction, Integer, Float, String, Enter, Colon, EOF_
 };
 
 struct Token {
     TokenType   type;
     std::string token;
+    size_t      line;
+    size_t      column;
 
     friend bool operator==(Token const& lhs, Token const& rhs) { return std::tie(lhs.type, lhs.token) == std::tie(rhs.type, rhs.token); }
 };

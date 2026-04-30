@@ -9,7 +9,8 @@ namespace tyche::as {
 class AssemblyError : public std::runtime_error
 {
 public:
-    explicit AssemblyError(std::string const& str) : std::runtime_error(str.c_str()) {}
+    explicit AssemblyError(std::string const& str, size_t line, size_t column)
+        : std::runtime_error((str + " at: line " + std::to_string(line) + ", column: " + std::to_string(column)).c_str()) {}
 };
 
 }
