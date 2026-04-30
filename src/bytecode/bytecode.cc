@@ -1,7 +1,7 @@
 #include "bytecode.hh"
 #include "../common/overloaded.hh"
 
-namespace tyche {
+namespace tyche::bc {
 
 Bytecode::Bytecode(ByteArray ba)
     : byte_array_(std::move(ba))

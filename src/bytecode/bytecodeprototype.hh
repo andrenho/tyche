@@ -6,9 +6,9 @@
 #include <variant>
 #include <vector>
 #include "constant.hh"
-#include "bytearray.hh"
+#include "../common/bytearray.hh"
 
-namespace tyche {
+namespace tyche::bc {
 
 struct BytecodePrototype {
     struct Function {

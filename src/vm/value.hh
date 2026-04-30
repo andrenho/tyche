@@ -4,14 +4,19 @@
 #include <string>
 #include <variant>
 
-namespace tyche {
+namespace tyche::vm {
+
+using FunctionId = uint32_t;
 
 enum class Type : uint8_t
 {
     Nil = 0, Integer, Float, String, Array, Table, Function, NativePointer,
 };
 
+
 class Value {
+    struct Function { FunctionId f_id; };
+
 public:
     Value() : value_(std::monostate()) {}
 
@@ -19,15 +24,19 @@ public:
     static Value CreateInteger(int32_t v) { return Value(v); }
     static Value CreateFloat(float f) { return Value(f); }
     static Value CreateString(std::string const& str) { return Value(str); }
+    static Value CreateFunctionId(FunctionId f_id) { return Value(Function { f_id }); }
 
     [[nodiscard]] Type type() const;
 
-    [[nodiscard]] int32_t     as_integer() const { return std::get<int32_t>(value_); }
-    [[nodiscard]] float       as_float() const   { return std::get<float>(value_); }
-    [[nodiscard]] std::string as_string() const  { return std::get<std::string>(value_); }
+    [[nodiscard]] int32_t     as_integer() const     { return std::get<int32_t>(value_); }
+    [[nodiscard]] float       as_float() const       { return std::get<float>(value_); }
+    [[nodiscard]] std::string as_string() const      { return std::get<std::string>(value_); }
+    [[nodiscard]] FunctionId  as_function_id() const { return std::get<Function>(value_).f_id; }
+
+    [[nodiscard]] std::string to_string() const;
 
 private:
-    using Internal = std::variant<std::monostate, int32_t, float, std::string>;
+    using Internal = std::variant<std::monostate, int32_t, float, std::string, Function>;
     Internal value_;
 
     explicit Value(Internal const& internal) : value_(internal) {}

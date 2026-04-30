@@ -2,7 +2,7 @@
 
 #include "vm_exceptions.hh"
 
-namespace tyche {
+namespace tyche::vm {
 
 Stack::Stack()
 {
@@ -16,7 +16,7 @@ void Stack::push(Value const& value)
 
 Value Stack::pop()
 {
-    if (stack_.size() <= fps_.size())
+    if (stack_.size() <= fps_.top())
         throw VMStackUnderflow();
 
     Value v = stack_.back();
@@ -56,6 +56,17 @@ void Stack::pop_fp()
 
     stack_.resize(fps_.top());
     fps_.pop();
+}
+
+std::string Stack::debug() const
+{
+    if (stack_.empty())
+        return "empty";
+
+    std::string out;
+    for (size_t i = 0; i < stack_.size(); ++i)
+        out += "[" + stack_.at(i).to_string() + "] ";
+    return out;
 }
 
 } // tyche

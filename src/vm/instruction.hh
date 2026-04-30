@@ -7,7 +7,7 @@
 
 #include "../bytecode/bytecode.hh"
 
-namespace tyche {
+namespace tyche::vm {
 
 enum class Instruction : uint8_t {
 
@@ -96,7 +96,10 @@ enum class Instruction : uint8_t {
 };
 
 std::pair<std::string, size_t> debug_instruction(Instruction inst, int oper=0);
-std::pair<std::string, size_t> debug_instruction(Bytecode const& bt, uint32_t function_id, uint32_t addr);
+std::pair<std::string, size_t> debug_instruction(bc::Bytecode const& bt, uint32_t function_id, uint32_t addr);
+
+enum class OperandType { NoOperand, Int8, Int16, Int32 };
+OperandType instruction_operand_type(Instruction instruction);
 
 }
 

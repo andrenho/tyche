@@ -3,11 +3,12 @@
 #include <cstring>
 #include <functional>
 
-#include "bytearray.hh"
+#include "../common/bytearray.hh"
 #include "bytecodeprototype.hh"
 #include "bytecode.hh"
 
 using namespace tyche;
+using namespace tyche::bc;
 
 TEST(ByteArray, ByteArray)
 {

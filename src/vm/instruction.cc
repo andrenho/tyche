@@ -1,6 +1,6 @@
 #include "instruction.hh"
 
-namespace tyche {
+namespace tyche::vm {
 
 std::pair<std::string, size_t> debug_instruction(Instruction inst, int oper)
 {
@@ -98,30 +98,48 @@ std::pair<std::string, size_t> debug_instruction(Instruction inst, int oper)
             out = "???";
     }
 
-    if ((uint8_t) inst < 0xa0)
+    OperandType operands = instruction_operand_type(inst);
+
+    if (operands == OperandType::NoOperand)
         return { out, 1 };
 
     out += " " + std::to_string(oper);
-    if ((uint8_t) inst >= 0xe0)
+    if (operands == OperandType::Int32)
         return { out, 5 };
-    else if ((uint8_t) inst >= 0xc0)
+    if (operands == OperandType::Int16)
         return { out, 3 };
-    else
-        return { out, 2 };
+
+    return { out, 2 };
 }
 
-std::pair<std::string, size_t> debug_instruction(Bytecode const& bt, uint32_t function_id, uint32_t addr)
+std::pair<std::string, size_t> debug_instruction(bc::Bytecode const& bt, uint32_t function_id, uint32_t addr)
 {
     auto inst = (Instruction) bt.get_code_byte(function_id, addr);
 
-    if ((uint8_t) inst >= 0xe0)
-        return debug_instruction(inst, bt.get_code_int32(function_id, addr + 1));
-    else if ((uint8_t) inst >= 0xc0)
-        return debug_instruction(inst, bt.get_code_int16(function_id, addr + 1));
-    else if ((uint8_t) inst >= 0xa0)
-        return debug_instruction(inst, bt.get_code_int8(function_id, addr + 1));
+    switch (instruction_operand_type(inst)) {
+        case OperandType::NoOperand:
+            return debug_instruction(inst);
+        case OperandType::Int8:
+            return debug_instruction(inst, bt.get_code_int8(function_id, addr + 1));
+        case OperandType::Int16:
+            return debug_instruction(inst, bt.get_code_int16(function_id, addr + 1));
+        case OperandType::Int32:
+            return debug_instruction(inst, bt.get_code_int32(function_id, addr + 1));
+        default:
+    }
 
-    return debug_instruction(inst);
+    return { "???", 1 };
+}
+
+OperandType instruction_operand_type(Instruction inst)
+{
+    if ((uint8_t) inst >= 0xe0)
+        return OperandType::Int32;
+    if ((uint8_t) inst >= 0xc0)
+        return OperandType::Int16;
+    if ((uint8_t) inst >= 0xa0)
+        return OperandType::Int8;
+    return OperandType::NoOperand;
 }
 
 }

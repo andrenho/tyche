@@ -6,7 +6,7 @@
 
 #include "value.hh"
 
-namespace tyche {
+namespace tyche::vm {
 
 class Stack {
 public:
@@ -20,6 +20,10 @@ public:
 
     void push_fp();
     void pop_fp();
+
+    [[nodiscard]] size_t fp_level() const { return fps_.size(); }
+
+    [[nodiscard]] std::string debug() const;
 
 private:
     std::vector<Value> stack_;

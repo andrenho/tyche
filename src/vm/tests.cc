@@ -1,12 +1,15 @@
 #include "gtest/gtest.h"
 
 #include "../bytecode/bytecodeprototype.hh"
-#include "../bytecode/bytearray.hh"
+#include "../common/bytearray.hh"
 #include "../bytecode/bytecode.hh"
 #include "code.hh"
 #include "stack.hh"
+#include "vm.hh"
 
 using namespace tyche;
+using namespace tyche::bc;
+using namespace tyche::vm;
 
 TEST(Code, ImportSingleAndDebug)
 {
@@ -66,6 +69,27 @@ TEST(Stack, FramePointer)
     ASSERT_EQ(stack.at(1).as_integer(), 20);
     ASSERT_EQ(stack.at(-1).as_integer(), 20);
     ASSERT_EQ(stack.at(-2).as_integer(), 10);
+}
+
+TEST(VM, BasicCode)
+{
+    // code (2+3)
+    BytecodePrototype bp;
+    bp.functions.emplace_back(0, 0);
+    bp.functions.at(0).code.append_byte((uint8_t) Instruction::PushInt8);
+    bp.functions.at(0).code.append_int8(2);
+    bp.functions.at(0).code.append_byte((uint8_t) Instruction::PushInt8);
+    bp.functions.at(0).code.append_int8(3);
+    bp.functions.at(0).code.append_byte((uint8_t) Instruction::Sum);
+    bp.functions.at(0).code.append_byte((uint8_t) Instruction::Return);
+    ByteArray ba = Bytecode::generate(bp);
+
+    VM vm;
+    vm.load_bytecode(std::move(ba));
+    vm.call(0);
+
+    int32_t result = vm.to_integer(-1);
+    ASSERT_EQ(result, 5);
 }
 
 int main(int argc, char** argv)

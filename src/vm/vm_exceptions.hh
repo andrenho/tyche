@@ -4,7 +4,9 @@
 #include <stdexcept>
 #include <string>
 
-namespace tyche {
+#include "expr.hh"
+
+namespace tyche::vm {
 
 class VMRuntimeError : public std::runtime_error
 {
@@ -22,6 +24,24 @@ class VMStackOutOfRange : public VMRuntimeError
 {
 public:
     explicit VMStackOutOfRange() : VMRuntimeError("Item does not exist in stack") {}
+};
+
+class VMTypeError : public VMRuntimeError
+{
+public:
+    explicit VMTypeError(Type expected, Type found) : VMRuntimeError("Type error") {}  // TODO - print types
+};
+
+class VMInvalidOpcode : public VMRuntimeError
+{
+public:
+    explicit VMInvalidOpcode(uint8_t opcode) : VMRuntimeError("Invalid opcode " + std::to_string(opcode)) {}
+};
+
+class VMInvalidOperation : public VMRuntimeError
+{
+public:
+    explicit VMInvalidOperation(BinaryOperationType op, Type type1, Type type2) : VMRuntimeError("Invalid binary operation") {}  // TODO - print types
 };
 
 }

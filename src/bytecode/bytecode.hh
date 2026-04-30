@@ -1,10 +1,10 @@
 #ifndef TYCHE_BYTECODE_HH
 #define TYCHE_BYTECODE_HH
 
-#include "bytearray.hh"
+#include "../common/bytearray.hh"
 #include "bytecodeprototype.hh"
 
-namespace tyche {
+namespace tyche::bc {
 
 class Bytecode {
 public:

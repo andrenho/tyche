@@ -25,9 +25,12 @@ After some additional development:
       - [x] Output bytecode format
   - [x] Value object
   - [x] Stack object
-  - [ ] External interface
-  - [ ] Code execution (except functions)
-  - [ ] Functions
+  - [x] External interface
+  - [x] Code execution (except functions)
+  - [x] Functions
+  - [x] Print stack
+
+- [ ] Assembler
 
 After some additional development:
 - [ ] Bytecode loader

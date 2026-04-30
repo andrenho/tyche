@@ -4,7 +4,7 @@
 #include <string>
 #include <variant>
 
-namespace tyche {
+namespace tyche::bc {
 
 using ConstantValue = std::variant<float, std::string>;
 

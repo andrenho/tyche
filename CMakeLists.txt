@@ -59,15 +59,15 @@ FetchContent_MakeAvailable(googletest)
 #
 
 add_library(lib${PROJECT_NAME} SHARED
-        src/bytecode/bytearray.hh
-        src/bytecode/bytearray.cc
+        src/common/overloaded.hh
+        src/common/bytearray.hh
+        src/common/bytearray.cc
         src/bytecode/bytecode.cc
         src/bytecode/bytecode.hh
         src/bytecode/bytecodeprototype.hh
-        src/common/overloaded.hh
+        src/bytecode/constant.hh
         src/vm/code.cc
         src/vm/code.hh
-        src/bytecode/constant.hh
         src/vm/instruction.hh
         src/vm/instruction.cc
         src/vm/value.cc
@@ -75,6 +75,11 @@ add_library(lib${PROJECT_NAME} SHARED
         src/vm/stack.cc
         src/vm/stack.hh
         src/vm/vm_exceptions.hh
+        src/vm/vm.cc
+        src/vm/vm.hh
+        src/vm/expr.cc
+        src/vm/expr.hh
+        src/vm/location.hh
 )
 
 target_compile_options(lib${PROJECT_NAME} PRIVATE ${warnings})
