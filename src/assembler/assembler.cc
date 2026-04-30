@@ -2,13 +2,10 @@
 
 namespace tyche::as {
 
-Assembler::Assembler(std::string const& source)
+ByteArray Assembler::assemble()
 {
+    lexer_.reset();
 
-}
-
-ByteArray Assembler::assemble() const
-{
     return {};
 }
 
