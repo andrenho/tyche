@@ -17,7 +17,7 @@ struct Token {
 
 class Lexer {
 public:
-    explicit Lexer(std::string source) : source_(std::move(source) + "\n") { reset(); }
+    explicit Lexer(std::string source) : source_(std::move(source)) { reset(); }
 
     void reset();
     [[nodiscard]] Token peek() const;

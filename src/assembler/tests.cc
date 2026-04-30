@@ -12,10 +12,23 @@ using namespace tyche::vm;
 
 TEST(Lexer, Lexer)
 {
-    Lexer lexer(".dir push 382 -12 3.14 -12.8 \"Hello\" \"Hel\"lo\"\n");
+    Lexer lexer(".dir push 382 -12 3.14 -12.8 \"Hello\" \"Hel\\\"lo\"\n");
 
     ASSERT_EQ(lexer.ingest(), (Token { TokenType::Directive, ".dir" }));
     ASSERT_EQ(lexer.ingest(), (Token { TokenType::Instruction, "push" }));
+    ASSERT_EQ(lexer.ingest(), (Token { TokenType::Integer, "382" }));
+    ASSERT_EQ(lexer.ingest(), (Token { TokenType::Integer, "-12" }));
+    ASSERT_EQ(lexer.ingest(), (Token { TokenType::Float, "3.14" }));
+    ASSERT_EQ(lexer.ingest(), (Token { TokenType::Float, "-12.8" }));
+    ASSERT_EQ(lexer.ingest(), (Token { TokenType::String, "Hello" }));
+    ASSERT_EQ(lexer.ingest(), (Token { TokenType::String, "Hel\"lo" }));
+    ASSERT_EQ(lexer.ingest(), (Token { TokenType::Enter }));
+    ASSERT_EQ(lexer.ingest(), (Token { TokenType::EOF_ }));
+    ASSERT_EQ(lexer.ingest(), (Token { TokenType::EOF_ }));
+    ASSERT_EQ(lexer.ingest(), (Token { TokenType::EOF_ }));
+
+    lexer.reset();
+    ASSERT_EQ(lexer.ingest(), (Token { TokenType::Directive, ".dir" }));
 }
 
 TEST(Assember, Assembler)
