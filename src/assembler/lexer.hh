@@ -6,11 +6,13 @@
 
 namespace tyche::as {
 
-enum class TokenType { BOF, Directive, Instruction, Number, Float, String, Enter, EOF_ };
+enum class TokenType { BOF, Directive, Instruction, Integer, Float, String, Enter, EOF_ };
 
 struct Token {
     TokenType   type;
     std::string token;
+
+    friend bool operator==(Token const& lhs, Token const& rhs) { return std::tie(lhs.type, lhs.token) == std::tie(rhs.type, rhs.token); }
 };
 
 class Lexer {
@@ -24,7 +26,7 @@ public:
 private:
     const std::string source_;
     size_t pos_ = 0;
-    Token look_ahead_;
+    Token current_token_ { TokenType::BOF, "" };
 
     void ingest_next_token();
 };

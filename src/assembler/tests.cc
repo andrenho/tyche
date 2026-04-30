@@ -10,6 +10,14 @@ using namespace tyche::as;
 using namespace tyche::bc;
 using namespace tyche::vm;
 
+TEST(Lexer, Lexer)
+{
+    Lexer lexer(".dir push 382 -12 3.14 -12.8 \"Hello\" \"Hel\"lo\"\n");
+
+    ASSERT_EQ(lexer.ingest(), (Token { TokenType::Directive, ".dir" }));
+    ASSERT_EQ(lexer.ingest(), (Token { TokenType::Instruction, "push" }));
+}
+
 TEST(Assember, Assembler)
 {
     BytecodePrototype bp;
