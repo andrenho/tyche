@@ -6,7 +6,9 @@
 
 namespace tyche::as {
 
-enum class TokenType { BOF, Directive, Instruction, Integer, Float, String, Enter, EOF_ };
+enum class TokenType {
+    BOF, Directive, Instruction, Integer, Float, String, Enter, EOF_
+};
 
 struct Token {
     TokenType   type;
