@@ -2,12 +2,15 @@
 #define TYCHE_INSTRUCTION_HH
 
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <utility>
 
 #include "../bytecode/bytecode.hh"
 
 namespace tyche::vm {
+
+constexpr uint8_t OPCODE_NEXT_SIZE = 0x20;
 
 enum class Instruction : uint8_t {
 
@@ -100,6 +103,8 @@ std::pair<std::string, size_t> debug_instruction(bc::Bytecode const& bt, uint32_
 
 enum class OperandType { NoOperand, Int8, Int16, Int32 };
 OperandType instruction_operand_type(Instruction instruction);
+
+std::optional<Instruction> translate_instruction(std::string const& txt, std::optional<int> op);
 
 }
 

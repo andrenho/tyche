@@ -80,6 +80,12 @@ add_library(lib${PROJECT_NAME} SHARED
         src/vm/expr.cc
         src/vm/expr.hh
         src/vm/location.hh
+        src/assembler/lexer.cc
+        src/assembler/lexer.hh
+        src/assembler/assembler.cc
+        src/assembler/assembler.hh
+        src/assembler/as_exceptions.hh
+        src/bytecode/bc_exceptions.hh
 )
 
 target_compile_options(lib${PROJECT_NAME} PRIVATE ${warnings})
@@ -88,6 +94,8 @@ target_compile_options(lib${PROJECT_NAME} PRIVATE ${warnings})
 # tests
 #
 
+enable_testing()
+
 add_executable(${PROJECT_NAME}-bytecode-test src/bytecode/tests.cc)
 target_link_libraries(${PROJECT_NAME}-bytecode-test lib${PROJECT_NAME} gtest_main)
 add_test(NAME tyche_bytecode_test COMMAND ${PROJECT_NAME}-bytecode-test)
@@ -95,6 +103,10 @@ add_test(NAME tyche_bytecode_test COMMAND ${PROJECT_NAME}-bytecode-test)
 add_executable(${PROJECT_NAME}-vm-test src/vm/tests.cc)
 target_link_libraries(${PROJECT_NAME}-vm-test lib${PROJECT_NAME} gtest_main)
 add_test(NAME tyche_vm_test COMMAND ${PROJECT_NAME}-vm-test)
+
+add_executable(${PROJECT_NAME}-as-test src/assembler/tests.cc)
+target_link_libraries(${PROJECT_NAME}-as-test lib${PROJECT_NAME} gtest_main)
+add_test(NAME tyche_as_test COMMAND ${PROJECT_NAME}-as-test)
 
 #
 # check for leaks

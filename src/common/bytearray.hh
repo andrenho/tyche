@@ -47,13 +47,10 @@ public:
 
     [[nodiscard]] std::string hexdump() const;
 
+    friend bool operator==(ByteArray const& lhs, ByteArray const& rhs) { return lhs.data_ == rhs.data_; }
+
 private:
     std::vector<uint8_t> data_ {};
-};
-
-class BytecodeParsingError : public std::runtime_error {
-public:
-    explicit BytecodeParsingError(std::string const& str) : std::runtime_error(str.c_str()) {}
 };
 
 }
