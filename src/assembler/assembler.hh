@@ -17,7 +17,8 @@ public:
 
 private:
     Lexer lexer_;
-    bc::BytecodePrototype bp_;
+
+    TokenValue expect_token(TokenType type);
 };
 
 } // tyche
