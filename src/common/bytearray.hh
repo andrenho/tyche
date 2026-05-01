@@ -53,11 +53,6 @@ private:
     std::vector<uint8_t> data_ {};
 };
 
-class BytecodeParsingError : public std::runtime_error {
-public:
-    explicit BytecodeParsingError(std::string const& str) : std::runtime_error(str.c_str()) {}
-};
-
 }
 
 #endif //TYCHE_BYTEARRAY_HH

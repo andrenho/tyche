@@ -1,4 +1,6 @@
 #include "bytecode.hh"
+
+#include "bc_exceptions.hh"
 #include "../common/overloaded.hh"
 
 namespace tyche::bc {

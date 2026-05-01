@@ -1,6 +1,7 @@
 #ifndef TYCHE_ASSEMBLER_HH
 #define TYCHE_ASSEMBLER_HH
 
+#include <optional>
 #include <string>
 
 #include "lexer.hh"
@@ -19,7 +20,6 @@ private:
     Lexer lexer_;
 
     TokenValue expect_token(TokenType type);
-    void       emit_instruction(uint32_t function_id, std::string const& inst, int oper);
 };
 
 } // tyche

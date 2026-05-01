@@ -1,6 +1,61 @@
 #include "instruction.hh"
 
+#include <limits>
+#include <unordered_map>
+
 namespace tyche::vm {
+
+const std::unordered_map<std::string, vm::Instruction> instruction_names = {
+    { "pushi", vm::Instruction::PushInt8 },
+    { "pushc", vm::Instruction::PushConstant8 },
+    { "pushz", vm::Instruction::PushZero },
+    { "pusht", vm::Instruction::PushTrue },
+    { "newa",  vm::Instruction::NewArray },
+    { "newt",  vm::Instruction::NewTable },
+    { "pop",   vm::Instruction::Pop },
+    { "dup",   vm::Instruction::Duplicate },
+    { "setl",  vm::Instruction::SetLocal8 },
+    { "getl",  vm::Instruction::GetLocal8 },
+    { "setg",  vm::Instruction::SetGlobal8 },
+    { "getl",  vm::Instruction::GetGlobal8 },
+    { "call8", vm::Instruction::Call8 },
+    { "ret",   vm::Instruction::Return },
+    { "retn",  vm::Instruction::ReturnNil },
+    { "getkv", vm::Instruction::GetKeyValue },
+    { "setkv", vm::Instruction::SetKeyValue },
+    { "geta",  vm::Instruction::GetArrayItem },
+    { "seta",  vm::Instruction::SetArrayItem },
+    { "appnd", vm::Instruction::Append },
+    { "next",  vm::Instruction::Next },
+    { "smt",   vm::Instruction::SetMetatable },
+    { "mt",    vm::Instruction::GetMetatable },
+    { "sum",   vm::Instruction::Sum },
+    { "sub",   vm::Instruction::Subtract },
+    { "mul",   vm::Instruction::Multiply },
+    { "div",   vm::Instruction::Divide },
+    { "idiv",  vm::Instruction::DivideInt },
+    { "eq",    vm::Instruction::Equals },
+    { "neq",   vm::Instruction::NotEquals },
+    { "lt",    vm::Instruction::LessThan },
+    { "lte",   vm::Instruction::LessThanEq },
+    { "gt",    vm::Instruction::GreaterThan },
+    { "gte",   vm::Instruction::GreaterThanEq },
+    { "and",   vm::Instruction::And },
+    { "or",    vm::Instruction::Or },
+    { "xor",   vm::Instruction::Xor },
+    { "len",   vm::Instruction::Len },
+    { "type",  vm::Instruction::Type },
+    { "cast",  vm::Instruction::Cast },
+    { "ver",   vm::Instruction::Version },
+    { "bz",    vm::Instruction::BranchIfZero8 },
+    { "bnz",   vm::Instruction::BranchIfNotZero8 },
+    { "jmp",   vm::Instruction::Jump8 },
+    { "cmpl",  vm::Instruction::Compile },
+    { "asmbl", vm::Instruction::Assemble },
+    { "load",  vm::Instruction::Load },
+};
+
+
 
 std::pair<std::string, size_t> debug_instruction(Instruction inst, int oper)
 {
@@ -140,6 +195,29 @@ OperandType instruction_operand_type(Instruction inst)
     if ((uint8_t) inst >= 0xa0)
         return OperandType::Int8;
     return OperandType::NoOperand;
+}
+
+std::optional<Instruction> translate_instruction(std::string const& txt, std::optional<int> op)
+{
+    auto it = instruction_names.find(txt);
+    if (it == instruction_names.end())
+        return {};
+    Instruction inst = it->second;
+    OperandType optype = instruction_operand_type(inst);
+
+    if (optype == OperandType::NoOperand && op)
+        return {};
+    if (optype != OperandType::NoOperand && !op)
+        return {};
+
+    if (optype == OperandType::NoOperand)
+        return inst;
+
+    if (op >= std::numeric_limits<int8_t>::min() && op <= std::numeric_limits<int8_t>::max())
+        return inst;
+    if (op >= std::numeric_limits<int16_t>::min() && op <= std::numeric_limits<int16_t>::max())
+        return (Instruction) ((uint8_t) inst + OPCODE_NEXT_SIZE);
+    return (Instruction) ((uint8_t) inst + (OPCODE_NEXT_SIZE * 2));
 }
 
 }

@@ -85,6 +85,7 @@ add_library(lib${PROJECT_NAME} SHARED
         src/assembler/assembler.cc
         src/assembler/assembler.hh
         src/assembler/as_exceptions.hh
+        src/bytecode/bc_exceptions.hh
 )
 
 target_compile_options(lib${PROJECT_NAME} PRIVATE ${warnings})

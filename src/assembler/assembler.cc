@@ -1,7 +1,10 @@
 #include "assembler.hh"
 
+#include <unordered_map>
+
 #include "as_exceptions.hh"
 #include "../bytecode/bytecode.hh"
+#include "../vm/instruction.hh"
 
 using namespace std::string_literals;
 
@@ -49,13 +52,25 @@ ByteArray Assembler::assemble()
 
         } else if (section == Section::Function && t.type == TokenType::Instruction) {
             std::string instruction = std::get<std::string>(t.token);
-            int oper = 0;
+            std::optional<int> oper = {};
             Token tt = lexer_.ingest();
             if (tt.type == TokenType::Integer) {
                 oper = std::get<int>(tt.token);
                 tt = lexer_.ingest();
             }
-            emit_instruction(function_id, instruction, oper);
+
+            auto oinst = vm::translate_instruction(instruction, oper);
+            if (!oinst)
+                throw AssemblyError("Invalid or misused instruction '" + instruction + "'", tt.line, tt.column);
+
+            bp.functions.at(function_id).code.append_byte((uint8_t) *oinst);
+            switch (vm::instruction_operand_type(*oinst)) {
+                case vm::OperandType::Int8:  bp.functions.at(function_id).code.append_int8((int8_t) *oper); break;
+                case vm::OperandType::Int16: bp.functions.at(function_id).code.append_int16((int16_t) *oper); break;
+                case vm::OperandType::Int32: bp.functions.at(function_id).code.append_int32(*oper); break;
+                case vm::OperandType::NoOperand: default:
+            }
+
             if (tt.type != TokenType::Enter)
                 throw AssemblyError("Expected enter", tt.line, tt.column);
 
@@ -68,11 +83,6 @@ ByteArray Assembler::assemble()
     }
 
     return bc::Bytecode::generate(bp);
-}
-
-void Assembler::emit_instruction(uint32_t function_id, std::string const& inst, int oper)
-{
-
 }
 
 TokenValue Assembler::expect_token(TokenType type)
