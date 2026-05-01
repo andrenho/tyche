@@ -14,7 +14,7 @@ struct BytecodePrototype {
     struct Function {
         uint16_t  n_pars;
         uint16_t  n_locals;
-        ByteArray code;
+        ByteArray code {};
 
         Function(uint16_t n_pars_, uint16_t n_locals_) : n_pars(n_pars_), n_locals(n_locals_), code(ByteArray {}) {}
     };

@@ -31,6 +31,8 @@ ByteArray Assembler::assemble()
             } else if (std::get<std::string>(t.token) == ".func") {
                 section = Section::Function;
                 function_id = std::get<int>(expect_token(TokenType::Integer));
+                if (function_id >= bp.functions.size())
+                    bp.functions.resize(function_id + 1, { 0, 0 });
                 expect_token(TokenType::Enter);
             } else {
                 throw AssemblyError("Invalid directive " + std::get<std::string>(t.token), t.line, t.column);
