@@ -19,6 +19,7 @@ private:
     Lexer lexer_;
 
     TokenValue expect_token(TokenType type);
+    void       emit_instruction(uint32_t function_id, std::string const& inst, int oper);
 };
 
 } // tyche
