@@ -4,6 +4,21 @@
 
 namespace tyche::vm {
 
+std::string type_name(Type type)
+{
+    switch (type) {
+        case Type::Nil: return "nil";
+        case Type::Integer: return "integer";
+        case Type::Float: return "float";
+        case Type::String: return "string";
+        case Type::Array: return "array";
+        case Type::Table: return "table";
+        case Type::Function: return "function";
+        case Type::NativePointer: return "native pointer";
+        case Type::COUNT: default: return "???";
+    }
+}
+
 Type Value::type() const
 {
     return std::visit(overloaded {

@@ -1,6 +1,7 @@
 #ifndef TYCHE_VALUE_HH
 #define TYCHE_VALUE_HH
 
+#include <cstdint>
 #include <string>
 #include <variant>
 
@@ -10,9 +11,10 @@ using FunctionId = uint32_t;
 
 enum class Type : uint8_t
 {
-    Nil = 0, Integer, Float, String, Array, Table, Function, NativePointer,
+    Nil = 0, Integer, Float, String, Array, Table, Function, NativePointer, COUNT
 };
 
+std::string type_name(Type type);
 
 class Value {
     struct Function { FunctionId f_id; };
@@ -20,11 +22,15 @@ class Value {
 public:
     Value() : value_(std::monostate()) {}
 
-    static Value CreateNil() { return Value(std::monostate()); }
-    static Value CreateInteger(int32_t v) { return Value(v); }
-    static Value CreateFloat(float f) { return Value(f); }
-    static Value CreateString(std::string const& str) { return Value(str); }
-    static Value CreateFunctionId(FunctionId f_id) { return Value(Function { f_id }); }
+    static Value createNil() { return Value(std::monostate()); }
+    static Value createInteger(int32_t v) { return Value(v); }
+    static Value createFloat(float f) { return Value(f); }
+    static Value createString(std::string const& str) { return Value(str); }
+    static Value createFunctionId(FunctionId f_id) { return Value(Function { f_id }); }
+
+    static Value createFalse() { return createInteger(0); }
+    static Value createTrue() { return createInteger(1); }
+    static Value createIntegerFromBool(bool b) { return createInteger(b ? 1 : 0); }
 
     [[nodiscard]] Type type() const;
 

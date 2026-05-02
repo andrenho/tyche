@@ -37,7 +37,7 @@ Local variables:
 
 Function operations:
    a7  c7 e7    call [n_pars]        Enter function on stack toplevel (passing n next stack values as parameters)
-10              ret                Leave a function (return value in stack)
+10              ret                  Leave a function (return value in stack)
 11              retn                 Leave a function (return nil)
 
 Table and array operations:
@@ -65,17 +65,21 @@ Logical/arithmetic:
 2b              and                  Bitwise AND
 2c              or                   Bitwise OR
 2d              xor                  Bitwise XOR
+2e              pow                  Power
+2f              shl                  Shift left
+30              shr                  Shift right
+31              mod                  Modulo
 
 Other value operations:
-30              len                  Get table, array or string size
-31              type                 Get type from value at the top of the stack
+40              len                  Get table, array or string size
+41              type                 Get type from value at the top of the stack
    b0           cast [type]          Cast type to another type
-32              ver                  Return VM version
+42              ver                  Return VM version
 
 External code:
-38              cmpl                 Compile code to assembly
-39              asmbl                Assemble code to bytecode format
-3a              load                 Load bytecode as function (will place function on stack)
+48              cmpl                 Compile code to assembly
+49              asmbl                Assemble code to bytecode format
+4a              load                 Load bytecode as function (will place function on stack)
 
 Control flow:
    a8 c8 e8     bz [pc]              Branch if zero

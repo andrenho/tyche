@@ -134,7 +134,7 @@ std::string ByteArray::hexdump() const
 {
     auto to_hex = [](uint32_t value, size_t n_chars) -> std::string {
         char buf[15];
-        snprintf(buf, sizeof buf, (std::string("%0") + std::to_string(n_chars) + "X").c_str(), value);
+        snprintf(buf, sizeof buf, "%0*X", (int) n_chars, value);
         return { buf };
     };
 

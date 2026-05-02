@@ -21,6 +21,9 @@ enum class Instruction : uint8_t {
     PushConstant8   = 0xa1,
     PushConstant16  = 0xc1,
     PushConstant32  = 0xe1,
+    PushFunction8   = 0xa2,
+    PushFunction16  = 0xc2,
+    PushFunction32  = 0xe2,
     PushZero        = 0x00,
     PushTrue        = 0x01,
     NewArray        = 0x02,
@@ -74,12 +77,16 @@ enum class Instruction : uint8_t {
     And             = 0x2b,
     Or              = 0x2c,
     Xor             = 0x2d,
+    Power           = 0x2e,
+    ShiftLeft       = 0x2f,
+    ShiftRight      = 0x30,
+    Modulo          = 0x31,
 
     // other value operations
-    Len             = 0x30,
-    Type            = 0x31,
-    Cast            = 0x32,
-    Version         = 0x33,
+    Len             = 0x40,
+    Type            = 0x41,
+    Cast            = 0x42,
+    Version         = 0x43,
 
     // control flow
     BranchIfZero8     = 0xa8,
@@ -93,9 +100,9 @@ enum class Instruction : uint8_t {
     Jump32            = 0xea,
 
     // external code
-    Compile         = 0x38,
-    Assemble        = 0x39,
-    Load            = 0x3a,
+    Compile           = 0x48,
+    Assemble          = 0x49,
+    Load              = 0x4a,
 };
 
 std::pair<std::string, size_t> debug_instruction(Instruction inst, int oper=0);

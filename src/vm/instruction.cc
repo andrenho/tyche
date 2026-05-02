@@ -5,54 +5,59 @@
 
 namespace tyche::vm {
 
-const std::unordered_map<std::string, vm::Instruction> instruction_names = {
-    { "pushi", vm::Instruction::PushInt8 },
-    { "pushc", vm::Instruction::PushConstant8 },
-    { "pushz", vm::Instruction::PushZero },
-    { "pusht", vm::Instruction::PushTrue },
-    { "newa",  vm::Instruction::NewArray },
-    { "newt",  vm::Instruction::NewTable },
-    { "pop",   vm::Instruction::Pop },
-    { "dup",   vm::Instruction::Duplicate },
-    { "setl",  vm::Instruction::SetLocal8 },
-    { "getl",  vm::Instruction::GetLocal8 },
-    { "setg",  vm::Instruction::SetGlobal8 },
-    { "getl",  vm::Instruction::GetGlobal8 },
-    { "call8", vm::Instruction::Call8 },
-    { "ret",   vm::Instruction::Return },
-    { "retn",  vm::Instruction::ReturnNil },
-    { "getkv", vm::Instruction::GetKeyValue },
-    { "setkv", vm::Instruction::SetKeyValue },
-    { "geta",  vm::Instruction::GetArrayItem },
-    { "seta",  vm::Instruction::SetArrayItem },
-    { "appnd", vm::Instruction::Append },
-    { "next",  vm::Instruction::Next },
-    { "smt",   vm::Instruction::SetMetatable },
-    { "mt",    vm::Instruction::GetMetatable },
-    { "sum",   vm::Instruction::Sum },
-    { "sub",   vm::Instruction::Subtract },
-    { "mul",   vm::Instruction::Multiply },
-    { "div",   vm::Instruction::Divide },
-    { "idiv",  vm::Instruction::DivideInt },
-    { "eq",    vm::Instruction::Equals },
-    { "neq",   vm::Instruction::NotEquals },
-    { "lt",    vm::Instruction::LessThan },
-    { "lte",   vm::Instruction::LessThanEq },
-    { "gt",    vm::Instruction::GreaterThan },
-    { "gte",   vm::Instruction::GreaterThanEq },
-    { "and",   vm::Instruction::And },
-    { "or",    vm::Instruction::Or },
-    { "xor",   vm::Instruction::Xor },
-    { "len",   vm::Instruction::Len },
-    { "type",  vm::Instruction::Type },
-    { "cast",  vm::Instruction::Cast },
-    { "ver",   vm::Instruction::Version },
-    { "bz",    vm::Instruction::BranchIfZero8 },
-    { "bnz",   vm::Instruction::BranchIfNotZero8 },
-    { "jmp",   vm::Instruction::Jump8 },
-    { "cmpl",  vm::Instruction::Compile },
-    { "asmbl", vm::Instruction::Assemble },
-    { "load",  vm::Instruction::Load },
+const std::unordered_map<std::string, Instruction> instruction_names = {
+    { "pushi", Instruction::PushInt8 },
+    { "pushc", Instruction::PushConstant8 },
+    { "pushz", Instruction::PushZero },
+    { "pusht", Instruction::PushTrue },
+    { "pushf", Instruction::PushFunction8 },
+    { "newa",  Instruction::NewArray },
+    { "newt",  Instruction::NewTable },
+    { "pop",   Instruction::Pop },
+    { "dup",   Instruction::Duplicate },
+    { "setl",  Instruction::SetLocal8 },
+    { "getl",  Instruction::GetLocal8 },
+    { "setg",  Instruction::SetGlobal8 },
+    { "getl",  Instruction::GetGlobal8 },
+    { "call8", Instruction::Call8 },
+    { "ret",   Instruction::Return },
+    { "retn",  Instruction::ReturnNil },
+    { "getkv", Instruction::GetKeyValue },
+    { "setkv", Instruction::SetKeyValue },
+    { "geta",  Instruction::GetArrayItem },
+    { "seta",  Instruction::SetArrayItem },
+    { "appnd", Instruction::Append },
+    { "next",  Instruction::Next },
+    { "smt",   Instruction::SetMetatable },
+    { "mt",    Instruction::GetMetatable },
+    { "sum",   Instruction::Sum },
+    { "sub",   Instruction::Subtract },
+    { "mul",   Instruction::Multiply },
+    { "div",   Instruction::Divide },
+    { "idiv",  Instruction::DivideInt },
+    { "eq",    Instruction::Equals },
+    { "neq",   Instruction::NotEquals },
+    { "lt",    Instruction::LessThan },
+    { "lte",   Instruction::LessThanEq },
+    { "gt",    Instruction::GreaterThan },
+    { "gte",   Instruction::GreaterThanEq },
+    { "and",   Instruction::And },
+    { "or",    Instruction::Or },
+    { "xor",   Instruction::Xor },
+    { "pow",   Instruction::Power },
+    { "shl",   Instruction::ShiftLeft },
+    { "shr",   Instruction::ShiftRight },
+    { "mod",   Instruction::Modulo },
+    { "len",   Instruction::Len },
+    { "type",  Instruction::Type },
+    { "cast",  Instruction::Cast },
+    { "ver",   Instruction::Version },
+    { "bz",    Instruction::BranchIfZero8 },
+    { "bnz",   Instruction::BranchIfNotZero8 },
+    { "jmp",   Instruction::Jump8 },
+    { "cmpl",  Instruction::Compile },
+    { "asmbl", Instruction::Assemble },
+    { "load",  Instruction::Load },
 };
 
 
@@ -71,6 +76,11 @@ std::pair<std::string, size_t> debug_instruction(Instruction inst, int oper)
         case Instruction::PushConstant16:
         case Instruction::PushConstant32:
             out = "pushc";
+            break;
+        case Instruction::PushFunction8:
+        case Instruction::PushFunction16:
+        case Instruction::PushFunction32:
+            out = "pushf";
             break;
         case Instruction::PushZero:         out = "pushz"; break;
         case Instruction::PushTrue:         out = "pusht"; break;
@@ -127,6 +137,10 @@ std::pair<std::string, size_t> debug_instruction(Instruction inst, int oper)
         case Instruction::And:              out = "and"; break;
         case Instruction::Or:               out = "or"; break;
         case Instruction::Xor:              out = "xor"; break;
+        case Instruction::Power:            out = "pow"; break;
+        case Instruction::ShiftLeft:        out = "shl"; break;
+        case Instruction::ShiftRight:       out = "shr"; break;
+        case Instruction::Modulo:           out = "mod"; break;
         case Instruction::Len:              out = "len"; break;
         case Instruction::Type:             out = "type"; break;
         case Instruction::Cast:             out = "cast"; break;
@@ -181,6 +195,7 @@ std::pair<std::string, size_t> debug_instruction(bc::Bytecode const& bt, uint32_
         case OperandType::Int32:
             return debug_instruction(inst, bt.get_code_int32(function_id, addr + 1));
         default:
+            break;
     }
 
     return { "???", 1 };

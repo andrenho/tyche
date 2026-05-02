@@ -29,7 +29,7 @@ public:
 class VMTypeError : public VMRuntimeError
 {
 public:
-    explicit VMTypeError(Type expected, Type found) : VMRuntimeError("Type error") {}  // TODO - print types
+    explicit VMTypeError(Type expected, Type found) : VMRuntimeError("Type error (expected " + type_name(expected) + ", found " + type_name(found) + ")") {}
 };
 
 class VMInvalidOpcode : public VMRuntimeError
@@ -41,7 +41,7 @@ public:
 class VMInvalidOperation : public VMRuntimeError
 {
 public:
-    explicit VMInvalidOperation(BinaryOperationType op, Type type1, Type type2) : VMRuntimeError("Invalid binary operation") {}  // TODO - print types
+    explicit VMInvalidOperation(BinaryOperationType op, Type type1, Type type2) : VMRuntimeError("Invalid binary operation for types " + type_name(type1) + " and " + type_name(type2)) {}
 };
 
 }

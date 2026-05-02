@@ -12,7 +12,7 @@ namespace tyche::as {
 
 class Assembler {
 public:
-    explicit Assembler(std::string source) : lexer_(std::move(source)) {}
+    explicit Assembler(std::string source) : lexer_(std::move(source) + "\n") {}
 
     [[nodiscard]] ByteArray assemble();
 

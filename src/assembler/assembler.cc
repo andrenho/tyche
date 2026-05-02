@@ -70,7 +70,7 @@ ByteArray Assembler::assemble()
                 case vm::OperandType::Int8:  bp.functions.at(function_id).code.append_int8((int8_t) *oper); break;
                 case vm::OperandType::Int16: bp.functions.at(function_id).code.append_int16((int16_t) *oper); break;
                 case vm::OperandType::Int32: bp.functions.at(function_id).code.append_int32(*oper); break;
-                case vm::OperandType::NoOperand: default:
+                case vm::OperandType::NoOperand: default: break;
             }
 
             if (tt.type != TokenType::Enter)

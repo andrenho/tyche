@@ -24,6 +24,14 @@ Value Stack::pop()
     return v;
 }
 
+Value Stack::peek() const
+{
+    if (stack_.size() <= fps_.top())
+        throw VMStackUnderflow();
+
+    return stack_.back();
+}
+
 Value Stack::at(int pos) const
 {
     try {

@@ -23,6 +23,8 @@ public:
 
     [[nodiscard]] Operation operation(Location const& location) const;
 
+    [[nodiscard]] bc::Bytecode const& bytecode() const { return bytecode_; }
+
 private:
     bc::Bytecode bytecode_;
 };

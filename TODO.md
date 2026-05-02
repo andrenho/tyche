@@ -19,7 +19,7 @@ After some additional development:
 
 ## VM
 
-- [ ] VM
+- [x] VM
   - [x] Code
     - [x] Simple bytecode loader
       - [x] Output bytecode format
@@ -29,10 +29,37 @@ After some additional development:
   - [x] Code execution (except functions)
   - [x] Functions
   - [x] Print stack
-
-- [ ] Assembler
+- [x] Assembler
+- [ ] VM execution
+  - [x] Stack operations (nil, integer, float, string, function)
+    - [x] Integer
+    - [x] Float
+    - [x] String
+  - [x] Expressions
+    - [x] Integer
+    - [x] Float
+    - [x] String
+  - [ ] Local/global variables
+  - [ ] Functions
+  - [ ] Constants
+  - [ ] Other operations
+  - [ ] Arrays
+    - [ ] Iteration
+    - [ ] Expressions
+  - [ ] Tables
+    - [ ] Iteration
+    - [ ] Metatables
+    - [ ] Expressions
+  - [ ] Control flow
+  - [ ] Compilation
+  - [ ] Error handling
+- [ ] C++ API
+  - [ ] Run native code on VM
+  - [ ] Run tyche code from C++
+  - [ ] C API
 
 After some additional development:
 - [ ] Bytecode loader
   - Combine multiple chunks
   - Resolve function ids, constant ids, etc
+- [ ] Upvalues

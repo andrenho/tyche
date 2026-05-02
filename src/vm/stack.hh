@@ -14,6 +14,7 @@ public:
 
     void push(Value const& value);
     Value pop();
+    [[nodiscard]] Value peek() const;
 
     [[nodiscard]] Value at(int pos) const;
     [[nodiscard]] size_t size() const;

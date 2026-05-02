@@ -44,6 +44,8 @@ Operation Code::operation(Location const& location) const
                 .operator_ = bytecode_.get_code_int32(location.function_id, location.pc + 1),
                 .next_location = { .function_id = location.function_id, .pc = location.pc + 5 },
             };
+        default:
+            break;
     }
 
     throw std::logic_error("Should not get here");
