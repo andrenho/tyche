@@ -224,7 +224,7 @@ TEST(VM, FloatFloatOperations)
 
 TEST(VM, StringString)
 {
-    ASSERT_EQ(run(R"(
+    EXPECT_STREQ(run(R"(
         .const
             0: "Hello"
             1: "World"
