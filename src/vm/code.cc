@@ -1,6 +1,6 @@
 #include "code.hh"
 #include "../common/overloaded.hh"
-#include "instruction.hh"
+#include "../instructions/instruction.hh"
 
 namespace tyche::vm {
 

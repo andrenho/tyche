@@ -4,7 +4,7 @@
 
 #include "as_exceptions.hh"
 #include "../bytecode/bytecode.hh"
-#include "../vm/instruction.hh"
+#include "../instructions/instruction.hh"
 
 using namespace std::string_literals;
 
@@ -61,16 +61,16 @@ ByteArray Assembler::assemble()
                 tt = lexer_.ingest();
             }
 
-            auto oinst = vm::translate_instruction(instruction, oper);
+            auto oinst = translate_instruction(instruction, oper);
             if (!oinst)
                 throw AssemblyError("Invalid or misused instruction '" + instruction + "'", tt.line, tt.column);
 
             bp.functions.at(function_id).code.append_byte((uint8_t) *oinst);
-            switch (vm::instruction_operand_type(*oinst)) {
-                case vm::OperandType::Int8:  bp.functions.at(function_id).code.append_int8((int8_t) *oper); break;
-                case vm::OperandType::Int16: bp.functions.at(function_id).code.append_int16((int16_t) *oper); break;
-                case vm::OperandType::Int32: bp.functions.at(function_id).code.append_int32(*oper); break;
-                case vm::OperandType::NoOperand: default: break;
+            switch (instruction_operand_type(*oinst)) {
+                case OperandType::Int8:  bp.functions.at(function_id).code.append_int8((int8_t) *oper); break;
+                case OperandType::Int16: bp.functions.at(function_id).code.append_int16((int16_t) *oper); break;
+                case OperandType::Int32: bp.functions.at(function_id).code.append_int32(*oper); break;
+                case OperandType::NoOperand: default: break;
             }
 
             if (tt.type != TokenType::Enter)

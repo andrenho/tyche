@@ -1,5 +1,8 @@
 #include "lexer.hh"
 
+#include <iostream>
+using namespace std::string_literals;
+
 #include "as_exceptions.hh"
 
 namespace tyche::as {
@@ -117,6 +120,23 @@ void Lexer::ingest_next_token()
         ++pos_;
 
     current_token_ = { .type = type, .token = value, .line = current_line, .column = pos_ - current_line_pos };
+}
+
+std::ostream& operator<<(std::ostream& os, Token const& t)
+{
+    switch (t.type) {
+        case TokenType::BOF:         os << "BOF"s; break;
+        case TokenType::Directive:   os << "Directive ("s << std::get<std::string>(t.token) << ")"s;
+        case TokenType::Instruction: os << "Instruction ("s << std::get<std::string>(t.token) << ")"s;
+        case TokenType::Integer:     os << "Integer ("s << std::to_string(std::get<int>(t.token)) << ")"s;
+        case TokenType::Float:       os << "Float ("s << std::to_string(std::get<float>(t.token)) << ")"s;
+        case TokenType::String:      os << "String ("s << std::get<std::string>(t.token) << ")"s;
+        case TokenType::Enter:       os << "Enter"s;
+        case TokenType::Colon:       os << "Colon"s;
+        case TokenType::EOF_:        os << "EOF"s;
+        default:                     os << "???"s;
+    }
+    return os;
 }
 
 } // tyche

@@ -40,7 +40,7 @@ public:
     [[nodiscard]] int16_t                        get_int16(uint32_t addr) const;
     [[nodiscard]] int32_t                        get_int32(uint32_t addr) const;
     [[nodiscard]] float                          get_float(uint32_t addr) const;
-    [[nodiscard]] std::pair<std::string, size_t> get_string(uint32_t addr) const;
+    [[nodiscard]] std::pair<const char*, size_t> get_string_ptr(uint32_t addr) const;
 
     [[nodiscard]] std::vector<uint8_t> const& data() const { return data_; }
     [[nodiscard]] size_t size() const { return data_.size(); }

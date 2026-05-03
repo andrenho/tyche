@@ -3,7 +3,7 @@
 #include <limits>
 #include <unordered_map>
 
-namespace tyche::vm {
+namespace tyche {
 
 const std::unordered_map<std::string, Instruction> instruction_names = {
     { "pushi", Instruction::PushInt8 },

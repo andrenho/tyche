@@ -1,7 +1,7 @@
 #ifndef TYCHE_CODE_HH
 #define TYCHE_CODE_HH
 
-#include "instruction.hh"
+#include "../instructions/instruction.hh"
 #include "location.hh"
 #include "value.hh"
 #include "../bytecode/bytecode.hh"

@@ -3,12 +3,11 @@
 
 #include "../bytecode/bytecodeprototype.hh"
 #include "../bytecode/bytecode.hh"
-#include "../vm/instruction.hh"
+#include "../instructions/instruction.hh"
 
 using namespace tyche;
 using namespace tyche::as;
 using namespace tyche::bc;
-using namespace tyche::vm;
 
 TEST(Lexer, Lexer)
 {

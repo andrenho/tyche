@@ -8,7 +8,7 @@
 
 #include "../bytecode/bytecode.hh"
 
-namespace tyche::vm {
+namespace tyche {
 
 constexpr uint8_t OPCODE_NEXT_SIZE = 0x20;
 

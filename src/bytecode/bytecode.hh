@@ -3,6 +3,7 @@
 
 #include "../common/bytearray.hh"
 #include "bytecodeprototype.hh"
+#include "constant.hh"
 
 namespace tyche::bc {
 

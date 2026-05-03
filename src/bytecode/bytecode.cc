@@ -48,7 +48,7 @@ ConstantValue Bytecode::get_constant(uint32_t idx) const
         case CONST_TYPE_FLOAT:
             return byte_array_.get_float(cache_.constants_start_addr + constant_idx + 1);
         case CONST_TYPE_STRING:
-            return byte_array_.get_string(cache_.constants_start_addr + constant_idx + 1).first;
+            return byte_array_.get_string_ptr(cache_.constants_start_addr + constant_idx + 1).first;
         default:
             throw BytecodeParsingError("Invalid bytecode format (invalid constant type)");
     }

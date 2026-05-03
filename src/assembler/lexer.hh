@@ -13,6 +13,7 @@ enum class TokenType {
 
 using TokenValue = std::variant<std::monostate, int, float, std::string>;
 
+
 struct Token {
     TokenType   type;
     TokenValue  token = std::monostate();
@@ -21,6 +22,7 @@ struct Token {
 
     friend bool operator==(Token const& lhs, Token const& rhs) { return std::tie(lhs.type, lhs.token) == std::tie(rhs.type, rhs.token); }
 };
+std::ostream& operator<<(std::ostream& os, Token const& t);
 
 std::string token_type_name(TokenType type);
 

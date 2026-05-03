@@ -36,7 +36,10 @@ TEST(ByteArray, ByteArray)
     ba.set_float(1, -3.14); ASSERT_FLOAT_EQ(ba.get_float(1), -3.14);
     ba.set_float(1, -5000300.1324); ASSERT_FLOAT_EQ(ba.get_float(1), -5000300.1324);
 
-    ba.set_string(1, "Hello world!"); ASSERT_EQ(ba.get_string(1), std::make_pair("Hello world!", 13));
+    ba.set_string(1, "Hello world!");
+    auto str = ba.get_string_ptr(1);
+    EXPECT_STREQ(str.first, "Hello world!");
+    ASSERT_EQ(str.second, 13);
 
 #undef TESTX
 }
@@ -145,7 +148,7 @@ TEST(Bytecode, Parsing)
     ASSERT_EQ(bc.get_function_sz(1), 1);
 
     ASSERT_FLOAT_EQ(std::get<float>(bc.get_constant(0)), 3.14f);
-    ASSERT_EQ(std::get<std::string>(bc.get_constant(1)), "HELLO");
+    EXPECT_STREQ(std::get<const char*>(bc.get_constant(1)), "HELLO");
 
     Bytecode::FunctionDef f1 = bc.get_function_def(0);
     ASSERT_EQ(f1.n_params, 0);

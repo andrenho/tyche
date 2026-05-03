@@ -6,7 +6,7 @@
 
 namespace tyche::bc {
 
-using ConstantValue = std::variant<float, std::string>;
+using ConstantValue = std::variant<float, const char*>;
 
 enum ConstantType : uint8_t { CONST_TYPE_FLOAT = 1, CONST_TYPE_STRING = 2 };
 

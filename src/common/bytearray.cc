@@ -117,12 +117,9 @@ float ByteArray::get_float(uint32_t addr) const
     return value;
 }
 
-std::pair<std::string, size_t> ByteArray::get_string(uint32_t addr) const
+std::pair<const char*, size_t> ByteArray::get_string_ptr(uint32_t addr) const
 {
-    std::string data;
-    while (char c = (char) get_byte(addr++))
-        data += c;
-    return { data, data.size() + 1 };
+    return { (const char *) &data_.at(addr), strlen((const char *) &data_.at(addr)) + 1 };
 }
 
 void ByteArray::append_bytearray(ByteArray const& bytearray)

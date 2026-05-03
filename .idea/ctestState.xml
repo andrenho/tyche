@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CidrCTestProjectState">
+    <ctestState>
+      <lineNumber testId="path:CMakeLists.txt test:tyche_as_test" value="108" />
+      <lineNumber testId="path:CMakeLists.txt test:tyche_bytecode_test" value="100" />
+      <lineNumber testId="path:CMakeLists.txt test:tyche_vm_test" value="104" />
+    </ctestState>
+  </component>
+</project>
