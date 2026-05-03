@@ -268,6 +268,23 @@ TEST(VM, StringString)
     )").to_integer(-1), 0);
 }
 
+TEST(VM, LocalVariables)
+{
+    VM vm = run(R"(
+        .func 0
+            pushv 2         ; local a, b
+            pushi 3         ; a = 3
+            set   0
+            pushi 4         ; b = 4
+            set   1
+            dupv  0         ; return a
+            ret
+    )");
+
+    ASSERT_EQ(vm.stack_sz(), 1);
+    ASSERT_EQ(vm.to_integer(-1), 3);
+}
+
 int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);

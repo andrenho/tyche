@@ -100,7 +100,9 @@ void Lexer::ingest_next_token()
     } else if (c == ':') {
         type = TokenType::Colon;
         ++pos_;
-    } else if (c == '\n') {
+    } else if (c == '\n' || c == ';') {
+        while (pos_ < source_.size() && source_.at(pos_) != '\n')
+            ++pos_;
         type = TokenType::Enter;
         value = "\n";
         ++pos_;

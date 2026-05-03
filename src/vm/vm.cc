@@ -132,6 +132,33 @@ void VM::step()
             break;
 
         //
+        // variables
+        //
+
+        case Instruction::PushValues8:
+        case Instruction::PushValues16:
+        case Instruction::PushValues32:
+            for (int i = 0; i < op.operator_; ++i)
+                push_nil();
+            break;
+
+        case Instruction::SetValue8:
+        case Instruction::SetValue16:
+        case Instruction::SetValue32: {
+            Value a = stack_.pop();
+            stack_.set(op.operator_, a);
+            break;
+        }
+
+        case Instruction::DuplicateValue8:
+        case Instruction::DuplicateValue16:
+        case Instruction::DuplicateValue32: {
+            Value a = stack_.at(op.operator_);
+            stack_.push(a);
+            break;
+        }
+
+        //
         // logical/arithmetic
         //
 

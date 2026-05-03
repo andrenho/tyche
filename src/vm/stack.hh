@@ -19,6 +19,8 @@ public:
     [[nodiscard]] Value at(int pos) const;
     [[nodiscard]] size_t size() const;
 
+    void set(int pos, Value const& val);
+
     void push_fp();
     void pop_fp();
 

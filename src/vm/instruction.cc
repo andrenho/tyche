@@ -15,8 +15,9 @@ const std::unordered_map<std::string, Instruction> instruction_names = {
     { "newt",  Instruction::NewTable },
     { "pop",   Instruction::Pop },
     { "dup",   Instruction::Duplicate },
-    { "setl",  Instruction::SetLocal8 },
-    { "getl",  Instruction::GetLocal8 },
+    { "pushv", Instruction::PushValues8 },
+    { "set",   Instruction::SetValue8 },
+    { "dupv",  Instruction::DuplicateValue8 },
     { "setg",  Instruction::SetGlobal8 },
     { "getl",  Instruction::GetGlobal8 },
     { "call8", Instruction::Call8 },
@@ -88,15 +89,20 @@ std::pair<std::string, size_t> debug_instruction(Instruction inst, int oper)
         case Instruction::NewTable:         out = "newt"; break;
         case Instruction::Pop:              out = "pop"; break;
         case Instruction::Duplicate:        out = "dup"; break;
-        case Instruction::SetLocal8:
-        case Instruction::SetLocal16:
-        case Instruction::SetLocal32:
-            out = "setl";
+        case Instruction::PushValues8:
+        case Instruction::PushValues16:
+        case Instruction::PushValues32:
+            out = "pushv";
             break;
-        case Instruction::GetLocal8:
-        case Instruction::GetLocal16:
-        case Instruction::GetLocal32:
-            out = "getl";
+        case Instruction::SetValue8:
+        case Instruction::SetValue16:
+        case Instruction::SetValue32:
+            out = "set";
+            break;
+        case Instruction::DuplicateValue8:
+        case Instruction::DuplicateValue16:
+        case Instruction::DuplicateValue32:
+            out = "dupv";
             break;
         case Instruction::SetGlobal8:
         case Instruction::SetGlobal16:

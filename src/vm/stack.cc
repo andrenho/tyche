@@ -47,6 +47,21 @@ Value Stack::at(int pos) const
     }
 }
 
+void Stack::set(int pos, Value const& val)
+{
+    try {
+        if (pos >= 0) {
+            stack_.at(fps_.top() + pos) = val;
+        } else {
+            if ((int) fps_.top() + (int) stack_.size() + pos < 0)
+                throw VMStackOutOfRange();
+            stack_.at(stack_.size() + pos) = val;
+        }
+    } catch (std::out_of_range&) {
+        throw VMStackOutOfRange();
+    }
+}
+
 size_t Stack::size() const
 {
     return stack_.size() - fps_.top();

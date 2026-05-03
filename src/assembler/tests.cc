@@ -56,7 +56,7 @@ TEST(Assember, Assembler)
     1: "Hello world"
 
 .func 0
-    pushi   2
+    pushi   2   ; this is a comment
     pushi   3
     sum
     ret

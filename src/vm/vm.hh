@@ -33,7 +33,7 @@ public:
     [[nodiscard]] float       to_float(int index) const;
     [[nodiscard]] std::string to_string(int index) const;
 
-    [[nodiscard]] std::string debug_stack() const           { return stack_.debug(); }
+    [[nodiscard]] std::string debug_stack() const { return stack_.debug(); }
 
 private:
     void run_until_return();
