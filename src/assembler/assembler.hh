@@ -5,7 +5,7 @@
 #include <string>
 
 #include "lexer.hh"
-#include "../common/bytearray.hh"
+#include "../bytearray/bytearray.hh"
 #include "../bytecode/bytecodeprototype.hh"
 
 namespace tyche::as {
@@ -14,7 +14,7 @@ class Assembler {
 public:
     explicit Assembler(std::string source) : lexer_(std::move(source) + "\n") {}
 
-    [[nodiscard]] ByteArray assemble();
+    [[nodiscard]] StaticByteArray assemble();
 
 private:
     Lexer lexer_;

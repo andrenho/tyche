@@ -1,7 +1,7 @@
 #ifndef TYCHE_BYTECODE_HH
 #define TYCHE_BYTECODE_HH
 
-#include "../common/bytearray.hh"
+#include "../bytearray/bytearray.hh"
 #include "bytecodeprototype.hh"
 #include "constant.hh"
 
@@ -9,8 +9,7 @@ namespace tyche::bc {
 
 class Bytecode {
 public:
-    Bytecode() = default;
-    explicit Bytecode(ByteArray ba);
+    explicit Bytecode(StaticByteArray const* ba);
 
     [[nodiscard]] uint32_t n_constants() const;
     [[nodiscard]] uint32_t n_functions() const;
@@ -28,10 +27,10 @@ public:
 
     // TODO - debugging info
 
-    [[nodiscard]] static ByteArray generate(BytecodePrototype const& bp);
+    [[nodiscard]] static StaticByteArray generate(BytecodePrototype const& bp);
 
 private:
-    ByteArray byte_array_;      // the actual data
+    StaticByteArray const* byte_array_;      // the actual data
 
     static constexpr uint8_t  BYTECODE_VERSION = 1;
     static constexpr uint32_t MAGIC_NUMBER = 0x74b3c138;

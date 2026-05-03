@@ -17,7 +17,7 @@ struct Operation
 
 class Code {
 public:
-    FunctionId import_bytecode(ByteArray incoming);
+    FunctionId import_bytecode(StaticByteArray const* incoming);
 
     [[nodiscard]] std::string disassemble() const;
 

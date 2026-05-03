@@ -4,9 +4,9 @@
 
 namespace tyche::vm {
 
-FunctionId Code::import_bytecode(ByteArray incoming)
+FunctionId Code::import_bytecode(StaticByteArray const* incoming)
 {
-    bc::Bytecode bc(std::move(incoming));
+    bc::Bytecode bc(incoming);
     // TODO - adjust function calls, constants
 
     bytecode_ = std::move(bc);

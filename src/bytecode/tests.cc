@@ -3,43 +3,46 @@
 #include <cstring>
 #include <functional>
 
-#include "../common/bytearray.hh"
+#include "../bytearray/bytearray.hh"
+#include "../bytearray/bytearraybuilder.hh"
 #include "bytecodeprototype.hh"
 #include "bytecode.hh"
 
 using namespace tyche;
 using namespace tyche::bc;
 
-TEST(ByteArray, ByteArray)
+TEST(StaticByteArray, StaticByteArray)
 {
-    auto test = [](std::function<void(ByteArray&)> const& f, std::vector<uint8_t> const& expected) {
-        ByteArray ba;
+    auto test = [](std::function<void(ByteArrayBuilder&)> const& f, std::vector<uint8_t> const& expected) {
+        ByteArrayBuilder ba;
         f(ba);
         ASSERT_EQ(ba.data().size(), expected.size());
         ASSERT_EQ(std::memcmp(ba.data().data(), expected.data(), ba.data().size()), 0);
     };
 
-#define TESTX(a, ...) test([](ByteArray& ba) { a; }, std::vector<uint8_t>({ __VA_ARGS__ }));
+#define TESTX(a, ...) test([](ByteArrayBuilder& ba) { a; }, std::vector<uint8_t>({ __VA_ARGS__ }));
 
     TESTX(ba.set_byte(1, 0xab), 0x00, 0xab)
 
-    ByteArray ba;
-    ba.set_byte(1, 0xab); ASSERT_EQ(ba.get_byte(1), 0xab);
+    ByteArrayBuilder ba;
+    { auto b = ba.set_byte(1, 0xab).build(); ASSERT_EQ(b.get_byte(1), 0xab); }
 
-    ba.set_int8(1, 12); ASSERT_EQ(ba.get_int8(1), 12);
-    ba.set_int8(1, -12); ASSERT_EQ(ba.get_int8(1), -12);
-    ba.set_int16(1, 5000); ASSERT_EQ(ba.get_int16(1), 5000);
-    ba.set_int32(1, 5000300); ASSERT_EQ(ba.get_int32(1), 5000300);
-    ba.set_int32(1, -5000300); ASSERT_EQ(ba.get_int32(1), -5000300);
+    { auto b = ba.set_int8(1, 12).build(); ASSERT_EQ(b.get_int8(1), 12); }
+    { auto b = ba.set_int8(1, -12).build(); ASSERT_EQ(b.get_int8(1), -12); }
+    { auto b = ba.set_int16(1, 5000).build(); ASSERT_EQ(b.get_int16(1), 5000); }
+    { auto b = ba.set_int32(1, 5000300).build(); ASSERT_EQ(b.get_int32(1), 5000300); }
+    { auto b = ba.set_int32(1, -5000300).build(); ASSERT_EQ(b.get_int32(1), -5000300); }
 
-    ba.set_float(1, 3.14); ASSERT_FLOAT_EQ(ba.get_float(1), 3.14);
-    ba.set_float(1, -3.14); ASSERT_FLOAT_EQ(ba.get_float(1), -3.14);
-    ba.set_float(1, -5000300.1324); ASSERT_FLOAT_EQ(ba.get_float(1), -5000300.1324);
+    { auto b = ba.set_float(1, 3.14).build(); ASSERT_FLOAT_EQ(b.get_float(1), 3.14); }
+    { auto b = ba.set_float(1, -3.14).build(); ASSERT_FLOAT_EQ(b.get_float(1), -3.14); }
+    { auto b = ba.set_float(1, -5000300.1324).build(); ASSERT_FLOAT_EQ(b.get_float(1), -5000300.1324); }
 
-    ba.set_string(1, "Hello world!");
-    auto str = ba.get_string_ptr(1);
-    EXPECT_STREQ(str.first, "Hello world!");
-    ASSERT_EQ(str.second, 13);
+    {
+        auto b = ba.set_string(1, "Hello world!").build();
+        auto str = b.get_string_ptr(1);
+        EXPECT_STREQ(str.first, "Hello world!");
+        ASSERT_EQ(str.second, 13);
+    }
 
 #undef TESTX
 }
@@ -76,7 +79,7 @@ TEST(Bytecode, Constants)
             CONST_TYPE_STRING, 'H', 'E', 'L', 'L', 'O', 0x00
     };
 
-    ByteArray ba = Bytecode::generate(bp);
+    StaticByteArray ba = Bytecode::generate(bp);
     ASSERT_EQ(ba.data(), expected);
 }
 
@@ -115,7 +118,7 @@ TEST(Bytecode, Code)
             0x68, 42, 0x42,
     };
 
-    ByteArray ba = Bytecode::generate(bp);
+    StaticByteArray ba = Bytecode::generate(bp);
     ASSERT_EQ(ba.data(), expected);
 }
 
@@ -135,12 +138,12 @@ TEST(Bytecode, Parsing)
     auto& ff = bp.functions.emplace_back(2, 1);
     ff.code.append_byte(0x42);
 
-    ByteArray ba = Bytecode::generate(bp);
+    StaticByteArray ba = Bytecode::generate(bp);
     // print(ba.data());
 
     // read bytecode
 
-    Bytecode bc(std::move(ba));
+    Bytecode bc(&ba);
 
     ASSERT_EQ(bc.n_constants(), 2);
     ASSERT_EQ(bc.n_functions(), 2);

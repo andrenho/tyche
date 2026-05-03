@@ -10,7 +10,7 @@ using namespace std::string_literals;
 
 namespace tyche::as {
 
-ByteArray Assembler::assemble()
+StaticByteArray Assembler::assemble()
 {
     bc::BytecodePrototype bp;
 

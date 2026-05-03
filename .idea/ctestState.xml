@@ -2,9 +2,10 @@
 <project version="4">
   <component name="CidrCTestProjectState">
     <ctestState>
-      <lineNumber testId="path:CMakeLists.txt test:tyche_as_test" value="108" />
-      <lineNumber testId="path:CMakeLists.txt test:tyche_bytecode_test" value="100" />
-      <lineNumber testId="path:CMakeLists.txt test:tyche_vm_test" value="104" />
+      <lineNumber testId="path:CMakeLists.txt test:tyche_as_test" value="116" />
+      <lineNumber testId="path:CMakeLists.txt test:tyche_bytearray_test" value="102" />
+      <lineNumber testId="path:CMakeLists.txt test:tyche_bytecode_test" value="106" />
+      <lineNumber testId="path:CMakeLists.txt test:tyche_vm_test" value="110" />
     </ctestState>
   </component>
 </project>

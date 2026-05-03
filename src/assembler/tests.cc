@@ -47,7 +47,7 @@ TEST(Assember, Assembler)
     bp.functions.at(1).code.append_byte((uint8_t) Instruction::PushInt16);
     bp.functions.at(1).code.append_int16(5000);
     bp.functions.at(1).code.append_byte((uint8_t) Instruction::Return);
-    ByteArray expected = Bytecode::generate(bp);
+    StaticByteArray expected = Bytecode::generate(bp);
 
     std::string src = R"(
 .const
@@ -64,7 +64,7 @@ TEST(Assember, Assembler)
     ret
 )";
 
-    ByteArray actual = Assembler(src).assemble();
+    StaticByteArray actual = Assembler(src).assemble();
     ASSERT_EQ(expected, actual);
 }
 

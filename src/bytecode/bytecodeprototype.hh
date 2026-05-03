@@ -5,17 +5,17 @@
 #include <string>
 #include <variant>
 #include <vector>
-#include "../common/bytearray.hh"
+#include "../bytearray/bytearraybuilder.hh"
 
 namespace tyche::bc {
 
 struct BytecodePrototype {
     struct Function {
-        uint16_t  n_pars;
-        uint16_t  n_locals;
-        ByteArray code {};
+        uint16_t         n_pars;
+        uint16_t         n_locals;
+        ByteArrayBuilder code {};
 
-        Function(uint16_t n_pars_, uint16_t n_locals_) : n_pars(n_pars_), n_locals(n_locals_), code(ByteArray {}) {}
+        Function(uint16_t n_pars_, uint16_t n_locals_) : n_pars(n_pars_), n_locals(n_locals_), code(ByteArrayBuilder {}) {}
     };
 
     using ConstantValue = std::variant<float, std::string>;

@@ -60,32 +60,34 @@ FetchContent_MakeAvailable(googletest)
 
 add_library(lib${PROJECT_NAME} SHARED
         src/common/overloaded.hh
-        src/common/bytearray.hh
-        src/common/bytearray.cc
-        src/bytecode/bytecode.cc
-        src/bytecode/bytecode.hh
-        src/bytecode/bytecodeprototype.hh
-        src/bytecode/constant.hh
-        src/bytecode/bc_exceptions.hh
-        src/assembler/lexer.cc
-        src/assembler/lexer.hh
-        src/assembler/assembler.cc
-        src/assembler/assembler.hh
-        src/assembler/as_exceptions.hh
-        src/instructions/instruction.hh
-        src/instructions/instruction.cc
-        src/vm/code.cc
-        src/vm/code.hh
-        src/vm/value.cc
-        src/vm/value.hh
-        src/vm/stack.cc
-        src/vm/stack.hh
-        src/vm/vm_exceptions.hh
-        src/vm/vm.cc
-        src/vm/vm.hh
-        src/vm/expr.cc
-        src/vm/expr.hh
-        src/vm/location.hh
+        src/bytearray/bytearray.hh
+        src/bytearray/bytearray.cc
+        src/bytearray/bytearraybuilder.hh
+        src/bytearray/bytearraybuilder.cc
+        #src/bytecode/bytecode.cc
+        #src/bytecode/bytecode.hh
+        #src/bytecode/bytecodeprototype.hh
+        #src/bytecode/constant.hh
+        #src/bytecode/bc_exceptions.hh
+        #src/assembler/lexer.cc
+        #src/assembler/lexer.hh
+        #src/assembler/assembler.cc
+        #src/assembler/assembler.hh
+        #src/assembler/as_exceptions.hh
+        #src/instructions/instruction.hh
+        #src/instructions/instruction.cc
+        #src/vm/code.cc
+        #src/vm/code.hh
+        #src/vm/value.cc
+        #src/vm/value.hh
+        #src/vm/stack.cc
+        #src/vm/stack.hh
+        #src/vm/vm_exceptions.hh
+        #src/vm/vm.cc
+        #src/vm/vm.hh
+        #src/vm/expr.cc
+        #src/vm/expr.hh
+        #src/vm/location.hh
 )
 
 target_compile_options(lib${PROJECT_NAME} PRIVATE ${warnings})
@@ -96,6 +98,10 @@ target_compile_options(lib${PROJECT_NAME} PRIVATE ${warnings})
 
 enable_testing()
 
+add_executable(${PROJECT_NAME}-bytearray-test src/bytearray/tests.cc)
+target_link_libraries(${PROJECT_NAME}-bytearray-test lib${PROJECT_NAME} gtest_main)
+add_test(NAME tyche_bytearray_test COMMAND ${PROJECT_NAME}-bytearray-test)
+
 add_executable(${PROJECT_NAME}-bytecode-test src/bytecode/tests.cc)
 target_link_libraries(${PROJECT_NAME}-bytecode-test lib${PROJECT_NAME} gtest_main)
 add_test(NAME tyche_bytecode_test COMMAND ${PROJECT_NAME}-bytecode-test)
@@ -104,7 +110,9 @@ add_executable(${PROJECT_NAME}-vm-test src/vm/tests.cc)
 target_link_libraries(${PROJECT_NAME}-vm-test lib${PROJECT_NAME} gtest_main)
 add_test(NAME tyche_vm_test COMMAND ${PROJECT_NAME}-vm-test)
 
-add_executable(${PROJECT_NAME}-as-test src/assembler/tests.cc)
+add_executable(${PROJECT_NAME}-as-test src/assembler/tests.cc
+        src/bytearray/bytearraybuilder.cc
+        src/bytearray/bytearraybuilder.hh)
 target_link_libraries(${PROJECT_NAME}-as-test lib${PROJECT_NAME} gtest_main)
 add_test(NAME tyche_as_test COMMAND ${PROJECT_NAME}-as-test)
 
