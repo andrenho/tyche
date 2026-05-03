@@ -41,4 +41,13 @@ std::string Value::to_string() const
     }, value_);
 }
 
+const char* Value::as_string_ptr() const
+{
+    if (auto s = std::get_if<std::string>(&value_))
+        return s->c_str();
+    if (auto s = std::get_if<const char*>(&value_))
+        return *s;
+    throw std::logic_error("Shouldn't get here");
+}
+
 }

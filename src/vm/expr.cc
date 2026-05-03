@@ -35,7 +35,7 @@ static int init_ = []() {
     BIN_OP(Sum, Integer, Float)   { return Value::createFloat((float) a.as_integer() + b.as_float()); };
     BIN_OP(Sum, Float, Integer)   { return Value::createFloat(a.as_float() + (float) b.as_integer()); };
     BIN_OP(Sum, Float, Float)     { return Value::createFloat(a.as_float() + b.as_float()); };
-    BIN_OP(Sum, String, String)   { return Value::createString(a.as_string() + b.as_string()); };
+    BIN_OP(Sum, String, String)   { return Value::createString(std::string(a.as_string_ptr()) + std::string(b.as_string_ptr())); };
 
     BIN_OP(Subtraction, Integer, Integer) { return Value::createInteger(a.as_integer() - b.as_integer()); };
     BIN_OP(Subtraction, Integer, Float)   { return Value::createFloat((float) a.as_integer() - b.as_float()); };
@@ -61,13 +61,13 @@ static int init_ = []() {
     BIN_OP(Equality, Integer, Float)   { return Value::createIntegerFromBool(std::abs((float) a.as_integer() - b.as_float()) < FLOAT_EPSILON); };
     BIN_OP(Equality, Float, Integer)   { return Value::createIntegerFromBool(std::abs(a.as_float() - (float) b.as_integer()) < FLOAT_EPSILON); };
     BIN_OP(Equality, Float, Float)     { return Value::createIntegerFromBool(std::abs(a.as_float() - b.as_float()) < FLOAT_EPSILON); };
-    BIN_OP(Equality, String, String)   { return Value::createIntegerFromBool(a.as_string() == b.as_string()); };
+    BIN_OP(Equality, String, String)   { return Value::createIntegerFromBool(strcmp(a.as_string_ptr(), b.as_string_ptr()) == 0); };
 
     BIN_OP(Inequality, Integer, Integer) { return Value::createIntegerFromBool(a.as_integer() != b.as_integer()); };
     BIN_OP(Inequality, Integer, Float)   { return Value::createIntegerFromBool(std::abs((float) a.as_integer() - b.as_float()) >= FLOAT_EPSILON); };
     BIN_OP(Inequality, Float, Integer)   { return Value::createIntegerFromBool(std::abs(a.as_float() - (float) b.as_integer()) >= FLOAT_EPSILON); };
     BIN_OP(Inequality, Float, Float)     { return Value::createIntegerFromBool(std::abs(a.as_float() - b.as_float()) >= FLOAT_EPSILON); };
-    BIN_OP(Inequality, String, String)   { return Value::createIntegerFromBool(a.as_string() != b.as_string()); };
+    BIN_OP(Inequality, String, String)   { return Value::createIntegerFromBool(strcmp(a.as_string_ptr(), b.as_string_ptr()) != 0); };
 
     BIN_OP(LessThan, Integer, Integer) { return Value::createIntegerFromBool(a.as_integer() < b.as_integer()); };
     BIN_OP(LessThan, Integer, Float)   { return Value::createIntegerFromBool((float) a.as_integer() < b.as_float()); };

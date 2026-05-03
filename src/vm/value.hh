@@ -26,6 +26,7 @@ public:
     static Value createInteger(int32_t v) { return Value(v); }
     static Value createFloat(float f) { return Value(f); }
     static Value createString(std::string const& str) { return Value(str); }
+    static Value createStringFromConstant(const char* str) { return Value(str); }
     static Value createFunctionId(FunctionId f_id) { return Value(Function { f_id }); }
 
     static Value createFalse() { return createInteger(0); }
@@ -36,13 +37,13 @@ public:
 
     [[nodiscard]] int32_t     as_integer() const     { return std::get<int32_t>(value_); }
     [[nodiscard]] float       as_float() const       { return std::get<float>(value_); }
-    [[nodiscard]] std::string as_string() const      { return std::get<std::string>(value_); }
+    [[nodiscard]] const char* as_string_ptr() const;
     [[nodiscard]] FunctionId  as_function_id() const { return std::get<Function>(value_).f_id; }
 
     [[nodiscard]] std::string to_string() const;
 
 private:
-    using Internal = std::variant<std::monostate, int32_t, float, std::string, Function>;
+    using Internal = std::variant<std::monostate, int32_t, float, std::string, const char*, Function>;
     Internal value_;
 
     explicit Value(Internal const& internal) : value_(internal) {}

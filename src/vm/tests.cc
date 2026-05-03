@@ -110,7 +110,7 @@ TEST(VM, StackOperations)
     ASSERT_FLOAT_EQ(run("pushi 5000").to_float(-1), 5000.f);
     ASSERT_FLOAT_EQ(run("pushc 0").to_float(-1), 3.14f);
     ASSERT_EQ(run("pushc 0").to_integer(-1), 3);
-    ASSERT_EQ(run("pushc 1").to_string(-1), "Hello world");
+    EXPECT_STREQ(run("pushc 1").to_string_ptr(-1), "Hello world");
     ASSERT_TRUE(run("pushf 0").is_function(-1));
     ASSERT_EQ(run("pushi 2\n pushi 3\n pop").to_integer(-1), 2);
 }
@@ -233,7 +233,7 @@ TEST(VM, StringString)
             pushc 1
             sum
             ret
-    )").to_string(-1), "HelloWorld");
+    )").to_string_ptr(-1), "HelloWorld");
 
     ASSERT_EQ(run(R"(
         .const

@@ -49,11 +49,11 @@ float VM::to_float(int index) const
     throw VMTypeError(Type::Float, f.type());
 }
 
-std::string VM::to_string(int index) const
+const char* VM::to_string_ptr(int index) const
 {
-    Value i = stack_.at(index);
-    assert_type(i, Type::String);
-    return i.as_string();
+    Value s = stack_.at(index);
+    assert_type(s, Type::String);
+    return s.as_string_ptr();
 }
 
 VM& VM::push_nil()
@@ -110,8 +110,8 @@ void VM::step()
             auto cnst = code_.bytecode().get_constant(op.operator_);
             if (auto f = std::get_if<float>(&cnst))
                 push_float(*f);
-            else if (auto s = std::get_if<std::string>(&cnst))
-                push_string(*s);
+            else if (auto s = std::get_if<const char*>(&cnst))
+                stack_.push(Value::createStringFromConstant(*s));
             else
                 throw std::logic_error("Shouldn't get here");
             break;

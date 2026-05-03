@@ -31,7 +31,7 @@ public:
 
     [[nodiscard]] int32_t     to_integer(int index) const;
     [[nodiscard]] float       to_float(int index) const;
-    [[nodiscard]] std::string to_string(int index) const;
+    [[nodiscard]] const char* to_string_ptr(int index) const;
 
     [[nodiscard]] std::string debug_stack() const { return stack_.debug(); }
 
