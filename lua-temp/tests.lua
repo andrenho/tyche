@@ -87,6 +87,27 @@ do
 end
 
 do
+    local stack = VM.new().stack
+    stack:push(10)
+    stack:push(20)
+    stack:push_fp()
+    stack:push(30)
+    stack:push(40)
+    stack:push(50)
+
+    assert_eq(#stack, 3)
+    assert_eq(stack[0], 30)
+    assert_eq(stack[1], 40)
+    assert_eq(stack[-1], 50)
+    assert_eq(stack[-2], 40)
+
+    stack:pop_fp()
+
+    assert_eq(#stack, 2)
+    assert_eq(stack[0], 10)
+    assert_eq(stack[1], 20)
+    assert_eq(stack[-1], 20)
+    assert_eq(stack[-2], 10)
 end
 
 print('End.')

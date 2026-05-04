@@ -10,10 +10,12 @@ local Stack = {}
 Stack.__index = Stack
 
 function Stack.new()
-    return setmetatable({
+    local self = setmetatable({
         stack = {},
-        fps = { 0 },
+        fps = {},
     }, Stack)
+    self:push_fp()
+    return self
 end
 
 function Stack:top_fps()
@@ -37,14 +39,14 @@ function Stack:peek(value)
 end
 
 Stack.__len = function(self)
-    return #self.stack - self:top_fps()
+    return #self.stack - self:top_fps() + 1
 end
 
 Stack.__index = function(self, key)
     local idx = tonumber(key)
     if idx then
         if idx >= 0 then
-            return self.stack[self:top_fps() + idx + 1]
+            return self.stack[self:top_fps() + idx]
         else
             if self:top_fps() + #self.stack + idx < 0 then error("Stack access out of range") end
             return self.stack[#self.stack + idx + 1]
@@ -55,18 +57,38 @@ Stack.__index = function(self, key)
 end
 
 Stack.__newindex = function(self, key, value)
+    local idx = tonumber(key)
+    if idx then
+        if idx >= 0 then
+            self.stack[self:top_fps() + idx] = value
+        else
+            if self:top_fps() + #self.stack + idx < 0 then error("Stack access out of range") end
+            self.stack[#self.stack + idx + 1] = value
+        end
+    end
 end
 
 function Stack:push_fp()
+    table.insert(self.fps, #self.stack + 1)
 end
 
 function Stack:pop_fp()
+    if #self.fps == 1 then error("FPS queue underflow") end
+    for i=self:top_fps(),#self.stack,1 do
+        self.stack[i] = nil
+    end
+    table.remove(self.fps)
 end
 
 function Stack:fp_level()
+    return #self.fps
 end
 
 function Stack:debug()
+    if #self.stack == 0 then return "empty" end
+    local ss = {}
+    for _,v in ipairs(self.stack) do table.insert(ss, '[' .. pprint.pformat(v) .. '] ') end
+    return table.concat(ss)
 end
 
 ----------------------
