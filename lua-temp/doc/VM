@@ -1,0 +1,15 @@
+Internal handling of values
+---------------------------
+
+## Supported types
+  Nil             0
+  Integer         1
+  Float           2
+  String          3
+  Array           4
+  Table           5
+  Function        6
+  NativePointer   7
+
+## Internal format
+  ???

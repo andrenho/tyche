@@ -1,0 +1,93 @@
+Operations
+----------
+
+Operations take either 0 or 1 parameter. The ones that take a parameter, it can be either a int8, int16 or int32.
+
+Instructions follow this logic:
+
+00 ~ 9F : no parameter
+A0 ~ BF : int8 (1 byte)
+C0 ~ DF : int16 (2 bytes)
+E0 ~ FF : int32 (4 bytes)
+
+The operations of 1, 2 and 4 bytes are always interchangeable by adding/subtracting 0x20.
+
+ ,----------- no parameter
+ |  ,-------- int8
+ |  |  ,----- int16
+ |  |  |   ,-- int32
+NP I8 I16 I32   Opc  Instruction          Description
+
+Stack operations:
+   a0  c0 e0    pushi [int]          Push int
+   a1  c1 e1    pushc [index]        Push constant
+   a2  c2 e2    pushf [function]     Push function id
+00              pushz                Push zero (or false)
+01              pusht                Push true
+02              newa                 Push (create) empty array
+03              newt                 Push (create) empty table
+04              pop
+05              dup
+
+Local variables:
+   a3  c3 e3    pushv [int]          Push n nil values into the stack (used to init local vars)
+   ab  cb eb    set [index]          Set value in stack position (set local variable)
+   a4  c4 e4    dupv [index]         Duplicate stack value (load local variable)
+   a5  c5 e5    setg [int]           Set global variable
+   a6  c6 e6    getg [int]           Get global variable
+
+Function operations:
+   a7  c7 e7    call [n_pars]        Enter function on stack toplevel (passing n next stack values as parameters)
+10              ret                  Leave a function (return value in stack)
+11              retn                 Leave a function (return nil)
+
+Table and array operations:
+16              getkv                Get table's value based on key (pull 1 value, push 1 value)
+17              setkv                Set table's key and value (pull 2 values from stack)
+18              geta                 Get array's position value
+19              seta                 Set array's position value (pull 2 values from stack)
+1a              appnd                Add value to the end of array
+1b              next                 Push the next pair into the stack (for loops)
+1c              smt                  Set value metatable
+1d              mt                   Get value metatable
+
+Logical/arithmetic:
+20              sum                  Sum top 2 values in stack
+21              sub                  Subtract top 2 values in stack
+22              mul                  Multiply top 2 values in stack
+23              div                  Float division
+24              idiv                 Integer division
+25              eq                   Equality
+26              neq                  Inequality
+27              lt                   Less than
+28              lte                  Less than or equals
+29              gt                   Greater than
+2a              gte                  Greater than or equals
+2b              and                  Bitwise AND
+2c              or                   Bitwise OR
+2d              xor                  Bitwise XOR
+2e              pow                  Power
+2f              shl                  Shift left
+30              shr                  Shift right
+31              mod                  Modulo
+
+Other value operations:
+40              len                  Get table, array or string size
+41              type                 Get type from value at the top of the stack
+   b0           cast [type]          Cast type to another type
+42              ver                  Return VM version
+
+External code:
+48              cmpl                 Compile code to assembly
+49              asmbl                Assemble code to bytecode format
+4a              load                 Load bytecode as function (will place function on stack)
+
+Control flow:
+   a8 c8 e8     bz [pc]              Branch if zero
+   a9 c9 e9     bnz [pc]             Branch if not zero
+   aa ca ea     jmp [pc]             Unconditional jump
+* Jumps can only happen within the same function.
+
+
+Error handling: (0xa0~0xaf)
+   ???
