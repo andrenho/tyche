@@ -1,26 +1,16 @@
+local pprint = require('pprint')
 local assemble = require('tyche-as')
+local VM = require('tyche-vm')
 
-function tprint(o, indent)
-    indent = indent or 0
-    local spacing = string.rep("  ", indent)
+----------------------
+--                  --
+--     SUPPORT      --
+--                  --
+----------------------
 
-    if type(o) == 'table' then
-        local s = '{\n'
-        for k, v in pairs(o) do
-            -- Format keys: quote strings, leave numbers as is
-            local key = type(k) == 'string' and '["'..k..'"]' or '['..k..']'
-            s = s .. spacing .. "  " .. key .. " = " .. tprint(v, indent + 1) .. ",\n"
-        end
-        return s .. spacing .. '}'
-    elseif type(o) == 'string' then
-        return '"' .. o .. '"'
-    else
-        return tostring(o)
-    end
-end
 
 function assert_eq(found, expected, key)
-    assert(type(found) == type(expected), "Types not matching " .. ((key ~= nil) and ('(key: ' .. key .. ')') or ''))
+    assert(type(found) == type(expected), 'Types not matching , expected "' .. pprint.pformat(expected) .. '", found "' .. pprint.pformat(found) .. '".' .. ((key ~= nil) and ('(key: ' .. key .. ')') or ''))
     if type(found) == 'table' then
         assert(#found == #expected, "Tables are of different sizes " .. ((key ~= nil) and ('(key: ' .. key .. ')') or ''))
         for k,v in pairs(found) do
@@ -30,9 +20,15 @@ function assert_eq(found, expected, key)
             assert_eq(v, found[k], k)
         end
     else
-        assert(found == expected, 'Assertion failed, expected "' .. tprint(expected) .. '", found "' .. tprint(found) .. '".')
+        assert(found == expected, 'Assertion failed, expected "' .. pprint.pformat(expected) .. '", found "' .. pprint.pformat(found) .. '".')
     end
 end
+
+----------------------
+--                  --
+--      PARSER      --
+--                  --
+----------------------
 
 do
     local source = [[
@@ -66,9 +62,31 @@ do
     }
 
     local found = assemble(source)
-    -- tprint(expected)
-    tprint(found)
+    -- pprint(expected)
+    -- pprint(found)
     assert_eq(found, expected)
+end
+
+----------------------
+--                  --
+--      STACK       --
+--                  --
+----------------------
+
+do
+    local stack = VM.new().stack
+    stack:push(10)
+    stack:push(20)
+    stack:push(30)
+
+    assert_eq(#stack, 3)
+    assert_eq(stack[0], 10)
+    assert_eq(stack[1], 20)
+    assert_eq(stack[-1], 30)
+    assert_eq(stack[-2], 20)
+end
+
+do
 end
 
 print('End.')
