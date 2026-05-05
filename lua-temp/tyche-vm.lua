@@ -2,6 +2,24 @@ local pprint = require('pprint')
 
 ----------------------
 --                  --
+--       UTIL       --
+--                  --
+----------------------
+
+function format_value(v)
+    if v.type == 'integer' or v.type == 'real' then
+        return tostring(v.value)
+    elseif v.type == 'string' then
+        return '"' .. v.value .. '"'
+    elseif v.type == 'function' then
+        return '@' .. tostring(v.value)
+    else
+        return pprint.format(v)
+    end
+end
+
+----------------------
+--                  --
 --      STACK       --
 --                  --
 ----------------------
@@ -23,6 +41,7 @@ function Stack:top_fps()
 end
 
 function Stack:push(value)
+    assert(type(value) == 'table' and value.type)
     table.insert(self.stack, value)
 end
 
@@ -87,7 +106,12 @@ end
 function Stack:debug()
     if #self.stack == 0 then return "empty" end
     local ss = {}
-    for _,v in ipairs(self.stack) do table.insert(ss, '[' .. pprint.pformat(v) .. '] ') end
+    for i,v in ipairs(self.stack) do
+        for _,fp in pairs(self.fps) do
+            if i == fp then table.insert(ss, '^ ') end
+        end
+        table.insert(ss, '[' .. format_value(v) .. '] ')
+    end
     return table.concat(ss)
 end
 
@@ -164,8 +188,8 @@ function VM:stack_sz()
     return #self.stack
 end
 
-function VM:is(idx, type)
-    return self.stack[idx].type == type
+function VM:is(idx, type_)
+    return self.stack[idx].type == type_
 end
 
 function VM:to_integer(idx)

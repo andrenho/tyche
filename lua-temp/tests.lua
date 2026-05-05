@@ -75,44 +75,45 @@ end
 
 do
     local stack = VM.new().stack
-    stack:push(10)
-    stack:push(20)
-    stack:push(30)
+    stack:push({ type='integer', value=10 })
+    stack:push({ type='integer', value=20 })
+    stack:push({ type='integer', value=30 })
 
     assert_eq(#stack, 3)
-    assert_eq(stack[0], 10)
-    assert_eq(stack[1], 20)
-    assert_eq(stack[-1], 30)
-    assert_eq(stack[-2], 20)
+    assert_eq(stack[0].value, 10)
+    assert_eq(stack[1].value, 20)
+    assert_eq(stack[-1].value, 30)
+    assert_eq(stack[-2].value, 20)
 
     stack:pop()
     stack:pop()
+    assert_eq(stack[-1].value, 10)
     stack:pop()
     assert_eq(#stack, 0)
 end
 
 do
     local stack = VM.new().stack
-    stack:push(10)
-    stack:push(20)
+    stack:push({ type='integer', value=10 })
+    stack:push({ type='integer', value=20 })
     stack:push_fp()
-    stack:push(30)
-    stack:push(40)
-    stack:push(50)
+    stack:push({ type='integer', value=30 })
+    stack:push({ type='integer', value=40 })
+    stack:push({ type='integer', value=50 })
 
     assert_eq(#stack, 3)
-    assert_eq(stack[0], 30)
-    assert_eq(stack[1], 40)
-    assert_eq(stack[-1], 50)
-    assert_eq(stack[-2], 40)
+    assert_eq(stack[0].value, 30)
+    assert_eq(stack[1].value, 40)
+    assert_eq(stack[-1].value, 50)
+    assert_eq(stack[-2].value, 40)
 
     stack:pop_fp()
 
     assert_eq(#stack, 2)
-    assert_eq(stack[0], 10)
-    assert_eq(stack[1], 20)
-    assert_eq(stack[-1], 20)
-    assert_eq(stack[-2], 10)
+    assert_eq(stack[0].value, 10)
+    assert_eq(stack[1].value, 20)
+    assert_eq(stack[-1].value, 20)
+    assert_eq(stack[-2].value, 10)
 end
 
 ----------------------
@@ -123,7 +124,7 @@ end
 
 do
     local vm = VM:new()
-    vm.debug = true
+    -- vm.debug = true
     local bytecode = assemble [[
         .func 0
             pushi   2
@@ -139,7 +140,7 @@ do
     vm:call(0)
 
     assert_eq(vm:stack_sz(), 1)
-    assert_eq(vm:is(-1, 'integer'))
+    assert_eq(vm:is(-1, 'integer'), true)
     assert_eq(vm:to_integer(-1), 5)
 end
 
