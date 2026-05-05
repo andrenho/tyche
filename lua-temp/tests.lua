@@ -84,6 +84,11 @@ do
     assert_eq(stack[1], 20)
     assert_eq(stack[-1], 30)
     assert_eq(stack[-2], 20)
+
+    stack:pop()
+    stack:pop()
+    stack:pop()
+    assert_eq(#stack, 0)
 end
 
 do
@@ -108,6 +113,33 @@ do
     assert_eq(stack[1], 20)
     assert_eq(stack[-1], 20)
     assert_eq(stack[-2], 10)
+end
+
+----------------------
+--                  --
+--     VM STACK     --
+--                  --
+----------------------
+
+do
+    local vm = VM:new()
+    local bytecode = assemble [[
+        .func 0
+            pushi   2
+            pushi   3
+            sum
+            ret
+    ]]
+    vm:load(bytecode)
+
+    assert_eq(vm:stack_sz(), 1)
+    assert_eq(vm:is(-1, 'function'), true)
+
+    vm:call(0)
+
+    assert_eq(vm:stack_sz(), 1)
+    assert_eq(vm:is(-1, 'integer'))
+    assert_eq(vm:to_integer(-1), 5)
 end
 
 print('End.')

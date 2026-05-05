@@ -27,14 +27,14 @@ function Stack:push(value)
 end
 
 function Stack:pop(value)
-    if #self.stack <= self:top_fps() then error("Stack underflow") end
+    if #self.stack < self:top_fps() then error("Stack underflow") end
     local v = self.stack[#self.stack]
     self.stack[#self.stack] = nil
     return v
 end
 
 function Stack:peek(value)
-    if #self.stack <= self:top_fps() then error("Stack underflow") end
+    if #self.stack < self:top_fps() then error("Stack underflow") end
     return self.stack[#self.stack]
 end
 
@@ -93,6 +93,35 @@ end
 
 ----------------------
 --                  --
+--      CODE        --
+--                  --
+----------------------
+
+local Code = {}
+Code.__index = Code
+
+function Code.new()
+    return setmetatable({
+        bytecode = nil
+    }, Code)
+end
+
+function Code:load(bytecode)
+    -- TODO - what if there's code already loaded?
+    self.bytecode = bytecode
+    return 0   -- main function
+end
+
+function Code:next_instruction(function_id, pc)
+    return {
+        operator = self.bytecode.functions[function_id][pc][1],
+        operand = self.bytecode.functions[function_id][pc][2],
+        instruction_size = 1,
+    }
+end
+
+----------------------
+--                  --
 --       VM         --
 --                  --
 ----------------------
@@ -102,8 +131,91 @@ VM.__index = VM
 
 function VM.new()
     return setmetatable({
-        stack = Stack.new()
+        stack = Stack.new(),
+        code = Code.new(),
+        loc = {},
     }, VM)
+end
+
+--
+-- code management
+--
+
+function VM:load(bytecode)
+    local f_id = self.code:load(bytecode)
+    self.stack:push({ type = 'function', value = f_id })
+    return self
+end
+
+--
+-- stack management
+--
+
+function VM:push_integer(n)
+    self.stack:push({ type = 'integer', value = n })
+end
+
+--
+-- information
+--
+
+function VM:stack_sz()
+    return #self.stack
+end
+
+function VM:is(idx, type)
+    return self.stack[idx].type == type
+end
+
+function VM:to_integer(idx)
+    local value = self.stack[idx]
+    if value.type ~= 'integer' then error("Type error: not an integer") end
+    return value.value
+end
+
+--
+-- code execution
+--
+
+function VM:call(n_pars)
+    local f = self.stack:pop()
+    if f.type ~= 'function' then error("Type error: expected function") end
+    table.insert(self.loc, {
+        f_id = f.value,
+        pc = 1
+    })
+    self.stack:push_fp()
+    self:_run_until_return()  -- execute code
+    table.remove(self.loc)
+    return self
+end
+
+function VM:_run_until_return()
+    local level = self.stack:fp_level()
+    while self.stack:fp_level() >= level do
+        self:_step()
+    end
+end
+
+function VM:_step()
+    local loc = self.loc[#self.loc]
+    local op = self.code:next_instruction(loc.f_id, loc.pc)
+    print(loc.f_id .. ':' .. loc.pc .. '   ' .. op.operator .. ' ' .. (op.operand and op.operand or ''))
+
+    if op.operator == 'pushi' then
+        self:push_integer(op.operand)
+    elseif op.operator == 'sum' then
+        self:push_integer(self.stack:pop().value + self.stack:pop().value)
+    elseif op.operator == 'ret' then
+        local v = self.stack:pop()
+        self.stack:pop_fp()
+        self.stack:push(v)
+        return
+    else
+        error("Unknown operator '" .. tostring(op.operator) .. "'")
+    end
+
+    loc.pc = loc.pc + op.instruction_size
 end
 
 return VM
