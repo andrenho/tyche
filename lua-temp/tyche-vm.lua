@@ -1,5 +1,13 @@
 local pprint = require('pprint')
 
+local TYPES = { 'nil', 'integer', 'float', 'string', 'array', 'table', 'function', 'native_pointer' }
+local TYPE_MAP = {}; for _,v in ipairs(TYPES) do TYPE_MAP[v] = true end
+
+local ARITH_LOGIC_OPS = {
+    sum=true, sub=true, mul=true, div=true, idiv=true, eq=true, neq=true, lt=true, lte=true, gt=true, gte=true,
+    ['and']=true, ['or']=true, xor=true, pow=true, shl=true, shr=true, mod=true
+}
+
 ----------------------
 --                  --
 --       UTIL       --
@@ -41,7 +49,7 @@ function Stack:top_fps()
 end
 
 function Stack:push(value)
-    assert(type(value) == 'table' and value.type)
+    assert(type(value) == 'table' and TYPE_MAP[value.type])
     table.insert(self.stack, value)
 end
 
@@ -146,6 +154,28 @@ end
 
 ----------------------
 --                  --
+--      EXPR        --
+--                  --
+----------------------
+
+local EXPR = {}
+
+-- initialize default
+for op,_ in pairs(ARITH_LOGIC_OPS) do
+    EXPR[op] = {}
+    for _,type1 in ipairs(TYPES) do
+        EXPR[op][type1] = {}
+        for _,type2 in ipairs(TYPES) do
+            EXPR[op][type1][type2] = function(vm, a, b) error(string.format("Type mismatch for operation '%s': types '%s' and '%s'", op, type1, type2)) end
+        end
+    end
+end
+
+EXPR.sum.integer.integer = function(vm, b, a) vm:push_integer(a + b) end
+EXPR.sub.integer.integer = function(vm, b, a) vm:push_integer(a - b) end
+
+----------------------
+--                  --
 --       VM         --
 --                  --
 ----------------------
@@ -228,16 +258,33 @@ function VM:_step()
 
     if self.debug then print('## ' .. loc.f_id .. ':' .. loc.pc .. '   ' .. op.operator .. ' ' .. (op.operand and op.operand or '')) end
 
+    --
+    -- stack operations
+    --
+
     if op.operator == 'pushi' then
         self:push_integer(op.operand)
-    elseif op.operator == 'sum' then
-        self:push_integer(self.stack:pop().value + self.stack:pop().value)
+
+    --
+    -- logic/arithmetic operations
+    --
+
+    elseif ARITH_LOGIC_OPS[op.operator] then
+        local a = self.stack:pop()
+        local b = self.stack:pop()
+        EXPR[op.operator][a.type][b.type](self, a.value, b.value)
+
+    --
+    -- function management
+    ---
+
     elseif op.operator == 'ret' then
         local v = self.stack:pop()
         self.stack:pop_fp()
         self.stack:push(v)
         return
     else
+
         error("Unknown operator '" .. tostring(op.operator) .. "'")
     end
 

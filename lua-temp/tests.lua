@@ -118,9 +118,20 @@ end
 
 ----------------------
 --                  --
---     VM STACK     --
+--     VM ARITH     --
 --                  --
 ----------------------
+
+local function arith(a, b, op)
+    return VM:new():load(assemble(string.format([[
+        .func 0
+            pushi   %d
+            pushi   %d
+            %s
+            ret
+    ]], a, b, op))):call(0)
+end
+
 
 do
     local vm = VM:new()
@@ -142,6 +153,11 @@ do
     assert_eq(vm:stack_sz(), 1)
     assert_eq(vm:is(-1, 'integer'), true)
     assert_eq(vm:to_integer(-1), 5)
+end
+
+do
+    assert_eq(arith(2, 5, 'sum'):to_integer(-1), 7)
+    assert_eq(arith(2, 5, 'sub'):to_integer(-1), -3)
 end
 
 print('End.')
