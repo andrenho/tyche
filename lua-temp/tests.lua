@@ -123,6 +123,7 @@ end
 
 do
     local vm = VM:new()
+    vm.debug = true
     local bytecode = assemble [[
         .func 0
             pushi   2

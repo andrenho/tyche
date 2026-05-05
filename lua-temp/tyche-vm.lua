@@ -134,6 +134,7 @@ function VM.new()
         stack = Stack.new(),
         code = Code.new(),
         loc = {},
+        debug = false,
     }, VM)
 end
 
@@ -200,7 +201,8 @@ end
 function VM:_step()
     local loc = self.loc[#self.loc]
     local op = self.code:next_instruction(loc.f_id, loc.pc)
-    print(loc.f_id .. ':' .. loc.pc .. '   ' .. op.operator .. ' ' .. (op.operand and op.operand or ''))
+
+    if self.debug then print('## ' .. loc.f_id .. ':' .. loc.pc .. '   ' .. op.operator .. ' ' .. (op.operand and op.operand or '')) end
 
     if op.operator == 'pushi' then
         self:push_integer(op.operand)
@@ -214,6 +216,8 @@ function VM:_step()
     else
         error("Unknown operator '" .. tostring(op.operator) .. "'")
     end
+
+    if self.debug then print(self.stack:debug()) end
 
     loc.pc = loc.pc + op.instruction_size
 end
