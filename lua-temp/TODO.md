@@ -7,10 +7,9 @@ Progress of the Lua port:
   - [ ] Local variables
   - [ ] Calling functions
   - [ ] Globals
-  - [ ] Recursion
-  - [ ] Stack traces in case of errors
 - [ ] Control flow
   - [ ] Lablels in Assembly
+  - [ ] Recursion
 - [ ] Strings
   - [ ] From constants
   - [ ] Garbage collection
@@ -21,8 +20,9 @@ Progress of the Lua port:
   - [ ] Metatables
 - [ ] Real
 - [ ] Error handling
+  - [ ] Stack traces in case of errors
 - [ ] Closures/upvalues
 
 
 - [ ] Assembler generate bytecode
-  - [ ] VM interepret it
+  - [ ] VM interpret it

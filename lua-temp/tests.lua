@@ -8,6 +8,9 @@ local VM = require('tyche-vm')
 --                  --
 ----------------------
 
+function TEST(name)
+    print("### " .. name)
+end
 
 function assert_eq(found, expected, key)
     assert(type(found) == type(expected), 'Types not matching , expected "' .. pprint.pformat(expected) .. '", found "' .. pprint.pformat(found) .. '".' .. ((key ~= nil) and ('(key: ' .. key .. ')') or ''))
@@ -30,7 +33,8 @@ end
 --                  --
 ----------------------
 
-do
+do TEST "Parser"
+
     local source = [[
 .const
     0: 3.14
@@ -73,7 +77,7 @@ end
 --                  --
 ----------------------
 
-do
+do TEST "Stack"
     local stack = VM.new().stack
     stack:push({ type='integer', value=10 })
     stack:push({ type='integer', value=20 })
@@ -92,7 +96,7 @@ do
     assert_eq(#stack, 0)
 end
 
-do
+do TEST "Stack with frame pointer"
     local stack = VM.new().stack
     stack:push({ type='integer', value=10 })
     stack:push({ type='integer', value=20 })
@@ -133,7 +137,7 @@ local function arith(a, b, op)
 end
 
 
-do
+do TEST("VM: basic")
     local vm = VM:new()
     -- vm.debug = true
     local bytecode = assemble [[
@@ -155,7 +159,7 @@ do
     assert_eq(vm:to_integer(-1), 5)
 end
 
-do
+do TEST("VM: logic/arithmetic")
     assert_eq(arith(2, 5, 'sum'):to_integer(-1), 7)
     assert_eq(arith(2, 5, 'sub'):to_integer(-1), -3)
     assert_eq(arith(2, 5, 'mul'):to_integer(-1), 10)
