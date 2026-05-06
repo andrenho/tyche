@@ -273,7 +273,7 @@ end
 -- code execution
 --
 
-function VM:call(n_pars)
+function VM:_enter_function(n_pars)
     -- get parameters
     local vars = {}
     for i=1,n_pars do
@@ -295,13 +295,11 @@ function VM:call(n_pars)
     for i=1,n_pars do
         self.stack:push(vars[#vars-i+1])
     end
+end
 
-    -- execute function
+function VM:call(n_pars)
+    self:_enter_function(n_pars)
     self:_run_until_return()
-
-    -- exit function
-    table.remove(self.loc)
-
     return self
 end
 
@@ -364,12 +362,14 @@ function VM:_step()
 
     elseif op.operator == 'call' then
         assert(op.operand >= 0)
-        self:call(op.operand)
+        self:_enter_function(op.operand)
 
     elseif op.operator == 'ret' then
         local v = self.stack:pop()
         self.stack:pop_fp()
         self.stack:push(v)
+        table.remove(self.loc)
+        if self.debug then print(self.stack:debug()) end
         return
     else
 
