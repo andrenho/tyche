@@ -158,6 +158,23 @@ end
 do
     assert_eq(arith(2, 5, 'sum'):to_integer(-1), 7)
     assert_eq(arith(2, 5, 'sub'):to_integer(-1), -3)
+    assert_eq(arith(2, 5, 'mul'):to_integer(-1), 10)
+    assert_eq(arith(20, 3, 'idiv'):to_integer(-1), 6)
+    assert_eq(arith(5, 5, 'eq'):to_integer(-1), 1)
+    assert_eq(arith(5, 5, 'neq'):to_integer(-1), 0)
+    assert_eq(arith(4, 5, 'lt'):to_integer(-1), 1)
+    assert_eq(arith(5, 5, 'lt'):to_integer(-1), 0)
+    assert_eq(arith(4, 5, 'lte'):to_integer(-1), 1)
+    assert_eq(arith(5, 5, 'lte'):to_integer(-1), 1)
+    assert_eq(arith(5, 5, 'gt'):to_integer(-1), 0)
+    assert_eq(arith(5, 5, 'gte'):to_integer(-1), 1)
+    assert_eq(arith(20, 5, 'and'):to_integer(-1), 4)
+    assert_eq(arith(20, 5, 'or'):to_integer(-1), 21)
+    assert_eq(arith(20, 5, 'xor'):to_integer(-1), 17)
+    assert_eq(arith(2, 5, 'pow'):to_integer(-1), 32)
+    assert_eq(arith(2, 5, 'shl'):to_integer(-1), 64)
+    assert_eq(arith(20, 3, 'shr'):to_integer(-1), 2)
+    assert_eq(arith(20, 3, 'mod'):to_integer(-1), 2)
 end
 
 print('End.')

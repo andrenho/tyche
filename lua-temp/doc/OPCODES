@@ -57,19 +57,19 @@ Logical/arithmetic:
 22              mul                  Multiply top 2 values in stack
 23              div                  Float division
 24              idiv                 Integer division
-25              eq                   Equality
-26              neq                  Inequality
-27              lt                   Less than
-28              lte                  Less than or equals
-29              gt                   Greater than
-2a              gte                  Greater than or equals
-2b              and                  Bitwise AND
-2c              or                   Bitwise OR
-2d              xor                  Bitwise XOR
-2e              pow                  Power
-2f              shl                  Shift left
-30              shr                  Shift right
-31              mod                  Modulo
+25              mod                  Modulo
+26              eq                   Equality
+27              neq                  Inequality
+28              lt                   Less than
+29              lte                  Less than or equals
+2a              gt                   Greater than
+2b              gte                  Greater than or equals
+2c              and                  Bitwise AND
+2d              or                   Bitwise OR
+2e              xor                  Bitwise XOR
+2f              pow                  Power
+30              shl                  Shift left
+31              shr                  Shift right
 
 Other value operations:
 40              len                  Get table, array or string size

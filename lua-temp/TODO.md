@@ -2,7 +2,7 @@ Progress of the Lua port:
 
 - [x] Assembler
 - [x] Basic VM execution
-- [ ] Logic/arithmetic expressions
+- [x] Logic/arithmetic expressions
 - [ ] Functions
   - [ ] Local variables
   - [ ] Calling functions
@@ -19,6 +19,7 @@ Progress of the Lua port:
 - [ ] Tables
   - [ ] Garbage collection
   - [ ] Metatables
+- [ ] Real
 - [ ] Error handling
 - [ ] Closures/upvalues
 

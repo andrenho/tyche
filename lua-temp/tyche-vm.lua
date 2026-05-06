@@ -173,6 +173,22 @@ end
 
 EXPR.sum.integer.integer = function(vm, b, a) vm:push_integer(a + b) end
 EXPR.sub.integer.integer = function(vm, b, a) vm:push_integer(a - b) end
+EXPR.mul.integer.integer = function(vm, b, a) vm:push_integer(a * b) end
+-- TODO - div
+EXPR.idiv.integer.integer = function(vm, b, a) vm:push_integer(math.floor(a / b)) end
+EXPR.mod.integer.integer  = function(vm, b, a) vm:push_integer(a % b) end
+EXPR.eq.integer.integer   = function(vm, b, a) vm:push_integer((a == b) and 1 or 0) end
+EXPR.neq.integer.integer  = function(vm, b, a) vm:push_integer((a ~= b) and 1 or 0) end
+EXPR.lt.integer.integer   = function(vm, b, a) vm:push_integer((a < b) and 1 or 0) end
+EXPR.lte.integer.integer  = function(vm, b, a) vm:push_integer((a <= b) and 1 or 0) end
+EXPR.gt.integer.integer   = function(vm, b, a) vm:push_integer((a > b) and 1 or 0) end
+EXPR.gte.integer.integer  = function(vm, b, a) vm:push_integer((a >= b) and 1 or 0) end
+EXPR['and'].integer.integer = function(vm, b, a) vm:push_integer(a & b) end
+EXPR['or'].integer.integer = function(vm, b, a) vm:push_integer(a | b) end
+EXPR.xor.integer.integer = function(vm, b, a) vm:push_integer(a ~ b) end
+EXPR.pow.integer.integer = function(vm, b, a) vm:push_integer(a ^ b) end
+EXPR.shl.integer.integer = function(vm, b, a) vm:push_integer(a << b) end
+EXPR.shr.integer.integer = function(vm, b, a) vm:push_integer(a >> b) end
 
 ----------------------
 --                  --
