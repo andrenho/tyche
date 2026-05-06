@@ -24,7 +24,20 @@ function format_value(v)
     elseif v.type == 'nil' then
         return 'nil'
     else
-        return pprint.format(v)
+        return pprint.pformat(v)
+    end
+end
+
+function validate_value(v)
+    assert(v, "value cannot be nil")
+    assert(type(v) == 'table', "invalid value format (expected { type='...', value=... }), received: " .. pprint.pformat(value))
+    assert(TYPE_MAP[v.type], "missing field 'type' in value")
+    if v.type == 'nil' then
+        assert(v.value == nil)
+    elseif v.type == 'number' then
+        assert(type(v.value) == 'number')
+    elseif v.type == 'function' then
+        assert(type(v.value) == 'number' and v.value >= 0, "function must be a positive number")
     end
 end
 
@@ -51,19 +64,18 @@ function Stack:top_fps()
 end
 
 function Stack:push(value)
-    assert(type(value) == 'table', "invalid value format (expected { type='...', value=... })")
-    assert(TYPE_MAP[value.type], "missing field 'type' in value")
+    validate_value(value)
     table.insert(self.stack, value)
 end
 
-function Stack:pop(value)
+function Stack:pop()
     if #self.stack < self:top_fps() then error("Stack underflow") end
     local v = self.stack[#self.stack]
     self.stack[#self.stack] = nil
     return v
 end
 
-function Stack:peek(value)
+function Stack:peek()
     if #self.stack < self:top_fps() then error("Stack underflow") end
     return self.stack[#self.stack]
 end
@@ -87,6 +99,7 @@ Stack.__index = function(self, key)
 end
 
 Stack.__newindex = function(self, key, value)
+    validate_value(value)
     local idx = tonumber(key)
     if idx then
         if idx >= 0 then
@@ -261,15 +274,34 @@ end
 --
 
 function VM:call(n_pars)
+    -- get parameters
+    local vars = {}
+    for i=1,n_pars do
+        vars[i] = self.stack:pop()
+    end
+
+    -- get function
     local f = self.stack:pop()
     if f.type ~= 'function' then error("Type error: expected function") end
+
+    -- enter function
     table.insert(self.loc, {
         f_id = f.value,
         pc = 1
     })
     self.stack:push_fp()
-    self:_run_until_return()  -- execute code
+
+    -- pass parameters
+    for i=1,n_pars do
+        self.stack:push(vars[#vars-i+1])
+    end
+
+    -- execute function
+    self:_run_until_return()
+
+    -- exit function
     table.remove(self.loc)
+
     return self
 end
 
@@ -293,20 +325,27 @@ function VM:_step()
     if op.operator == 'pushi' then
         self:push_integer(op.operand)
 
+    elseif op.operator == 'pushf' then
+        assert(op.operand >= 0)
+        self.stack:push({ type = 'function', value = op.operand })
+
     --
     -- local variables
     --
 
     elseif op.operator == 'pushv' then
+        assert(op.operand >= 0)
         for i=1,op.operand do
             self:push_nil()
         end
 
     elseif op.operator == 'set' then
+        assert(op.operand >= 0)
         local a = self.stack:pop()
         self.stack[op.operand + 1] = a
 
     elseif op.operator == 'dupv' then
+        assert(op.operand >= 0)
         local a = self.stack[op.operand + 1]
         self.stack:push(a)
 
@@ -322,6 +361,10 @@ function VM:_step()
     --
     -- function management
     ---
+
+    elseif op.operator == 'call' then
+        assert(op.operand >= 0)
+        self:call(op.operand)
 
     elseif op.operator == 'ret' then
         local v = self.stack:pop()

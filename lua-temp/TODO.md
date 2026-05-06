@@ -3,8 +3,8 @@ Progress of the Lua port:
 - [x] Assembler
 - [x] Basic VM execution
 - [x] Logic/arithmetic expressions
-- [ ] Variables
-  - [ ] Local variables
+- [x] Variables
+  - [x] Local variables
 - [ ] Functions
   - [ ] Calling functions
   - [ ] Calling functions with parameters
