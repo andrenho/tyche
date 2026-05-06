@@ -181,4 +181,20 @@ do TEST("VM: logic/arithmetic")
     assert_eq(arith(20, 3, 'mod'):to_integer(-1), 2)
 end
 
+do TEST("VM: local variables")
+    local vm = VM:new():load(assemble([[
+        .func 0
+            pushv 2         ; local a, b
+            pushi 3         ; a = 3
+            set   0
+            pushi 4         ; b = 4
+            set   1
+            dupv  0         ; return a
+            ret
+    ]])):call(0)
+
+    assert_eq(vm:stack_sz(), 1)
+    assert_eq(vm:to_integer(-1), 3)
+end
+
 print('End.')

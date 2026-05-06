@@ -21,6 +21,8 @@ function format_value(v)
         return '"' .. v.value .. '"'
     elseif v.type == 'function' then
         return '@' .. tostring(v.value)
+    elseif v.type == 'nil' then
+        return 'nil'
     else
         return pprint.format(v)
     end
@@ -49,7 +51,8 @@ function Stack:top_fps()
 end
 
 function Stack:push(value)
-    assert(type(value) == 'table' and TYPE_MAP[value.type])
+    assert(type(value) == 'table', "invalid value format (expected { type='...', value=... })")
+    assert(TYPE_MAP[value.type], "missing field 'type' in value")
     table.insert(self.stack, value)
 end
 
@@ -208,6 +211,11 @@ function VM.new()
     }, VM)
 end
 
+function VM:set_debug(b)
+    self.debug = b
+    return self
+end
+
 --
 -- code management
 --
@@ -224,6 +232,10 @@ end
 
 function VM:push_integer(n)
     self.stack:push({ type = 'integer', value = n })
+end
+
+function VM:push_nil()
+    self.stack:push({ type = 'nil' })
 end
 
 --
@@ -280,6 +292,23 @@ function VM:_step()
 
     if op.operator == 'pushi' then
         self:push_integer(op.operand)
+
+    --
+    -- local variables
+    --
+
+    elseif op.operator == 'pushv' then
+        for i=1,op.operand do
+            self:push_nil()
+        end
+
+    elseif op.operator == 'set' then
+        local a = self.stack:pop()
+        self.stack[op.operand + 1] = a
+
+    elseif op.operator == 'dupv' then
+        local a = self.stack[op.operand + 1]
+        self.stack:push(a)
 
     --
     -- logic/arithmetic operations
