@@ -5,9 +5,9 @@ Progress of the Lua port:
 - [x] Logic/arithmetic expressions
 - [x] Variables
   - [x] Local variables
-- [ ] Functions
-  - [ ] Calling functions
-  - [ ] Calling functions with parameters
+- [x] Functions
+  - [x] Calling functions
+  - [x] Calling functions with parameters
 - [ ] Control flow
   - [ ] Lablels in Assembly
   - [ ] Recursion

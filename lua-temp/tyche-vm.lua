@@ -340,11 +340,11 @@ function VM:_step()
     elseif op.operator == 'set' then
         assert(op.operand >= 0)
         local a = self.stack:pop()
-        self.stack[op.operand + 1] = a
+        self.stack[op.operand] = a
 
     elseif op.operator == 'dupv' then
         assert(op.operand >= 0)
-        local a = self.stack[op.operand + 1]
+        local a = self.stack[op.operand]
         self.stack:push(a)
 
     --

@@ -198,7 +198,7 @@ do TEST("VM: local variables")
 end
 
 do TEST("VM: functions")
-    local vm = VM:new():set_debug(true):load(assemble([[
+    local vm = VM:new():load(assemble([[
         .func 0
             pushf   1
             pushi   2
@@ -208,12 +208,12 @@ do TEST("VM: functions")
         .func 1
             dupv    0
             dupv    1
-            sum
+            sub
             ret
     ]])):call(0)
 
     assert_eq(vm:stack_sz(), 1)
-    assert_eq(vm:to_integer(-1), 5)
+    assert_eq(vm:to_integer(-1), -1)
 end
 
 print('End.')
