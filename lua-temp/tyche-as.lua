@@ -17,7 +17,7 @@ local function assemble(source)
         local line = line:gsub("%s*;.*$", "")   -- remove comments
         line = line:match("^%s*(.-)%s*$")       -- trim
 
-        if #line == 1 then goto continue end
+        if #line == 0 then goto continue end
 
         if line == ".const" then
             section = 'const'
@@ -28,6 +28,7 @@ local function assemble(source)
             current_f_id = f_id
         elseif section == 'const' then
             local k, v = line:match("^%s*(%d+)%s*:%s*(.+)$")
+            if not k then error("Invalid row for constant") end
             if v:sub(1, 1) == '"' then
                 proto.constants[tonumber(k)] = line:match('"(.*)"')
             else
@@ -39,6 +40,7 @@ local function assemble(source)
                 table.insert(proto.functions[current_f_id], { inst, tonumber(par) })
             else
                 local inst = line:match("^%s*(%a+)%s*$")
+                if not inst then error("Invalid row for function") end
                 table.insert(proto.functions[current_f_id], { inst })
             end
         end

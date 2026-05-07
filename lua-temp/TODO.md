@@ -9,7 +9,7 @@ Progress of the Lua port:
   - [x] Calling functions
   - [x] Calling functions with parameters
 - [ ] Control flow
-  - [ ] Lablels in Assembly
+  - [ ] Labels in Assembly
   - [ ] Recursion
 - [ ] Strings
   - [ ] From constants

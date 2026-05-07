@@ -71,6 +71,31 @@ do TEST "Parser"
     assert_eq(found, expected)
 end
 
+--do TEST "Parser: labels"
+--
+--    local source = [[
+--        .func 0
+--            jmp     %my_label
+--            pushi   3
+--        %my_label:
+--            ret ]]
+--
+--    local expected = {
+--        constants = {},
+--        functions = {
+--            [0] = {
+--                { "jmp", "%my_label" },
+--                { "pushi", 3 },
+--                { "ret", labels = { "%my_label" } },
+--            }
+--        }
+--    }
+--
+--    local found = assemble(source)
+--    pprint(found)
+--    assert_eq(found, expected)
+--end
+
 ----------------------
 --                  --
 --      STACK       --
@@ -137,7 +162,7 @@ local function arith(a, b, op)
 end
 
 
-do TEST("VM: basic")
+do TEST "VM: basic"
     local vm = VM:new()
     -- vm.debug = true
     local bytecode = assemble [[
@@ -159,7 +184,7 @@ do TEST("VM: basic")
     assert_eq(vm:to_integer(-1), 5)
 end
 
-do TEST("VM: logic/arithmetic")
+do TEST "VM: logic/arithmetic"
     assert_eq(arith(2, 5, 'sum'):to_integer(-1), 7)
     assert_eq(arith(2, 5, 'sub'):to_integer(-1), -3)
     assert_eq(arith(2, 5, 'mul'):to_integer(-1), 10)
@@ -181,7 +206,7 @@ do TEST("VM: logic/arithmetic")
     assert_eq(arith(20, 3, 'mod'):to_integer(-1), 2)
 end
 
-do TEST("VM: local variables")
+do TEST "VM: local variables"
     local vm = VM:new():load(assemble([[
         .func 0
             pushv 2         ; local a, b
@@ -197,7 +222,7 @@ do TEST("VM: local variables")
     assert_eq(vm:to_integer(-1), 3)
 end
 
-do TEST("VM: functions")
+do TEST "VM: functions"
     local vm = VM:new():load(assemble([[
         .func 0
             pushf   1
