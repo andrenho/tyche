@@ -71,30 +71,30 @@ do TEST "Parser"
     assert_eq(found, expected)
 end
 
---do TEST "Parser: labels"
---
---    local source = [[
---        .func 0
---            jmp     %my_label
---            pushi   3
---        %my_label:
---            ret ]]
---
---    local expected = {
---        constants = {},
---        functions = {
---            [0] = {
---                { "jmp", "%my_label" },
---                { "pushi", 3 },
---                { "ret", labels = { "%my_label" } },
---            }
---        }
---    }
---
---    local found = assemble(source)
---    pprint(found)
---    assert_eq(found, expected)
---end
+do TEST "Parser: labels"
+
+    local source = [[
+        .func 0
+            jmp     @my_label
+            pushi   3
+        @my_label:
+            ret ]]
+
+    local expected = {
+        constants = {},
+        functions = {
+            [0] = {
+                { "jmp", "@my_label" },
+                { "pushi", 3 },
+                { "ret", labels = { "@my_label" } },
+            }
+        }
+    }
+
+    local found = assemble(source)
+    pprint(found)
+    assert_eq(found, expected)
+end
 
 ----------------------
 --                  --

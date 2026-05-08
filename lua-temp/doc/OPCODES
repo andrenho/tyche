@@ -82,10 +82,10 @@ External code:
 49              asmbl                Assemble code to bytecode format
 4a              load                 Load bytecode as function (will place function on stack)
 
-Control flow:
-   a8 c8 e8     bz [pc]              Branch if zero
-   a9 c9 e9     bnz [pc]             Branch if not zero
-   aa ca ea     jmp [pc]             Unconditional jump
+Control flow (the destination is always a 16-bit field):
+      c8        bz [pc]              Branch if zero
+      c9        bnz [pc]             Branch if not zero
+      ca        jmp [pc]             Unconditional jump
 * Jumps can only happen within the same function.
 
 

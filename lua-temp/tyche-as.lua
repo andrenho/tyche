@@ -13,6 +13,7 @@ local function assemble(source)
     local section = ''
     local current_f_id = 0
 
+    local next_label = nil
     for line in source:gmatch("([^\n]+)") do
         local line = line:gsub("%s*;.*$", "")   -- remove comments
         line = line:match("^%s*(.-)%s*$")       -- trim
@@ -28,21 +29,43 @@ local function assemble(source)
             current_f_id = f_id
         elseif section == 'const' then
             local k, v = line:match("^%s*(%d+)%s*:%s*(.+)$")
-            if not k then error("Invalid row for constant") end
+            if not k then error("Invalid row for constant: " .. line) end
             if v:sub(1, 1) == '"' then
                 proto.constants[tonumber(k)] = line:match('"(.*)"')
             else
                 proto.constants[tonumber(k)] = tonumber(v)
             end
         elseif section == 'function' then
-            local inst, par = line:match("^%s*(%a+)%s+(%d+)%s*$")
-            if inst then
-                table.insert(proto.functions[current_f_id], { inst, tonumber(par) })
-            else
-                local inst = line:match("^%s*(%a+)%s*$")
-                if not inst then error("Invalid row for function") end
-                table.insert(proto.functions[current_f_id], { inst })
+            local regexes = {
+                "^%s*(%a+)%s+(%d+)%s*$",        -- instruction + parameter
+                "^%s*(%a+)%s+(@[%a_]+)%s*$",    -- instruction + label
+                "^%s*(%a+)%s*$",                -- instruction only
+                "^(@[%a_]+):%s*$",              -- label
+            }
+            local match = false
+            for i,regex in ipairs(regexes) do
+                local inst, par = line:match(regex)
+                if inst then
+                    match = true
+                    if i == 1 then       -- instruction + parameter
+                        table.insert(proto.functions[current_f_id], { inst, tonumber(par), labels = next_label })
+                    elseif i == 2 then   -- instruction + label
+                        table.insert(proto.functions[current_f_id], { inst, par, labels = next_label })
+                    elseif i == 3 then   -- instruction only
+                        table.insert(proto.functions[current_f_id], { inst, labels = next_label })
+                    elseif i == 4 then   -- label
+                        if not next_label then
+                            next_label = { inst }
+                        else
+                            table.insert(next_label, inst)
+                        end
+                    end
+                    if i ~= 4 then
+                        next_label = nil
+                    end
+                end
             end
+            if not match then error("Invalid instruction: " .. line) end
         end
 
         ::continue::
