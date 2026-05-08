@@ -14,7 +14,7 @@ local ARITH_LOGIC_OPS = {
 --                  --
 ----------------------
 
-function format_value(v)
+local function format_value(v)
     if v.type == 'integer' or v.type == 'real' then
         return tostring(v.value)
     elseif v.type == 'string' then
@@ -28,9 +28,10 @@ function format_value(v)
     end
 end
 
-function validate_value(v)
+local function validate_value(v)
     assert(v, "value cannot be nil")
-    assert(type(v) == 'table', "invalid value format (expected { type='...', value=... }), received: " .. pprint.pformat(value))
+    assert(type(v) == 'table',
+        "invalid value format (expected { type='...', value=... }), received: " .. pprint.pformat(v))
     assert(TYPE_MAP[v.type], "missing field 'type' in value")
     if v.type == 'nil' then
         assert(v.value == nil)
@@ -39,6 +40,12 @@ function validate_value(v)
     elseif v.type == 'function' then
         assert(type(v.value) == 'number' and v.value >= 0, "function must be a positive number")
     end
+end
+
+function is_zero(v)
+    if v.type == 'nil' then return true end
+    if v.type == 'integer' and v.value == 0 then return true end
+    return false
 end
 
 ----------------------
@@ -168,6 +175,18 @@ function Code:next_instruction(function_id, pc)
     }
 end
 
+function Code:find_label(function_id, label)
+    for pc, op in ipairs(self.bytecode.functions[function_id]) do
+        if op.labels then
+            for _,lbl in ipairs(op.labels) do
+                if lbl == label then
+                    return pc
+                end
+            end
+        end
+    end
+end
+
 ----------------------
 --                  --
 --      EXPR        --
@@ -182,7 +201,7 @@ for op,_ in pairs(ARITH_LOGIC_OPS) do
     for _,type1 in ipairs(TYPES) do
         EXPR[op][type1] = {}
         for _,type2 in ipairs(TYPES) do
-            EXPR[op][type1][type2] = function(vm, a, b) error(string.format("Type mismatch for operation '%s': types '%s' and '%s'", op, type1, type2)) end
+            EXPR[op][type1][type2] = function(_, _, _) error(string.format("Type mismatch for operation '%s': types '%s' and '%s'", op, type1, type2)) end
         end
     end
 end
@@ -310,6 +329,12 @@ function VM:_run_until_return()
     end
 end
 
+function VM:_debug_stack()
+    if self.debug then
+        print(self.stack:debug())
+    end
+end
+
 function VM:_step()
     local loc = self.loc[#self.loc]
     local op = self.code:next_instruction(loc.f_id, loc.pc)
@@ -327,13 +352,16 @@ function VM:_step()
         assert(op.operand >= 0)
         self.stack:push({ type = 'function', value = op.operand })
 
+    elseif op.operator == 'dup' then
+        self.stack:push(self.stack:peek())
+
     --
     -- local variables
     --
 
     elseif op.operator == 'pushv' then
         assert(op.operand >= 0)
-        for i=1,op.operand do
+        for _=1,op.operand do
             self:push_nil()
         end
 
@@ -369,14 +397,43 @@ function VM:_step()
         self.stack:pop_fp()
         self.stack:push(v)
         table.remove(self.loc)
-        if self.debug then print(self.stack:debug()) end
+        self:_debug_stack()
         return
-    else
 
+    --
+    -- jumps/branching
+    --
+
+    elseif op.operator == 'jmp' then
+        loc.pc = self.code:find_label(loc.f_id, op.operand)
+        self:_debug_stack()
+        return
+
+    elseif op.operator == 'bz' then
+        local v = self.stack:pop()
+        if is_zero(v) then
+            loc.pc = self.code:find_label(loc.f_id, op.operand)
+            self:_debug_stack()
+            return
+        end
+
+    elseif op.operator == 'bnz' then
+        local v = self.stack:pop()
+        if not is_zero(v) then
+            loc.pc = self.code:find_label(loc.f_id, op.operand)
+            self:_debug_stack()
+            return
+        end
+
+    --
+    -- instruction not found
+    --
+
+    else
         error("Unknown operator '" .. tostring(op.operator) .. "'")
     end
 
-    if self.debug then print(self.stack:debug()) end
+    self:_debug_stack()
 
     loc.pc = loc.pc + op.instruction_size
 end

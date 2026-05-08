@@ -37,10 +37,10 @@ local function assemble(source)
             end
         elseif section == 'function' then
             local regexes = {
-                "^%s*(%a+)%s+(%d+)%s*$",        -- instruction + parameter
-                "^%s*(%a+)%s+(@[%a_]+)%s*$",    -- instruction + label
-                "^%s*(%a+)%s*$",                -- instruction only
-                "^(@[%a_]+):%s*$",              -- label
+                "^%s*(%a+)%s+(%d+)%s*$",                -- instruction + parameter
+                "^%s*(%a+)%s+(@[%a_][%a%d_]*)%s*$",     -- instruction + label
+                "^%s*(%a+)%s*$",                        -- instruction only
+                "^(@[%a_][%a%d_]*):%s*$",                      -- label
             }
             local match = false
             for i,regex in ipairs(regexes) do

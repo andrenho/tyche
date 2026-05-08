@@ -152,7 +152,7 @@ end
 ----------------------
 
 local function arith(a, b, op)
-    return VM:new():load(assemble(string.format([[
+    return VM.new():load(assemble(string.format([[
         .func 0
             pushi   %d
             pushi   %d
@@ -163,7 +163,7 @@ end
 
 
 do TEST "VM: basic"
-    local vm = VM:new()
+    local vm = VM.new()
     -- vm.debug = true
     local bytecode = assemble [[
         .func 0
@@ -207,7 +207,7 @@ do TEST "VM: logic/arithmetic"
 end
 
 do TEST "VM: local variables"
-    local vm = VM:new():load(assemble([[
+    local vm = VM.new():load(assemble([[
         .func 0
             pushv 2         ; local a, b
             pushi 3         ; a = 3
@@ -223,7 +223,7 @@ do TEST "VM: local variables"
 end
 
 do TEST "VM: functions"
-    local vm = VM:new():load(assemble([[
+    local vm = VM.new():load(assemble([[
         .func 0
             pushf   1
             pushi   2
@@ -240,5 +240,64 @@ do TEST "VM: functions"
     assert_eq(vm:stack_sz(), 1)
     assert_eq(vm:to_integer(-1), -1)
 end
+
+do
+    TEST "VM: jumps (jmp + bnz)"
+    local vm = VM.new():load(assemble [[
+        .func 0
+            jmp     @x1
+            pushi   5
+        @x1:
+            pushi   1
+            bnz     @x2
+            bz      @x3
+        @x2:
+            pushi   6
+            ret
+        @x3:
+            pushi   7
+            ret
+    ]]):call(0)
+
+    assert_eq(vm:to_integer(-1), 6)
+end
+
+do
+    TEST "VM: jumps (bz)"
+    pprint(assemble [[
+                   .func 0
+                       jmp     @x1
+                       pushi   5
+                   @x1:
+                       pushi   0
+                       bnz     @x2
+                       pushi   0
+                       bz      @x3
+                   @x2:
+                       pushi   6
+                       ret
+                   @x3:
+                       pushi   7
+                       ret
+               ]])
+    local vm = VM.new():set_debug(true):load(assemble [[
+        .func 0
+            jmp     @x1
+            pushi   5
+        @x1:
+            pushi   0
+            bnz     @x2
+            bz      @x3
+        @x2:
+            pushi   6
+            ret
+        @x3:
+            pushi   7
+            ret
+    ]]):call(0)
+
+    assert_eq(vm:to_integer(-1), 7)
+end
+
 
 print('End.')
