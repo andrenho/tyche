@@ -8,9 +8,9 @@ Progress of the Lua port:
 - [x] Functions
   - [x] Calling functions
   - [x] Calling functions with parameters
-- [ ] Control flow
-  - [ ] Labels in Assembly
-  - [ ] Recursion
+- [x] Control flow
+  - [x] Labels in Assembly
+  - [x] Recursion
 - [ ] Strings
   - [ ] From constants
   - [ ] Garbage collection

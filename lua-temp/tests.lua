@@ -92,7 +92,6 @@ do TEST "Parser: labels"
     }
 
     local found = assemble(source)
-    pprint(found)
     assert_eq(found, expected)
 end
 
