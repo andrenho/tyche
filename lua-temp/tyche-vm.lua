@@ -8,6 +8,8 @@ local ARITH_LOGIC_OPS = {
     ['and']=true, ['or']=true, xor=true, pow=true, shl=true, shr=true, mod=true
 }
 
+math.randomseed(os.time())
+
 ----------------------
 --                  --
 --       UTIL       --
@@ -25,6 +27,8 @@ local function validate_value(v)
         assert(type(v.value) == 'number')
     elseif v.type == 'function' then
         assert(type(v.value) == 'number' and v.value >= 0, "function must be a positive number")
+    elseif v.type == 'string' then
+        assert(type(v.ref) == 'number' or type(v.const_ref) == 'number')
     end
 end
 
@@ -202,6 +206,32 @@ EXPR.shr.integer.integer = function(vm, b, a) vm:push_integer(a >> b) end
 
 ----------------------
 --                  --
+--      HEAP        --
+--                  --
+----------------------
+
+local Heap = {}
+Heap.__index = Heap
+
+function Heap.new()
+    return setmetatable({
+        items = {}
+    }, Heap)
+end
+
+function Heap:add_value(value)
+    local key = math.random(math.mininteger, math.maxinteger)
+    while self.items[key] do key = math.random(math.mininteger, math.maxinteger) end
+    self.items[key] = value
+    return key
+end
+
+function Heap:get_value(key)
+    return self.items[key]
+end
+
+----------------------
+--                  --
 --       VM         --
 --                  --
 ----------------------
@@ -212,6 +242,7 @@ VM.__index = VM
 function VM.new()
     return setmetatable({
         stack = Stack.new(),
+        heap = Heap.new(),
         code = Code.new(),
         loc = {},
         debug = false,
@@ -239,10 +270,17 @@ end
 
 function VM:push_integer(n)
     self.stack:push({ type = 'integer', value = n })
+    return self
+end
+
+function VM:push_string(str)
+    self.stack:push({ type = 'string', ref = self.heap:add_value(str) })
+    return self
 end
 
 function VM:push_nil()
     self.stack:push({ type = 'nil' })
+    return self
 end
 
 --
@@ -263,6 +301,18 @@ function VM:to_integer(idx)
     return value.value
 end
 
+function VM:to_string(idx)
+    local value = self.stack[idx]
+    if value.type ~= 'string' then error("Type error: not a string") end
+    if value.const_ref then
+        return self.code.bytecode.constants[value.const_ref]
+    elseif value.ref then
+        return self.heap:get_value(value.ref)
+    else
+        error()
+    end
+end
+
 function VM:format_value(v)
     if v.type == 'integer' or v.type == 'real' then
         return tostring(v.value)
@@ -273,6 +323,7 @@ function VM:format_value(v)
     elseif v.type == 'nil' then
         return 'nil'
     else
+        print('warning: cannot convert from type ' .. v.type)
         return pprint.pformat(v)
     end
 end
@@ -353,6 +404,14 @@ function VM:_step()
     elseif op.operator == 'pushf' then
         assert(op.operand >= 0)
         self.stack:push({ type = 'function', value = op.operand })
+
+    elseif op.operator == 'pushc' then
+        local c = self.code.bytecode.constants[op.operand]
+        if type(c) == 'string' then
+            self.stack:push({ type = 'string', const_ref = op.operand })
+        elseif type(c) == 'number' then
+            error('REAL consts not supported for now.')
+        end
 
     elseif op.operator == 'dup' then
         self.stack:push(self.stack:peek())

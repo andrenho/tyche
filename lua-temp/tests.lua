@@ -242,8 +242,7 @@ do TEST "VM: functions"
     assert_eq(vm:to_integer(-1), -1)
 end
 
-do
-    TEST "VM: jumps (jmp + bnz)"
+do TEST "VM: jumps (jmp + bnz)"
     local vm = VM.new():load(assemble [[
         .func 0
             jmp     @x1
@@ -264,9 +263,8 @@ do
     assert_eq(vm:to_integer(-1), 6)
 end
 
-do
-    TEST "VM: jumps (bz)"
-    local vm = VM.new():set_debug(true):load(assemble [[
+do TEST "VM: jumps (bz)"
+    local vm = VM.new():load(assemble [[
         .func 0
             jmp     @x1
             pushi   5
@@ -285,6 +283,26 @@ do
 
     assert_eq(vm:to_integer(-1), 7)
 end
+
+do TEST "VM: string from const"
+    local vm = VM.new():load(assemble [[
+        .const
+            0: "Hello"
+        .func 0
+            pushc   0
+            ret
+    ]]):call(0)
+
+    assert_eq(vm:to_string(-1), "Hello")
+end
+
+do TEST "VM: managed strings"
+    local vm = VM.new():push_string("Hello")
+    assert_eq(vm:to_string(-1), "Hello")
+end
+
+-- TODO - concatenate strings
+-- TODO - collect string (GC)
 
 
 print('End.')
