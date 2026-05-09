@@ -298,10 +298,47 @@ end
 
 do TEST "VM: managed strings"
     local vm = VM.new():push_string("Hello")
+    -- print(vm:debug_heap())
     assert_eq(vm:to_string(-1), "Hello")
 end
 
--- TODO - concatenate strings
+do TEST "VM: concatenate strings"
+    local vm = VM.new():load(assemble [[
+        .const
+            0: "Hello "
+            1: "world"
+        .func 0
+            pushc   0
+            pushc   1
+            sum
+            ret
+    ]]):call(0)
+
+    -- print(vm:debug_heap())
+    assert_eq(vm:to_string(-1), "Hello world")
+    assert_eq(vm.heap:size(), 1)
+end
+
+do TEST "VM: collect strings"
+    local vm = VM.new():load(assemble [[
+        .const
+            0: "Hello "
+            1: "world"
+        .func 0
+            pushn
+            pushc   0
+            pushc   1
+            sum
+            pop
+            gc
+            ret
+    ]]):call(0)
+
+    print(vm:debug_heap())
+    assert_eq(vm:is(-1, 'nil'), true)
+    assert_eq(vm.heap:size(), 0)
+end
+
 -- TODO - collect string (GC)
 
 

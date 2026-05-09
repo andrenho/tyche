@@ -185,24 +185,25 @@ for op,_ in pairs(ARITH_LOGIC_OPS) do
     end
 end
 
-EXPR.sum.integer.integer = function(vm, b, a) vm:push_integer(a + b) end
-EXPR.sub.integer.integer = function(vm, b, a) vm:push_integer(a - b) end
-EXPR.mul.integer.integer = function(vm, b, a) vm:push_integer(a * b) end
+EXPR.sum.integer.integer = function(vm, b, a) vm:push_integer(a.value + b.value) end
+EXPR.sum.string.string   = function(vm, b, a) vm:push_string(vm:_extract_string(a) ..vm:_extract_string(b)) end
+EXPR.sub.integer.integer = function(vm, b, a) vm:push_integer(a.value - b.value) end
+EXPR.mul.integer.integer = function(vm, b, a) vm:push_integer(a.value * b.value) end
 -- TODO - div
-EXPR.idiv.integer.integer = function(vm, b, a) vm:push_integer(math.floor(a / b)) end
-EXPR.mod.integer.integer  = function(vm, b, a) vm:push_integer(a % b) end
-EXPR.eq.integer.integer   = function(vm, b, a) vm:push_integer((a == b) and 1 or 0) end
-EXPR.neq.integer.integer  = function(vm, b, a) vm:push_integer((a ~= b) and 1 or 0) end
-EXPR.lt.integer.integer   = function(vm, b, a) vm:push_integer((a < b) and 1 or 0) end
-EXPR.lte.integer.integer  = function(vm, b, a) vm:push_integer((a <= b) and 1 or 0) end
-EXPR.gt.integer.integer   = function(vm, b, a) vm:push_integer((a > b) and 1 or 0) end
-EXPR.gte.integer.integer  = function(vm, b, a) vm:push_integer((a >= b) and 1 or 0) end
-EXPR['and'].integer.integer = function(vm, b, a) vm:push_integer(a & b) end
-EXPR['or'].integer.integer = function(vm, b, a) vm:push_integer(a | b) end
-EXPR.xor.integer.integer = function(vm, b, a) vm:push_integer(a ~ b) end
-EXPR.pow.integer.integer = function(vm, b, a) vm:push_integer(a ^ b) end
-EXPR.shl.integer.integer = function(vm, b, a) vm:push_integer(a << b) end
-EXPR.shr.integer.integer = function(vm, b, a) vm:push_integer(a >> b) end
+EXPR.idiv.integer.integer = function(vm, b, a) vm:push_integer(math.floor(a.value / b.value)) end
+EXPR.mod.integer.integer  = function(vm, b, a) vm:push_integer(a.value % b.value) end
+EXPR.eq.integer.integer   = function(vm, b, a) vm:push_integer((a.value == b.value) and 1 or 0) end
+EXPR.neq.integer.integer  = function(vm, b, a) vm:push_integer((a.value ~= b.value) and 1 or 0) end
+EXPR.lt.integer.integer   = function(vm, b, a) vm:push_integer((a.value < b.value) and 1 or 0) end
+EXPR.lte.integer.integer  = function(vm, b, a) vm:push_integer((a.value <= b.value) and 1 or 0) end
+EXPR.gt.integer.integer   = function(vm, b, a) vm:push_integer((a.value > b.value) and 1 or 0) end
+EXPR.gte.integer.integer  = function(vm, b, a) vm:push_integer((a.value >= b.value) and 1 or 0) end
+EXPR['and'].integer.integer = function(vm, b, a) vm:push_integer(a.value & b.value) end
+EXPR['or'].integer.integer = function(vm, b, a) vm:push_integer(a.value | b.value) end
+EXPR.xor.integer.integer = function(vm, b, a) vm:push_integer(a.value ~ b.value) end
+EXPR.pow.integer.integer = function(vm, b, a) vm:push_integer(a.value ^ b.value) end
+EXPR.shl.integer.integer = function(vm, b, a) vm:push_integer(a.value << b.value) end
+EXPR.shr.integer.integer = function(vm, b, a) vm:push_integer(a.value >> b.value) end
 
 ----------------------
 --                  --
@@ -228,6 +229,16 @@ end
 
 function Heap:get_value(key)
     return self.items[key]
+end
+
+function Heap:size()
+    local n = 0
+    for _ in pairs(self.items) do n = n + 1 end
+    return n
+end
+
+function Heap:call_gc()
+    -- TODO
 end
 
 ----------------------
@@ -301,23 +312,29 @@ function VM:to_integer(idx)
     return value.value
 end
 
-function VM:to_string(idx)
-    local value = self.stack[idx]
-    if value.type ~= 'string' then error("Type error: not a string") end
+function VM:_extract_string(value)
+    assert(value)
+    assert(value.type == 'string')
     if value.const_ref then
         return self.code.bytecode.constants[value.const_ref]
     elseif value.ref then
         return self.heap:get_value(value.ref)
     else
-        error()
+        error("Incorrect string value (nor 'const_ref' or 'ref')")
     end
+end
+
+function VM:to_string(idx)
+    local value = self.stack[idx]
+    if value.type ~= 'string' then error("Type error: not a string") end
+    return self:_extract_string(value)
 end
 
 function VM:format_value(v)
     if v.type == 'integer' or v.type == 'real' then
         return tostring(v.value)
     elseif v.type == 'string' then
-        return '"' .. v.value .. '"'
+        return self_:extract_string(v)
     elseif v.type == 'function' then
         return '@' .. tostring(v.value)
     elseif v.type == 'nil' then
@@ -340,6 +357,19 @@ function VM:debug_stack()
     return table.concat(ss)
 end
 
+function VM:debug_heap()
+    local ss = { "Heap:\n" }
+    for k,v in pairs(self.heap.items) do
+        table.insert(ss, string.format("  [%X] = ", k))
+        if type(v) == 'string' then
+            table.insert(ss, '"' .. v .. '"')
+        else
+            error('Unsupported value in heap')
+        end
+        table.insert(ss, "\n")
+    end
+    return table.concat(ss)
+end
 
 --
 -- code execution
@@ -397,8 +427,11 @@ function VM:_step()
     --
     -- stack operations
     --
+    
+    if op.operator == 'pushn' then
+        self:push_nil()
 
-    if op.operator == 'pushi' then
+    elseif op.operator == 'pushi' then
         self:push_integer(op.operand)
 
     elseif op.operator == 'pushf' then
@@ -412,6 +445,9 @@ function VM:_step()
         elseif type(c) == 'number' then
             error('REAL consts not supported for now.')
         end
+
+    elseif op.operator == 'pop' then
+        self.stack:pop()
 
     elseif op.operator == 'dup' then
         self.stack:push(self.stack:peek())
@@ -443,7 +479,7 @@ function VM:_step()
     elseif ARITH_LOGIC_OPS[op.operator] then
         local a = self.stack:pop()
         local b = self.stack:pop()
-        EXPR[op.operator][a.type][b.type](self, a.value, b.value)
+        EXPR[op.operator][a.type][b.type](self, a, b)
 
     --
     -- function management
@@ -485,6 +521,13 @@ function VM:_step()
             self:_print_stack()
             return
         end
+
+    --
+    -- memory management
+    --
+    
+    elseif op.operator == 'gc' then
+        self.heap:call_gc()
 
     --
     -- instruction not found

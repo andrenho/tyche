@@ -22,12 +22,13 @@ Stack operations:
    a0  c0 e0    pushi [int]          Push int
    a1  c1 e1    pushc [index]        Push constant
    a2  c2 e2    pushf [function]     Push function id
-00              pushz                Push zero (or false)
-01              pusht                Push true
-02              newa                 Push (create) empty array
-03              newt                 Push (create) empty table
-04              pop
-05              dup
+00              pushn                Push nil
+01              pushz                Push zero (or false)
+02              pusht                Push true
+03              newa                 Push (create) empty array
+04              newt                 Push (create) empty table
+05              pop
+06              dup
 
 Local variables:
    a3  c3 e3    pushv [int]          Push n nil values into the stack (used to init local vars)
@@ -88,6 +89,8 @@ Control flow (the destination is always a 16-bit field):
       ca        jmp [pc]             Unconditional jump
 * Jumps can only happen within the same function.
 
+Memory management:
+4b              gc                   Call garbage collector
 
 Error handling: (0xa0~0xaf)
    ???
