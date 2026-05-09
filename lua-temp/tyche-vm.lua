@@ -29,6 +29,8 @@ local function validate_value(v)
         assert(type(v.value) == 'number' and v.value >= 0, "function must be a positive number")
     elseif v.type == 'string' then
         assert(type(v.ref) == 'number' or type(v.const_ref) == 'number')
+    elseif v.type == 'array' then
+        assert(type(v.ref) == 'number')
     end
 end
 
@@ -228,6 +230,7 @@ function Heap:add_value(value)
 end
 
 function Heap:get_value(key)
+    assert(type(key) == 'number')
     return self.items[key]
 end
 
@@ -307,6 +310,11 @@ function VM:push_nil()
     return self
 end
 
+function VM:new_array()
+    self.stack:push({ type = 'array', ref = self.heap:add_value({}) })
+    return self
+end
+
 --
 -- information
 --
@@ -316,6 +324,8 @@ function VM:stack_sz()
 end
 
 function VM:is(idx, type_)
+    assert(type(idx) == "number")
+    assert(TYPE_MAP[type_])
     return self.stack[idx].type == type_
 end
 
@@ -337,6 +347,14 @@ function VM:_extract_string(value)
     end
 end
 
+function VM:_extract_array(value)
+    assert(value)
+    assert(value.type == 'array')
+    local array = self.heap:get_value(value.ref)
+    if type(array) ~= 'table' then error('Expected array') end
+    return self.heap:get_value(value.ref)
+end
+
 function VM:to_string(idx)
     local value = self.stack[idx]
     if value.type ~= 'string' then error("Type error: not a string") end
@@ -348,6 +366,11 @@ function VM:format_value(v)
         return tostring(v.value)
     elseif v.type == 'string' then
         return self_:extract_string(v)
+    elseif v.type == 'array' then
+        local array = self:_extract_array(v)
+        local tbl = {}
+        for _,vv in ipairs(array) do table.insert(tbl, self:format_value(vv)) end
+        return "[" .. table.concat(tbl, ', ') .. "]"
     elseif v.type == 'function' then
         return '@' .. tostring(v.value)
     elseif v.type == 'nil' then
@@ -365,7 +388,7 @@ function VM:debug_stack()
         for _,fp in pairs(self.stack.fps) do
             if i == fp then table.insert(ss, '^ ') end
         end
-        table.insert(ss, '[' .. self:format_value(v) .. '] ')
+        table.insert(ss, self:format_value(v) .. ' ')
     end
     return table.concat(ss)
 end
@@ -373,12 +396,7 @@ end
 function VM:debug_heap()
     local ss = { "Heap:\n" }
     for k,v in pairs(self.heap.items) do
-        table.insert(ss, string.format("  [%X] = ", k))
-        if type(v) == 'string' then
-            table.insert(ss, '"' .. v .. '"')
-        else
-            error('Unsupported value in heap')
-        end
+        table.insert(ss, string.format("  [%X] = %s", k, pprint.pformat(v)))
         table.insert(ss, "\n")
     end
     return table.concat(ss)
@@ -459,6 +477,9 @@ function VM:_step()
             error('REAL consts not supported for now.')
         end
 
+    elseif op.operator == 'newa' then
+        self:new_array()
+
     elseif op.operator == 'pop' then
         self.stack:pop()
 
@@ -484,6 +505,20 @@ function VM:_step()
         assert(op.operand >= 0)
         local a = self.stack[op.operand]
         self.stack:push(a)
+
+    --
+    -- table and array operations
+    --
+
+    elseif op.operator == 'seti' then
+        local array_ref = self.stack[-2]
+        local array = self:_extract_array(array_ref)
+        array[op.operand+1] = self.stack:pop()
+
+    elseif op.operator == 'geti' then
+        local array_ref = self.stack[-1]
+        local array = self:_extract_array(array_ref)
+        self.stack:push(array[op.operand+1])
 
     --
     -- logic/arithmetic operations

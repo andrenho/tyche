@@ -45,8 +45,8 @@ Function operations:
 Table and array operations:
 16              getkv                Get table's value based on key (pull 1 value, push 1 value)
 17              setkv                Set table's key and value (pull 2 values from stack)
-  a8  c8 e8     geta                 Get array's position value
-  a9  c9 e9     seta                 Set array's position value
+  a8  c8 e8     geti                 Get array's position value
+  a9  c9 e9     seti                 Set array's position value
 18              appnd                Add value to the end of array
 19              next                 Push the next pair into the stack (for loops)
 1a              smt                  Set value metatable
