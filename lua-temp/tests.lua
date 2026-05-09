@@ -249,6 +249,7 @@ do
         @x1:
             pushi   1
             bnz     @x2
+            pushi   1
             bz      @x3
         @x2:
             pushi   6
@@ -263,22 +264,6 @@ end
 
 do
     TEST "VM: jumps (bz)"
-    pprint(assemble [[
-                   .func 0
-                       jmp     @x1
-                       pushi   5
-                   @x1:
-                       pushi   0
-                       bnz     @x2
-                       pushi   0
-                       bz      @x3
-                   @x2:
-                       pushi   6
-                       ret
-                   @x3:
-                       pushi   7
-                       ret
-               ]])
     local vm = VM.new():set_debug(true):load(assemble [[
         .func 0
             jmp     @x1
@@ -286,6 +271,7 @@ do
         @x1:
             pushi   0
             bnz     @x2
+            pushi   0
             bz      @x3
         @x2:
             pushi   6
