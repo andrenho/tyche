@@ -365,7 +365,7 @@ function VM:format_value(v)
     if v.type == 'integer' or v.type == 'real' then
         return tostring(v.value)
     elseif v.type == 'string' then
-        return self_:extract_string(v)
+        return '"' .. self:_extract_string(v) .. '"'
     elseif v.type == 'array' then
         local array = self:_extract_array(v)
         local tbl = {}
@@ -376,7 +376,7 @@ function VM:format_value(v)
     elseif v.type == 'nil' then
         return 'nil'
     else
-        print('warning: cannot convert from type ' .. v.type)
+        print('warning: cannot convert from type ' .. tostring(v.type))
         return pprint.pformat(v)
     end
 end
@@ -396,7 +396,15 @@ end
 function VM:debug_heap()
     local ss = { "Heap:\n" }
     for k,v in pairs(self.heap.items) do
-        table.insert(ss, string.format("  [%X] = %s", k, pprint.pformat(v)))
+        if type(v) == 'string' then
+            table.insert(ss, string.format('  [%X] = "%s"', k, v))
+        elseif type(v) == 'table' then
+            table.insert(ss, string.format('  [%X] = [', k))
+            local t = {}; for _,vv in ipairs(v) do t[#t+1] = self:format_value(vv) end
+            table.insert(ss, table.concat(t, ", ") .. ']')
+        else
+            error('Unsupported type in heap')
+        end
         table.insert(ss, "\n")
     end
     return table.concat(ss)

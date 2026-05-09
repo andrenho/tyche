@@ -341,7 +341,7 @@ do TEST "VM: GC strings"
 end
 
 do TEST "VM: arrays"
-    local vm = VM.new():set_debug(true):load(assemble [[
+    local vm = VM.new():load(assemble [[
         .func 0
             newa
             pushi   10
@@ -358,5 +358,43 @@ do TEST "VM: arrays"
     assert_eq(vm:to_integer(-1), 20)
     assert_eq(vm.heap:size(), 1)
 end
+
+do TEST "VM: arrays GC"
+    local vm = VM.new():load(assemble [[
+        .func 0
+            pushn
+            newa
+            pushi   10
+            seti    0
+            pop
+            gc
+            ret
+    ]]):call(0)
+
+    assert_eq(vm.heap:size(), 0)
+end
+
+do TEST "VM: GC items (1st level)"
+    local vm = VM.new():set_debug(true):load(assemble [[
+        .const
+            0: "Hello "
+            1: "world"
+        .func 0
+            pushn
+            newa
+            pushc   0
+            pushc   1
+            sum
+            seti    0
+            gc
+            pop
+            ret
+    ]]):call(0)
+
+    pprint(vm.heap)
+    print(vm:debug_heap())
+    assert_eq(vm.heap:size(), 0)
+end
+-- TODO - arrays gc items
 
 print('End.')
