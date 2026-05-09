@@ -414,4 +414,48 @@ do TEST "VM: GC items (1st level) - all items removed"
     assert_eq(vm.heap:size(), 0)
 end
 
+do TEST "VM: GC items (2nd level) - no items removed"
+    local vm = VM.new():load(assemble [[
+        .const
+            0: "Hello "
+            1: "world"
+        .func 0
+            pushn
+            newa
+            newa
+            pushc   0
+            pushc   1
+            sum
+            seti    0
+            seti    0
+            gc
+            pop
+            ret
+    ]]):call(0)
+
+    assert_eq(vm.heap:size(), 3)
+end
+
+do TEST "VM: GC items (1st level) - all items removed"
+    local vm = VM.new():load(assemble [[
+        .const
+            0: "Hello "
+            1: "world"
+        .func 0
+            pushn
+            newa
+            newa
+            pushc   0
+            pushc   1
+            sum
+            seti    0
+            seti    0
+            pop
+            gc
+            ret
+    ]]):call(0)
+
+    assert_eq(vm.heap:size(), 0)
+end
+
 print('End.')
