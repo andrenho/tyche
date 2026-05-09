@@ -354,7 +354,7 @@ do TEST "VM: arrays"
             ret
     ]]):call(0)
 
-    print(vm:debug_heap())
+    -- print(vm:debug_heap())
     assert_eq(vm:to_integer(-1), 20)
     assert_eq(vm.heap:size(), 1)
 end
@@ -374,8 +374,8 @@ do TEST "VM: arrays GC"
     assert_eq(vm.heap:size(), 0)
 end
 
-do TEST "VM: GC items (1st level)"
-    local vm = VM.new():set_debug(true):load(assemble [[
+do TEST "VM: GC items (1st level) - no items removed"
+    local vm = VM.new():load(assemble [[
         .const
             0: "Hello "
             1: "world"
@@ -391,10 +391,27 @@ do TEST "VM: GC items (1st level)"
             ret
     ]]):call(0)
 
-    pprint(vm.heap)
-    print(vm:debug_heap())
+    assert_eq(vm.heap:size(), 2)
+end
+
+do TEST "VM: GC items (1st level) - all items removed"
+    local vm = VM.new():load(assemble [[
+        .const
+            0: "Hello "
+            1: "world"
+        .func 0
+            pushn
+            newa
+            pushc   0
+            pushc   1
+            sum
+            seti    0
+            pop
+            gc
+            ret
+    ]]):call(0)
+
     assert_eq(vm.heap:size(), 0)
 end
--- TODO - arrays gc items
 
 print('End.')

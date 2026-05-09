@@ -223,6 +223,9 @@ function Heap.new()
 end
 
 function Heap:add_value(value)
+    assert(value.type and (value.type == 'string' or value.type == 'array' or value.type == 'table'))
+    assert(value.value)
+
     local key = math.random(1, math.maxinteger)
     while self.items[key] do key = math.random(1, math.maxinteger) end
     self.items[key] = value
@@ -243,12 +246,18 @@ end
 function Heap:call_gc(roots)
     -- mark
     local marked = {}
-    for _,v in ipairs(roots) do  -- TODO - recursive, add support to array
-        if v.type == 'string' and v.ref then
+
+    local function mark(v)
+        if v.type == 'string' then
+            if v.ref then marked[v.ref] = true end
+        elseif v.type == 'array' then
             marked[v.ref] = true
-        else
-            error("Can't handle this type on GC")
+            for _,vv in ipairs(self.items[v.ref].value) do mark(vv) end
         end
+    end
+
+    for _,v in ipairs(roots) do  -- TODO - recursive, add support to array
+        mark(v)
     end
 
     -- sweep
@@ -303,7 +312,7 @@ function VM:push_integer(n)
 end
 
 function VM:push_string(str)
-    self.stack:push({ type = 'string', ref = self.heap:add_value(str) })
+    self.stack:push({ type = 'string', ref = self.heap:add_value({ type='string', value=str }) })
     return self
 end
 
@@ -313,7 +322,7 @@ function VM:push_nil()
 end
 
 function VM:new_array()
-    self.stack:push({ type = 'array', ref = self.heap:add_value({}) })
+    self.stack:push({ type = 'array', ref = self.heap:add_value({ type='array', value={} }) })
     return self
 end
 
@@ -343,7 +352,7 @@ function VM:_extract_string(value)
     if value.const_ref then
         return self.code.bytecode.constants[value.const_ref]
     elseif value.ref then
-        return self.heap:get_value(value.ref)
+        return self.heap:get_value(value.ref).value
     else
         error("Incorrect string value (nor 'const_ref' or 'ref')")
     end
@@ -354,7 +363,7 @@ function VM:_extract_array(value)
     assert(value.type == 'array')
     local array = self.heap:get_value(value.ref)
     if type(array) ~= 'table' then error('Expected array') end
-    return self.heap:get_value(value.ref)
+    return self.heap:get_value(value.ref).value
 end
 
 function VM:to_string(idx)
@@ -398,11 +407,11 @@ end
 function VM:debug_heap()
     local ss = { "Heap:\n" }
     for k,v in pairs(self.heap.items) do
-        if type(v) == 'string' then
-            table.insert(ss, string.format('  [%X] = "%s"', k, v))
-        elseif type(v) == 'table' then
+        if v.type == 'string' then
+            table.insert(ss, string.format('  [%X] = "%s"', k, v.value))
+        elseif v.type == 'array' then
             table.insert(ss, string.format('  [%X] = [', k))
-            local t = {}; for _,vv in ipairs(v) do t[#t+1] = self:format_value(vv) end
+            local t = {}; for _,vv in ipairs(v.value) do t[#t+1] = self:format_value(vv) end
             table.insert(ss, table.concat(t, ", ") .. ']')
         else
             error('Unsupported type in heap')
@@ -585,7 +594,15 @@ function VM:_step()
     --
     
     elseif op.operator == 'gc' then
+        -- if self.debug then
+        --     print('About to run GC, current heap:')
+        --     print(self:debug_heap())
+        -- end
         self.heap:call_gc(self.stack.stack)
+        -- if self.debug then
+        --     print('GC executed, this is the heap:')
+        --     print(self:debug_heap())
+        -- end
 
     --
     -- instruction not found
