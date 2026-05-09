@@ -246,6 +246,8 @@ function Heap:call_gc(roots)
     for _,v in ipairs(roots) do  -- TODO - recursive, add support to array
         if v.type == 'string' and v.ref then
             marked[v.ref] = true
+        else
+            error("Can't handle this type on GC")
         end
     end
 
