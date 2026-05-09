@@ -221,8 +221,8 @@ function Heap.new()
 end
 
 function Heap:add_value(value)
-    local key = math.random(math.mininteger, math.maxinteger)
-    while self.items[key] do key = math.random(math.mininteger, math.maxinteger) end
+    local key = math.random(1, math.maxinteger)
+    while self.items[key] do key = math.random(1, math.maxinteger) end
     self.items[key] = value
     return key
 end
@@ -237,8 +237,21 @@ function Heap:size()
     return n
 end
 
-function Heap:call_gc()
-    -- TODO
+function Heap:call_gc(roots)
+    -- mark
+    local marked = {}
+    for _,v in ipairs(roots) do  -- TODO - recursive, add support to array
+        if v.type == 'string' and v.ref then
+            marked[v.ref] = true
+        end
+    end
+
+    -- sweep
+    for key,_ in pairs(self.items) do
+        if not marked[key] then
+            self.items[key] = nil
+        end
+    end
 end
 
 ----------------------
@@ -527,7 +540,7 @@ function VM:_step()
     --
     
     elseif op.operator == 'gc' then
-        self.heap:call_gc()
+        self.heap:call_gc(self.stack.stack)
 
     --
     -- instruction not found

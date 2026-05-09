@@ -302,7 +302,7 @@ do TEST "VM: managed strings"
     assert_eq(vm:to_string(-1), "Hello")
 end
 
-do TEST "VM: concatenate strings"
+do TEST "VM: concatenate strings (GC won't delete)"
     local vm = VM.new():load(assemble [[
         .const
             0: "Hello "
@@ -311,6 +311,7 @@ do TEST "VM: concatenate strings"
             pushc   0
             pushc   1
             sum
+            gc
             ret
     ]]):call(0)
 
@@ -319,7 +320,7 @@ do TEST "VM: concatenate strings"
     assert_eq(vm.heap:size(), 1)
 end
 
-do TEST "VM: collect strings"
+do TEST "VM: GC strings"
     local vm = VM.new():load(assemble [[
         .const
             0: "Hello "
@@ -334,7 +335,7 @@ do TEST "VM: collect strings"
             ret
     ]]):call(0)
 
-    print(vm:debug_heap())
+    -- print(vm:debug_heap())
     assert_eq(vm:is(-1, 'nil'), true)
     assert_eq(vm.heap:size(), 0)
 end

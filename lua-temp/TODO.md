@@ -11,9 +11,9 @@ Progress of the Lua port:
 - [x] Control flow
   - [x] Labels in Assembly
   - [x] Recursion
-- [ ] Strings
-  - [ ] From constants
-  - [ ] Garbage collection
+- [x] Strings
+  - [x] From constants
+  - [x] Garbage collection
 - [ ] Arrays
   - [ ] Garbage collection
 - [ ] Tables
