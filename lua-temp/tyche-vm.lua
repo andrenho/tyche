@@ -14,20 +14,6 @@ local ARITH_LOGIC_OPS = {
 --                  --
 ----------------------
 
-local function format_value(v)
-    if v.type == 'integer' or v.type == 'real' then
-        return tostring(v.value)
-    elseif v.type == 'string' then
-        return '"' .. v.value .. '"'
-    elseif v.type == 'function' then
-        return '@' .. tostring(v.value)
-    elseif v.type == 'nil' then
-        return 'nil'
-    else
-        return pprint.pformat(v)
-    end
-end
-
 local function validate_value(v)
     assert(v, "value cannot be nil")
     assert(type(v) == 'table',
@@ -134,17 +120,6 @@ function Stack:fp_level()
     return #self.fps
 end
 
-function Stack:debug()
-    if #self.stack == 0 then return "empty" end
-    local ss = {}
-    for i,v in ipairs(self.stack) do
-        for _,fp in pairs(self.fps) do
-            if i == fp then table.insert(ss, '^ ') end
-        end
-        table.insert(ss, '[' .. format_value(v) .. '] ')
-    end
-    return table.concat(ss)
-end
 
 ----------------------
 --                  --
@@ -288,6 +263,33 @@ function VM:to_integer(idx)
     return value.value
 end
 
+function VM:format_value(v)
+    if v.type == 'integer' or v.type == 'real' then
+        return tostring(v.value)
+    elseif v.type == 'string' then
+        return '"' .. v.value .. '"'
+    elseif v.type == 'function' then
+        return '@' .. tostring(v.value)
+    elseif v.type == 'nil' then
+        return 'nil'
+    else
+        return pprint.pformat(v)
+    end
+end
+
+function VM:debug_stack()
+    if #self.stack.stack == 0 then return "empty" end
+    local ss = {}
+    for i,v in ipairs(self.stack.stack) do
+        for _,fp in pairs(self.stack.fps) do
+            if i == fp then table.insert(ss, '^ ') end
+        end
+        table.insert(ss, '[' .. self:format_value(v) .. '] ')
+    end
+    return table.concat(ss)
+end
+
+
 --
 -- code execution
 --
@@ -329,9 +331,9 @@ function VM:_run_until_return()
     end
 end
 
-function VM:_debug_stack()
+function VM:_print_stack()
     if self.debug then
-        print(self.stack:debug())
+        print(self:debug_stack())
     end
 end
 
@@ -397,7 +399,7 @@ function VM:_step()
         self.stack:pop_fp()
         self.stack:push(v)
         table.remove(self.loc)
-        self:_debug_stack()
+        self:_print_stack()
         return
 
     --
@@ -406,14 +408,14 @@ function VM:_step()
 
     elseif op.operator == 'jmp' then
         loc.pc = self.code:find_label(loc.f_id, op.operand)
-        self:_debug_stack()
+        self:_print_stack()
         return
 
     elseif op.operator == 'bz' then
         local v = self.stack:pop()
         if is_zero(v) then
             loc.pc = self.code:find_label(loc.f_id, op.operand)
-            self:_debug_stack()
+            self:_print_stack()
             return
         end
 
@@ -421,7 +423,7 @@ function VM:_step()
         local v = self.stack:pop()
         if not is_zero(v) then
             loc.pc = self.code:find_label(loc.f_id, op.operand)
-            self:_debug_stack()
+            self:_print_stack()
             return
         end
 
@@ -433,7 +435,7 @@ function VM:_step()
         error("Unknown operator '" .. tostring(op.operator) .. "'")
     end
 
-    self:_debug_stack()
+    self:_print_stack()
 
     loc.pc = loc.pc + op.instruction_size
 end

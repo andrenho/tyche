@@ -1,3 +1,5 @@
+#!/usr/bin/env lua
+
 local pprint = require('pprint')
 local assemble = require('tyche-as')
 local VM = require('tyche-vm')
@@ -146,7 +148,7 @@ end
 
 ----------------------
 --                  --
---     VM ARITH     --
+--       VM         --
 --                  --
 ----------------------
 
