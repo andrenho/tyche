@@ -45,12 +45,12 @@ Function operations:
 Table and array operations:
 16              getkv                Get table's value based on key (pull 1 value, push 1 value)
 17              setkv                Set table's key and value (pull 2 values from stack)
-18              geta                 Get array's position value
-19              seta                 Set array's position value (pull 2 values from stack)
-1a              appnd                Add value to the end of array
-1b              next                 Push the next pair into the stack (for loops)
-1c              smt                  Set value metatable
-1d              mt                   Get value metatable
+  a8  c8 e8     geta                 Get array's position value
+  a9  c9 e9     seta                 Set array's position value
+18              appnd                Add value to the end of array
+19              next                 Push the next pair into the stack (for loops)
+1a              smt                  Set value metatable
+1b              mt                   Get value metatable
 
 Logical/arithmetic:
 20              sum                  Sum top 2 values in stack
@@ -75,7 +75,7 @@ Logical/arithmetic:
 Other value operations:
 40              len                  Get table, array or string size
 41              type                 Get type from value at the top of the stack
-   b0           cast [type]          Cast type to another type
+   aa           cast [type]          Cast type to another type
 42              ver                  Return VM version
 
 External code:
@@ -84,9 +84,9 @@ External code:
 4a              load                 Load bytecode as function (will place function on stack)
 
 Control flow (the destination is always a 16-bit field):
-      c8        bz [pc]              Branch if zero
-      c9        bnz [pc]             Branch if not zero
-      ca        jmp [pc]             Unconditional jump
+      ca        bz [pc]              Branch if zero
+      cb        bnz [pc]             Branch if not zero
+      cc        jmp [pc]             Unconditional jump
 * Jumps can only happen within the same function.
 
 Memory management:

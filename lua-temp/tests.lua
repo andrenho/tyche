@@ -340,7 +340,23 @@ do TEST "VM: GC strings"
     assert_eq(vm.heap:size(), 0)
 end
 
--- TODO - collect string (GC)
+do TEST "VM: arrays"
+    local vm = VM.new():set_debug(true):load(assemble [
+        .func 0
+            newa
+            pushi   10
+            seta    0
+            pushi   20
+            seta    1
+            pushi   30
+            seta    2
+            geta    1
+    ]):call(0)
 
+    print(vm:debug_heap())
+    assert_eq(vm:to_integer(-1), 20)
+    assert_eq(vm:is(-2, 'array'), true)
+    assert_eq(vm.heap:size(), 1)
+end
 
 print('End.')
