@@ -28,3 +28,10 @@ Progress of the Lua port:
 
 - [ ] Assembler generate bytecode
   - [ ] VM interpret it
+
+
+## C interface
+
+- [ ] Error management (decision)
+- [ ] Format for value and heap value
+- [ ] Transparency and log levels
