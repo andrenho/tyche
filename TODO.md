@@ -1,65 +1,52 @@
-## Bytecode
+## C
 
-- [x] Byte array
-  - Auto-expand
-  - Add/retrive byte/int/float/string
-  - Should not be larger than the byte array itself
-- [x] Bytecode
-  - Add/retrive all types of data
-  - Keeps no memory except for caching
-  - [x] Refactor bytecode code
+Decisions:
+ - How to handle errors
+ - How values and heap values will be represented
+ - Transparency and log levels
 
-Improvements:
-- [x] Fixed int type (based on opcode)
-- [x] Constant type (only floats and strings for now)
-
-After some additional development:
-- [ ] Bytecode debugging info
-
-
-## VM
-
-- [x] VM
-  - [x] Code
-    - [x] Simple bytecode loader
-      - [x] Output bytecode format
-  - [x] Value object
-  - [x] Stack object
-  - [x] External interface
-  - [x] Code execution (except functions)
-  - [x] Functions
-  - [x] Print stack
-- [x] Assembler
-- [ ] VM execution
-  - [x] Stack operations (nil, integer, float, string, function)
-    - [x] Integer
-    - [x] Float
-    - [x] String
-  - [x] Expressions
-    - [x] Integer
-    - [x] Float
-    - [x] String
-  - [ ] Local/global variables
+- [ ] Makefile
+- [ ] Value and stack value
+- [ ] Stack
+  - [ ] Test application (C++?)
+- [ ] Heap
+- [ ] VM
+  - [ ] (Lua interface) call assembler
+  - [ ] (Lua) generate bytecode
+    - [ ] Labels
+  - [ ] Code
+    - [ ] Interpret bytecode (fast)
+  - [ ] Execution loop (fast)
+- [ ] VM operations
+  - [ ] Expressions
+  - [ ] Local variables
   - [ ] Functions
-  - [ ] Constants
-  - [ ] Other operations
-  - [ ] Arrays
-    - [ ] Iteration
-    - [ ] Expressions
-  - [ ] Tables
-    - [ ] Iteration
-    - [ ] Metatables
-    - [ ] Expressions
+    - [ ] With parameters
   - [ ] Control flow
-  - [ ] Compilation
+    - [ ] Recursion
+  - [ ] Strings
+    - [ ] From constants
+    - [ ] Garbage collection
+  - [ ] Arrays
+    - [ ] Garbage collection
+  - [ ] Tables
+    - [ ] Garbage collection
+    - [ ] Metatables
+    - [ ] Iteration
+  - [ ] Floats (real)
+  - [ ] Globals (?)
   - [ ] Error handling
-- [ ] C++ API
-  - [ ] Run native code on VM
-  - [ ] Run tyche code from C++
-  - [ ] C API
+    - [ ] Stack trace in case of errors
+  - [ ] Closure/upvalues
+  - [ ] Rest of opcodes
+- [ ] Prepare for release
+  - [ ] Documentation and webpage
 
-After some additional development:
-- [ ] Bytecode loader
-  - Combine multiple chunks
-  - Resolve function ids, constant ids, etc
-- [ ] Upvalues
+## Future versions
+
+- [ ] Debugging information
+- [ ] Debugger
+- [ ] Dynamic language
+- [ ] Support tools
+  - [ ] Editor syntax file, etc
+- [ ] Static language
