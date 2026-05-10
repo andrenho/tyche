@@ -10,45 +10,75 @@ VERSION_MINOR=1
 VERSION=${VERSION_MAJOR}.${VERSION_MINOR}
 
 #
+# flags/options
+#
+
+IS_CLANG := $(shell $(CC) -dM -E - < /dev/null | grep -c __clang__)
+
+WARNINGS=@config/WARNINGS
+ADD_DBG_FLAGS=
+ifeq ($(IS_CLANG),1)
+  WARNINGS += @config/WARNINGS_CLANG
+else
+  WARNINGS += @config/WARNINGS_GCC
+  ADD_DBG_FLAGS=-fanalyzer
+endif
+
+DEBUG_CFLAGS=-Og -ggdb3 ${WARNINGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined -fsanitize=leak \
+  -fno-sanitize-recover=all -fstack-protector-strong -fstack-clash-protection -fno-common ${ADD_DBG_FLAGS}
+DEBUG_LDFLAGS=-fsanitize=address
+
+RELEASE_CFLAGS=-O3 -flto=auto -march=native -mtune=native -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -fstack-protector-strong
+RELEASE_LDFLAGS=-flto=auto
+
+CFLAGS+=-std=c99 -fPIC -fvisibility=hidden -MMD -MP
+LDFLAGS+=
+
+#
 # generic targets
 #
 
 all: tyche libtyche.a libtyche.so.${VERSION}
 
-check: tyche-test
+check:
+	$(MAKE) clean
+	$(MAKE) tyche-test
 	./tyche-test
 
 clean:
-	rm -f tyche libtyche.a libtyche.so* tyche-test src/tyche.o src/tests.o lib/vm.o
+	rm -f tyche libtyche.a libtyche.so* tyche-test src/tyche.o src/tests.o lib/vm.o src/*.d lib/*.d
 
-install: tyche libtyche.a libtyche.so.${VERSION}
-	install libtyche.a libtyche.so.${VERSION} ${PREFIX}/lib
+install: tyche libtyche.a libtyche.so.${VERSION} lib/tyche.h
+	install -m 644 libtyche.a libtyche.so.${VERSION} ${PREFIX}/lib
 	install tyche ${PREFIX}/bin
-	ln -s libfoo.so.${VERSION} libfoo.so.${VERSION_MAJOR}
-	ln -s libfoo.so.${VERSION_MAJOR} libfoo.so
+	install -m 644 lib/tyche.h ${PREFIX}/include
+	ln -s ${PREFIX}/lib/libtyche.so.${VERSION} ${PREFIX}/lib/libtyche.so.${VERSION_MAJOR}
+	ln -s ${PREFIX}/lib/libtyche.so.${VERSION_MAJOR} ${PREFIX}/lib/libtyche.so
 
 uninstall:
-	rm -f ${PREFIX}/lib/libtyche.* ${PREFIX}/bin/tyche
+	rm -f ${PREFIX}/lib/libtyche.* ${PREFIX}/bin/tyche ${PREFIX}/include/tyche.h
 
-#
-# flags/options
-#
-
-CFLAGS=-fPIC
-LIBS=
+.PHONY: all check clean install uninstall
 
 #
 # executable files
 #
 
+tyche: CFLAGS += ${RELEASE_CFLAGS}
+tyche: LDFLAGS += ${RELEASE_LDFLAGS}
 tyche: src/tyche.o libtyche.a
-	$(CC) -o $@ $^ ${LIBS}
+	$(CC) -o $@ $^ ${LDFLAGS}
 
+tyche-test: CFLAGS += ${DEBUG_CFLAGS}
+tyche-test: LDFLAGS += ${DEBUG_LDFLAGS}
 tyche-test: src/tests.o libtyche.a
-	$(CC) -o $@ $^ ${LIBS}
+	$(CC) -o $@ $^ ${LDFLAGS}
 
 libtyche.a: lib/vm.o
 	ar rcs $@ $^
 
+libtyche.so.${VERSION}: LDFLAGS += ${RELEASE_LDFLAGS}
 libtyche.so.${VERSION}: lib/vm.o
-	$(CC) -shared -o $@ -Wl,-soname,libfoo.so.${VERSION_MAJOR} $^
+	$(CC) -shared -o $@ -Wl,-soname,libfoo.so.${VERSION_MAJOR} $^ ${LDFLAGS}
+
+-include $(wildcard src/*.d lib/*.d)
