@@ -1,6 +1,7 @@
 #include "tyche.h"
 
 #include <assert.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdint.h>
 
@@ -47,6 +48,11 @@ static uint32_t value_idx(VALUE v)
     return v.idx;
 }
 
+static VALUE create_value_nil()
+{
+    return (VALUE) { .type = TT_NIL };
+}
+
 static VALUE create_value_integer(int32_t v)
 {
     return (VALUE) { .type = TT_INTEGER, .i = v };
@@ -64,4 +70,9 @@ static VALUE create_value_idx(TYC_TYPE type, uint32_t idx)
         abort();
 #endif
     return (VALUE) { .type = type, .idx = idx };
+}
+
+static bool value_is_zero(VALUE v)
+{
+    return v.type == TT_NIL || (v.type == TT_INTEGER && v.i == 0);
 }
