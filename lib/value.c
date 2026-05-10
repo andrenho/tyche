@@ -15,6 +15,11 @@ typedef struct {
 
 static_assert(sizeof(VALUE) <= 8, "VALUE must be < 8 bytes");
 
+static TYC_TYPE value_type(VALUE v)
+{
+    return v.type;
+}
+
 static int32_t value_integer(VALUE v)
 {
 #ifdef CHECK_TYCHE_BUGS

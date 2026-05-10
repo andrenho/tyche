@@ -5,8 +5,8 @@ Decisions:
  - How values and heap values will be represented
  - Transparency and log levels
 
-- [ ] Makefile
-- [ ] VALUE
+- [x] Makefile
+- [x] VALUE
 - [ ] Stack
   - [ ] Test application (C++?)
 - [ ] Heap
