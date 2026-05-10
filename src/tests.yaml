@@ -1,0 +1,6 @@
+- name: Basic test
+  assembly: |
+    .func 0
+      pushi   2
+      ret
+  expected: 2

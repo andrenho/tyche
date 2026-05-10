@@ -83,8 +83,8 @@ tyche: src/tyche.o libtyche.a
 
 tyche-test: CFLAGS += ${DEBUG_CFLAGS}
 tyche-test: LDFLAGS += ${DEBUG_LDFLAGS}
-tyche-test: src/tests.o libtyche.a
-	$(CC) -o $@ $^ ${LDFLAGS}
+tyche-test: test/tests.o
+	$(CC) -o $@ $^ ${LDFLAGS} -I../lib
 
 libtyche.a: lib/vm.o
 	ar rcs $@ $^

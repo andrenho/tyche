@@ -42,17 +42,17 @@ static uint32_t value_idx(VALUE v)
     return v.idx;
 }
 
-VALUE create_value_integer(int32_t v)
+static VALUE create_value_integer(int32_t v)
 {
     return (VALUE) { .type = TT_INTEGER, .i = v };
 }
 
-VALUE create_value_real(float f)
+static VALUE create_value_real(float f)
 {
     return (VALUE) { .type = TT_INTEGER, .f = f };
 }
 
-VALUE create_value_idx(TYC_TYPE type, uint32_t idx)
+static VALUE create_value_idx(TYC_TYPE type, uint32_t idx)
 {
 #ifdef CHECK_TYCHE_BUGS
     if (type != TT_FUNCTION && type != TT_NATIVE_PTR && type != TT_ARRAY && type != TT_TABLE && type != TT_STRING && type != TT_STRING_CONST)
