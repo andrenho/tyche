@@ -1,6 +1,13 @@
+#
 # user overwritable variables
+#
 
+# install prefix
 PREFIX=/usr/local
+
+#
+# internal flags/options
+#
 
 # version
 
@@ -8,10 +15,6 @@ VERSION_MAJOR=0
 VERSION_MINOR=1
 
 VERSION=${VERSION_MAJOR}.${VERSION_MINOR}
-
-#
-# flags/options
-#
 
 IS_CLANG := $(shell $(CC) -dM -E - < /dev/null | grep -c __clang__)
 
@@ -25,13 +28,14 @@ else
 endif
 
 DEBUG_CFLAGS=-Og -ggdb3 ${WARNINGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined -fsanitize=leak \
-  -fno-sanitize-recover=all -fstack-protector-strong -fstack-clash-protection -fno-common ${ADD_DBG_FLAGS}
+  -fno-sanitize-recover=all -fstack-protector-strong -fstack-clash-protection -fno-common ${ADD_DBG_FLAGS} \
+  -DCHECK_TYCHE_BUGS=1
 DEBUG_LDFLAGS=-fsanitize=address
 
 RELEASE_CFLAGS=-O3 -flto=auto -march=native -mtune=native -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -fstack-protector-strong
 RELEASE_LDFLAGS=-flto=auto
 
-CFLAGS+=-std=c99 -fPIC -fvisibility=hidden -MMD -MP
+CFLAGS+=-std=c11 -fPIC -fvisibility=hidden
 LDFLAGS+=
 
 #
@@ -61,6 +65,13 @@ uninstall:
 .PHONY: all check clean install uninstall
 
 #
+# intermediate rules
+#
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c -o $@ $^
+
+#
 # executable files
 #
 
@@ -68,6 +79,7 @@ tyche: CFLAGS += ${RELEASE_CFLAGS}
 tyche: LDFLAGS += ${RELEASE_LDFLAGS}
 tyche: src/tyche.o libtyche.a
 	$(CC) -o $@ $^ ${LDFLAGS}
+	strip $@
 
 tyche-test: CFLAGS += ${DEBUG_CFLAGS}
 tyche-test: LDFLAGS += ${DEBUG_LDFLAGS}
@@ -80,5 +92,3 @@ libtyche.a: lib/vm.o
 libtyche.so.${VERSION}: LDFLAGS += ${RELEASE_LDFLAGS}
 libtyche.so.${VERSION}: lib/vm.o
 	$(CC) -shared -o $@ -Wl,-soname,libfoo.so.${VERSION_MAJOR} $^ ${LDFLAGS}
-
--include $(wildcard src/*.d lib/*.d)

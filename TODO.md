@@ -6,10 +6,11 @@ Decisions:
  - Transparency and log levels
 
 - [ ] Makefile
-- [ ] Value and stack value
+- [ ] VALUE
 - [ ] Stack
   - [ ] Test application (C++?)
 - [ ] Heap
+  - [ ] Heap value
 - [ ] VM
   - [ ] (Lua interface) call assembler
   - [ ] (Lua) generate bytecode
