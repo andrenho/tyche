@@ -14,8 +14,8 @@ Progress of the Lua port:
 - [x] Strings
   - [x] From constants
   - [x] Garbage collection
-- [ ] Arrays
-  - [ ] Garbage collection
+- [x] Arrays
+  - [x] Garbage collection
 - [ ] Tables
   - [ ] Garbage collection
   - [ ] Metatables
