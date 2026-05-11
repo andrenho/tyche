@@ -30,12 +30,12 @@ endif
 DEBUG_CFLAGS=-Og -ggdb3 ${WARNINGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined -fsanitize=leak \
   -fno-sanitize-recover=all -fstack-protector-strong -fstack-clash-protection -fno-common ${ADD_DBG_FLAGS} \
   -DCHECK_TYCHE_BUGS=1
-DEBUG_LDFLAGS=-fsanitize=address
+DEBUG_LDFLAGS=-fsanitize=address -fsanitize=undefined -fsanitize=leak
 
 RELEASE_CFLAGS=-O3 -flto=auto -march=native -mtune=native -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -fstack-protector-strong
 RELEASE_LDFLAGS=-flto=auto
 
-CFLAGS+=-std=c11 -fPIC -fvisibility=hidden
+CFLAGS+=-std=c99 -fPIC -fvisibility=hidden
 LDFLAGS+=
 
 #
@@ -50,7 +50,7 @@ check:
 	./tyche-test
 
 clean:
-	rm -f tyche libtyche.a libtyche.so* tyche-test src/tyche.o src/tests.o lib/vm.o src/*.d lib/*.d
+	rm -f tyche libtyche.a libtyche.so* tyche-test **/*.o src/*.d lib/*.d
 
 install: tyche libtyche.a libtyche.so.${VERSION} lib/tyche.h
 	install -m 644 libtyche.a libtyche.so.${VERSION} ${PREFIX}/lib

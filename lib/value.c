@@ -11,10 +11,8 @@ typedef struct {
         int32_t  i;
         float    f;
         uint32_t idx;
-    };
+    } v;
 } VALUE;
-
-static_assert(sizeof(VALUE) <= 8, "VALUE must be < 8 bytes");
 
 static TYC_TYPE value_type(VALUE v)
 {
@@ -27,7 +25,7 @@ static int32_t value_integer(VALUE v)
     if (v.type != TT_INTEGER)
         abort();
 #endif
-    return v.i;
+    return v.v.i;
 }
 
 static float value_real(VALUE v)
@@ -36,7 +34,7 @@ static float value_real(VALUE v)
     if (v.type != TT_REAL)
         abort();
 #endif
-    return v.f;
+    return v.v.f;
 }
 
 static uint32_t value_idx(VALUE v)
@@ -45,7 +43,7 @@ static uint32_t value_idx(VALUE v)
     if (v.type != TT_FUNCTION && v.type != TT_NATIVE_PTR && v.type != TT_ARRAY && v.type != TT_TABLE && v.type != TT_STRING && v.type != TT_STRING_CONST)
         abort();
 #endif
-    return v.idx;
+    return v.v.idx;
 }
 
 static VALUE create_value_nil()
@@ -55,12 +53,12 @@ static VALUE create_value_nil()
 
 static VALUE create_value_integer(int32_t v)
 {
-    return (VALUE) { .type = TT_INTEGER, .i = v };
+    return (VALUE) { .type = TT_INTEGER, .v = { .i = v } };
 }
 
 static VALUE create_value_real(float f)
 {
-    return (VALUE) { .type = TT_INTEGER, .f = f };
+    return (VALUE) { .type = TT_REAL, .v = { .f = f } };
 }
 
 static VALUE create_value_idx(TYC_TYPE type, uint32_t idx)
@@ -69,10 +67,10 @@ static VALUE create_value_idx(TYC_TYPE type, uint32_t idx)
     if (type != TT_FUNCTION && type != TT_NATIVE_PTR && type != TT_ARRAY && type != TT_TABLE && type != TT_STRING && type != TT_STRING_CONST)
         abort();
 #endif
-    return (VALUE) { .type = type, .idx = idx };
+    return (VALUE) { .type = type, .v = { .idx = idx } };
 }
 
 static bool value_is_zero(VALUE v)
 {
-    return v.type == TT_NIL || (v.type == TT_INTEGER && v.i == 0);
+    return v.type == TT_NIL || (v.type == TT_INTEGER && v.v.i == 0);
 }
