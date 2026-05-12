@@ -83,3 +83,7 @@ static size_t heap_size(Heap* h)
 {
     return kh_size(h->items);
 }
+
+static void heap_gc(Heap* h, VALUE const* roots, size_t n_roots)
+{
+}
