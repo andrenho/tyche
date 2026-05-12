@@ -36,6 +36,9 @@ int main()
         assert(stack_at(&s, -1, &v) == T_OK); assert(value_integer(v) == 30);
         assert(stack_at(&s, -2, &v) == T_OK); assert(value_integer(v) == 20);
 
+        assert(stack_at(&s, 3, &v) == T_ERR_STACK_ACCESS_OUT_OF_RANGE);
+        assert(stack_at(&s, -4, &v) == T_ERR_STACK_ACCESS_OUT_OF_RANGE);
+
         assert(stack_pop(&s, NULL) == T_OK);
         assert(stack_pop(&s, NULL) == T_OK);
         assert(stack_at(&s, -1, &v) == T_OK); assert(value_integer(v) == 10);
