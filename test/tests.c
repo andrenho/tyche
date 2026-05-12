@@ -92,5 +92,20 @@ int main()
         stack_finalize(&s);
     }
 
-    // TODO - stack set
+    {
+        printf("### Heap\n");
+
+        Heap h;
+        heap_init(&h);
+
+        HEAP_KEY key1 = heap_add_string(&h, "hello");
+        HEAP_KEY key2 = heap_add_string(&h, "world");
+
+        const char* value;
+        assert(heap_get_string(&h, key1, &value) == T_OK); assert(strcmp(value, "hello") == 0);
+        assert(heap_get_string(&h, key2, &value) == T_OK); assert(strcmp(value, "world") == 0);
+        assert(heap_get_string(&h, 1000, &value) == T_ERR_HEAP_KEY_NOT_FOUND);
+
+        heap_finalize(&h);
+    }
 }

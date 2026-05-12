@@ -30,7 +30,7 @@ endif
 
 # debug and release flags
 
-DEBUG_CFLAGS=-O0 -Og -ggdb3 ${WARNINGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined \
+DEBUG_CFLAGS=-Og -ggdb3 ${WARNINGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined \
   -fno-sanitize-recover=all -fstack-protector-strong -fstack-clash-protection -fno-common ${ADD_DBG_FLAGS} \
   -DCHECK_TYCHE_BUGS=1
 DEBUG_LDFLAGS=-fsanitize=address -fsanitize=undefined
@@ -45,7 +45,7 @@ endif
 RELEASE_CFLAGS=-O3 -flto=auto -march=native -mtune=native -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -fstack-protector-strong
 RELEASE_LDFLAGS=-flto=auto
 
-CFLAGS+=-std=c99 -fPIC -fvisibility=hidden
+CFLAGS+=-std=c99 -D_GNU_SOURCE -fPIC -fvisibility=hidden
 LDFLAGS+=
 
 

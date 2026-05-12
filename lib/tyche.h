@@ -8,6 +8,7 @@ typedef enum {
 typedef enum {
     T_OK = 0,
     T_ERR_STACK_UNDERFLOW = -1, T_ERR_STACK_FP_UNDERFLOW = -2, T_ERR_STACK_ACCESS_OUT_OF_RANGE = -3,
+    T_ERR_HEAP_KEY_NOT_FOUND = -10,
 } TYC_RESULT;
 
 #endif //TYCHE_TYCHE_H
