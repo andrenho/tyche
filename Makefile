@@ -35,7 +35,8 @@ DEBUG_CFLAGS=-Og -ggdb3 ${WARNINGS} -fno-omit-frame-pointer -fsanitize=address -
   -DCHECK_TYCHE_BUGS=1
 DEBUG_LDFLAGS=-fsanitize=address -fsanitize=undefined
 
-UNAME_S := $(shell uname -s)   # apple clang doesn't support -fsanitize=leak
+# apple clang doesn't support -fsanitize=leak
+UNAME_S := $(shell uname -s)
 ifneq ($(UNAME_S),Darwin)
   DEBUG_CFLAGS += -fsanitize=leak
   DEBUG_LDFLAGS += -fsanitize=leak

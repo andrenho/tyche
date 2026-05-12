@@ -55,7 +55,8 @@ static TYC_RESULT stack_peek(Stack* s, VALUE* v_out)
 {
     if (s->stack_n < stack_top_fp(s))
         return T_ERR_STACK_UNDERFLOW;
-    *v_out = s->stack[s->stack_n - 1];
+    if (v_out)
+        *v_out = s->stack[s->stack_n - 1];
     return T_OK;
 }
 
@@ -73,9 +74,17 @@ static size_t stack_len(Stack* s)
     return s->stack_n - stack_top_fp(s);
 }
 
-static VALUE stack_get(Stack* s, int32_t key)
+static TYC_RESULT stack_at(Stack* s, int32_t key, VALUE* v)
 {
-    abort(); // TODO
+    if (key >= 0) {
+        *v = s->stack[stack_top_fp(s) + key];
+    } else {
+        if (stack_top_fp(s) + s->stack_n + key < 0)
+            return T_ERR_STACK_ACCESS_OUT_OF_RANGE;
+        *v = s->stack[s->stack_n + key];
+    }
+
+    return T_OK;
 }
 
 static void stack_set(Stack* s, int32_t key, VALUE v)
