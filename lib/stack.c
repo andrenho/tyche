@@ -81,7 +81,7 @@ static TYC_RESULT stack_at(Stack* s, int32_t key, VALUE* v)
             return T_ERR_STACK_ACCESS_OUT_OF_RANGE;
         *v = s->stack[stack_top_fp(s) + key];
     } else {
-        if ((int) stack_top_fp(s) + (int) s->stack_n + key < 0)
+        if ((int) s->stack_n + key < (int) stack_top_fp(s))
             return T_ERR_STACK_ACCESS_OUT_OF_RANGE;
         *v = s->stack[s->stack_n + key];
     }
@@ -96,7 +96,7 @@ static TYC_RESULT stack_set(Stack* s, int32_t key, VALUE v)
             return T_ERR_STACK_ACCESS_OUT_OF_RANGE;
         s->stack[stack_top_fp(s) + key] = v;
     } else {
-        if ((int) stack_top_fp(s) + (int) s->stack_n + key < 0)
+        if ((int) s->stack_n + key < (int) stack_top_fp(s))
             return T_ERR_STACK_ACCESS_OUT_OF_RANGE;
         s->stack[s->stack_n + key] = v;
     }
