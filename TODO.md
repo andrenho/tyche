@@ -7,8 +7,8 @@ Decisions:
 
 - [x] Makefile
 - [x] VALUE
-- [ ] Stack
-  - [ ] Test application (C++?)
+- [x] Stack
+  - [x] Test application
 - [ ] Heap
   - [ ] Heap value
 - [ ] VM
