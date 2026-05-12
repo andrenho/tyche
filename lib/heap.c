@@ -84,6 +84,36 @@ static size_t heap_size(Heap* h)
     return kh_size(h->items);
 }
 
+//
+// GC
+//
+
+KHASH_MAP_INIT_INT(MARK, bool)
 static void heap_gc(Heap* h, VALUE const* roots, size_t n_roots)
 {
+    //
+    // mark
+    //
+
+    khash_t(MARK) *marked = kh_init(MARK);
+
+    for (size_t i = 0; i < n_roots; ++i) {
+        if (value_type(roots[i]) == TT_STRING) {
+            int ret;
+            khiter_t k = kh_put(MARK, marked, value_idx(roots[i]), &ret);
+            kh_value(marked, k) = true;
+        }
+    }
+
+    //
+    // sweep
+    //
+
+    for (khiter_t k = kh_begin(marked); k != kh_end(marked); ++k) {
+        HEAP_KEY key = kh_value(marked, k);
+        khiter_t item = kh_get(HEAP, h->items, key);
+        kh_del(HEAP, h->items, item);
+    }
+
+    kh_destroy(MARK, marked);
 }
