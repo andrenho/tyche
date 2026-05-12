@@ -89,7 +89,7 @@ static TYC_RESULT stack_at(Stack* s, int32_t key, VALUE* v)
     return T_OK;
 }
 
-static void stack_set(Stack* s, int32_t key, VALUE v)
+static TYC_RESULT stack_set(Stack* s, int32_t key, VALUE v)
 {
     abort(); // TODO
 }

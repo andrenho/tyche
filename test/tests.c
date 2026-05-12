@@ -37,6 +37,10 @@ int main()
         assert(stack_at(&s, 3, &v) == T_ERR_STACK_ACCESS_OUT_OF_RANGE);
         assert(stack_at(&s, -4, &v) == T_ERR_STACK_ACCESS_OUT_OF_RANGE);
 
+        assert(stack_set(&s, 1, create_value_integer(99)) == T_OK);
+        assert(stack_at(&s, 1, &v) == T_OK); assert(value_integer(v) == 99);
+        assert(stack_at(&s, -2, &v) == T_OK); assert(value_integer(v) == 99);
+
         assert(stack_pop(&s, NULL) == T_OK);
         assert(stack_pop(&s, NULL) == T_OK);
         assert(stack_at(&s, -1, &v) == T_OK); assert(value_integer(v) == 10);
@@ -84,4 +88,6 @@ int main()
 
         stack_finalize(&s);
     }
+
+    // TODO - stack set
 }
