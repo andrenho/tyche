@@ -9,7 +9,6 @@
 
 int main()
 {
-    // values
     {
         printf("### Values\n");
         assert(value_type(create_value_integer(42)) == TT_INTEGER);
@@ -18,7 +17,6 @@ int main()
         assert(value_idx(create_value_idx(TT_FUNCTION, 42)) == 42);
     }
 
-    // stack
     {
         printf("### Stack\n");
 
@@ -50,4 +48,40 @@ int main()
         stack_finalize(&s);
     }
 
+    {
+        printf("### Stack with frame pointer\n");
+
+        Stack s;
+        stack_init(&s);
+
+        stack_push(&s, create_value_integer(10));
+        stack_push(&s, create_value_integer(20));
+        stack_push_fp(&s);
+        stack_push(&s, create_value_integer(30));
+        stack_push(&s, create_value_integer(40));
+        stack_push(&s, create_value_integer(50));
+
+        VALUE v;
+        assert(stack_len(&s) == 3);
+        assert(stack_at(&s, 0, &v) == T_OK); assert(value_integer(v) == 30);
+        assert(stack_at(&s, 1, &v) == T_OK); assert(value_integer(v) == 40);
+        assert(stack_at(&s, -1, &v) == T_OK); assert(value_integer(v) == 50);
+        assert(stack_at(&s, -2, &v) == T_OK); assert(value_integer(v) == 40);
+
+        assert(stack_at(&s, 3, &v) == T_ERR_STACK_ACCESS_OUT_OF_RANGE);
+        assert(stack_at(&s, -4, &v) == T_ERR_STACK_ACCESS_OUT_OF_RANGE);
+
+        stack_pop_fp(&s);
+
+        assert(stack_len(&s) == 2);
+        assert(stack_at(&s, 0, &v) == T_OK); assert(value_integer(v) == 10);
+        assert(stack_at(&s, 1, &v) == T_OK); assert(value_integer(v) == 20);
+        assert(stack_at(&s, -1, &v) == T_OK); assert(value_integer(v) == 20);
+        assert(stack_at(&s, -2, &v) == T_OK); assert(value_integer(v) == 10);
+
+        assert(stack_at(&s, 2, &v) == T_ERR_STACK_ACCESS_OUT_OF_RANGE);
+        assert(stack_at(&s, -3, &v) == T_ERR_STACK_ACCESS_OUT_OF_RANGE);
+
+        stack_finalize(&s);
+    }
 }
