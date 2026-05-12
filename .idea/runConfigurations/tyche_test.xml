@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="tyche-test" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="tyche" TARGET_NAME="tyche-test" CONFIG_NAME="tyche-test" version="1" RUN_TARGET_PROJECT_NAME="tyche" RUN_TARGET_NAME="tyche-test">
+    <envs>
+      <env name="MallocNanoZone" value="0" />
+    </envs>
+    <method v="2">
+      <option name="ToolBeforeRunTask" enabled="true" actionId="Tool_External Tools_clean" />
+      <option name="CLION.COMPOUND.BUILD" enabled="true" />
+    </method>
+  </configuration>
+</component>
