@@ -30,7 +30,7 @@ endif
 
 # debug and release flags
 
-DEBUG_CFLAGS=-Og -ggdb3 ${WARNINGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined \
+DEBUG_CFLAGS=-O0 -Og -ggdb3 ${WARNINGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined \
   -fno-sanitize-recover=all -fstack-protector-strong -fstack-clash-protection -fno-common ${ADD_DBG_FLAGS} \
   -DCHECK_TYCHE_BUGS=1
 DEBUG_LDFLAGS=-fsanitize=address -fsanitize=undefined
