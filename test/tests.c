@@ -135,6 +135,33 @@ int main()
     }
 
     {
+        printf("### Table - string index\n");
+
+        Heap* h = heap_new();
+        Table* t = table_new(h);
+
+        VALUE key1 = create_value_idx(TT_STRING, heap_add_string(h, "key1"));
+        VALUE key2 = create_value_idx(TT_STRING, heap_add_string(h, "key2"));
+
+        table_set(t, key1, create_value_integer(100));
+        table_set(t, key2, create_value_integer(200));
+
+        VALUE key1b = create_value_idx(TT_STRING, heap_add_string(h, "key1"));
+        VALUE key2b = create_value_idx(TT_STRING, heap_add_string(h, "key2"));
+
+        VALUE v;
+        assert(table_get(t, key1b, &v) == T_OK); assert(value_integer(v) == 100);
+        assert(table_get(t, key2b, &v) == T_OK); assert(value_integer(v) == 200);
+
+        table_del(t, key2b);
+        assert(table_get(t, key1b, &v) == T_OK);
+        assert(table_get(t, key2b, &v) == T_ERR_TABLE_KEY_NOT_FOUND);
+
+        table_destroy(t);
+        heap_destroy(h);
+    }
+
+    {
         printf("### Heap - strings\n");
 
         Heap* h = heap_new();
