@@ -9,6 +9,11 @@ TYC_TYPE value_type(VALUE v)
     return v.type;
 }
 
+bool type_is_collectable(TYC_TYPE t)
+{
+    return t == TT_STRING || t == TT_ARRAY || t == TT_TABLE;
+}
+
 int32_t value_integer(VALUE v)
 {
 #ifdef CHECK_TYCHE_BUGS

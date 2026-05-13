@@ -4,6 +4,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #define EQ(a, b) (memcmp(a, b) == 0)
 
@@ -116,21 +117,28 @@ int main()
         stack_push(s, create_value_idx(TT_STRING, heap_add_string(h, "item2")));
         stack_push(s, create_value_idx(TT_STRING, heap_add_string(h, "item3")));
 
-        /*
+        size_t v_sz;
+        VALUE* v_idx;
+
         assert(heap_size(h) == 3);
-        heap_gc(h, s->stack, s->stack_n);
+        v_sz = stack_collectable_array(s, &v_idx);
+        heap_gc(h, v_idx, v_sz);
+        free(v_idx);
         assert(heap_size(h) == 3);
 
         stack_pop(s, NULL);
 
         assert(heap_size(h) == 3);
-        heap_gc(&h, s.stack, s.stack_n);
+        v_sz = stack_collectable_array(s, &v_idx);
+        heap_gc(h, v_idx, v_sz);
+        free(v_idx);
         assert(heap_size(h) == 2);
 
         stack_pop(s, NULL);
-        heap_gc(&h, s.stack, s.stack_n);
+        v_sz = stack_collectable_array(s, &v_idx);
+        heap_gc(h, v_idx, v_sz);
+        free(v_idx);
         assert(heap_size(h) == 1);
-         */
 
         heap_destroy(h);
         stack_destroy(s);

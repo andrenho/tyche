@@ -135,3 +135,14 @@ size_t stack_fp_level(Stack* s)
 {
     return s->fp_n;
 }
+
+size_t stack_collectable_array(Stack* s, VALUE** values)
+{
+    size_t j = 0;
+    *values = xmalloc(stack_len(s) * sizeof(VALUE));
+
+    for (size_t i = 0; i < s->stack_n; ++i)
+        if (type_is_collectable(s->stack[i].type))
+            (*values)[j++] = s->stack[i];
+    return j;
+}

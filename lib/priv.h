@@ -30,6 +30,8 @@ typedef struct {
 } VALUE;
 
 TYC_TYPE value_type(VALUE v);
+bool     type_is_collectable(TYC_TYPE t);
+
 int32_t  value_integer(VALUE v);
 float    value_real(VALUE v);
 uint32_t value_idx(VALUE v);
@@ -62,6 +64,8 @@ size_t     stack_top_fp(Stack* s);
 TYC_RESULT stack_push_fp(Stack* s);
 TYC_RESULT stack_pop_fp(Stack* s);
 size_t     stack_fp_level(Stack* s);
+
+size_t     stack_collectable_array(Stack* s, VALUE** values);
 
 //
 // HEAP
