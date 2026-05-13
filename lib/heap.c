@@ -42,10 +42,8 @@ static void heap_free_item(HeapValue value)
             break;
         case TH_ARRAY:
             abort();  // not implemented yet
-            break;
         case TH_TABLE:
             abort();  // not implemented yet
-            break;
         default:
             __builtin_unreachable();
     }
@@ -75,6 +73,9 @@ HEAP_KEY heap_add_string(Heap* h, const char* value)
     } while (k != kh_end(h->items));
 
     k = kh_put(HEAP, h->items, key, &ret);
+    if (ret < 0)
+        out_of_memory();
+
     kh_value(h->items, k) = (HeapValue) {
             .type = TH_STRING,
             .value = { .str = strdup(value) }

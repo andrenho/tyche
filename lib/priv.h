@@ -8,6 +8,27 @@
 #include <stddef.h>
 
 //
+// TYPE DECLARATION
+//
+
+typedef struct {
+    TYC_TYPE type;
+    union {
+        int32_t  i;
+        float    f;
+        uint32_t idx;
+    } v;
+} VALUE;
+
+typedef struct Stack Stack;
+typedef struct Array Array;
+typedef struct Table Table;
+typedef struct Heap  Heap;
+
+typedef uint32_t HEAP_KEY;
+typedef uint64_t TABLE_HASH;
+
+//
 // UTILS
 //
 
@@ -19,15 +40,6 @@ void* xrealloc(void* p, size_t n);
 //
 // VALUE
 //
-
-typedef struct {
-    TYC_TYPE type;
-    union {
-        int32_t  i;
-        float    f;
-        uint32_t idx;
-    } v;
-} VALUE;
 
 TYC_TYPE value_type(VALUE v);
 bool     type_is_collectable(TYC_TYPE t);
@@ -45,8 +57,6 @@ VALUE create_value_idx(TYC_TYPE type, uint32_t idx);
 //
 // STACK
 //
-
-typedef struct Stack Stack;
 
 Stack*     stack_new(void);
 void       stack_destroy(Stack* s);
@@ -71,8 +81,6 @@ size_t     stack_collectable_array(Stack const* s, VALUE** values);
 // HEAP ARRAY
 //
 
-typedef struct Array Array;
-
 Array* array_new(void);
 void   array_destroy(Array* a);
 
@@ -85,9 +93,7 @@ void   array_append(Array* a, VALUE v);
 // HEAP TABLE
 //
 
-typedef struct Table Table;
-
-Table* table_new(void);
+Table* table_new(Heap const* heap);
 void   table_destroy(Table* t);
 
 size_t table_len(Table* t);
@@ -97,10 +103,6 @@ void   table_set(Table* t, VALUE key, VALUE value);
 //
 // HEAP
 //
-
-typedef struct Heap Heap;
-
-typedef uint32_t HEAP_KEY;
 
 Heap*    heap_new(void);
 void     heap_destroy(Heap* h);
