@@ -45,7 +45,7 @@ endif
 RELEASE_CFLAGS=-O3 -flto=auto -march=native -mtune=native -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -fstack-protector-strong
 RELEASE_LDFLAGS=-flto=auto
 
-CFLAGS+=-std=c99 -D_GNU_SOURCE -fPIC -fvisibility=hidden
+CFLAGS+=-std=c99 -D_GNU_SOURCE -fPIC -fvisibility=hidden -isystem lib/contrib -MMD -MP
 LDFLAGS+=
 
 
@@ -61,7 +61,7 @@ check:
 	./tyche-test
 
 clean:
-	rm -f tyche libtyche.a libtyche.so* tyche-test **/*.o src/*.d lib/*.d
+	rm -f tyche libtyche.a libtyche.so* tyche-test **/*.o **/*.d
 
 install: tyche libtyche.a libtyche.so.${VERSION} lib/tyche.h
 	install -m 644 libtyche.a libtyche.so.${VERSION} ${PREFIX}/lib
@@ -86,6 +86,8 @@ uninstall:
 # executable files
 #
 
+LIB_SRC=lib/value.o lib/stack.o lib/heap.o lib/vm.o
+
 tyche: CFLAGS += ${RELEASE_CFLAGS}
 tyche: LDFLAGS += ${RELEASE_LDFLAGS}
 tyche: src/tyche.o libtyche.a
@@ -94,12 +96,14 @@ tyche: src/tyche.o libtyche.a
 
 tyche-test: CFLAGS += ${DEBUG_CFLAGS}
 tyche-test: LDFLAGS += ${DEBUG_LDFLAGS}
-tyche-test: test/tests.o
+tyche-test: test/tests.o libtyche.a
 	$(CC) -o $@ $^ ${LDFLAGS} -I../lib
 
-libtyche.a: lib/vm.o
+libtyche.a: ${LIB_SRC}
 	ar rcs $@ $^
 
 libtyche.so.${VERSION}: LDFLAGS += ${RELEASE_LDFLAGS}
-libtyche.so.${VERSION}: lib/vm.o
+libtyche.so.${VERSION}: ${LIB_SRC}
 	$(CC) -shared -o $@ -Wl,-soname,libfoo.so.${VERSION_MAJOR} $^ ${LDFLAGS}
+
+-include $(LIB_SRC:.o=.d)

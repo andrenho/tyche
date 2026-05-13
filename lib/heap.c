@@ -1,12 +1,9 @@
-#include "stack.c"
+#include "priv.h"
 
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
 #include "khash.h"
-
-typedef int HEAP_KEY;
 
 typedef enum {
     TH_STRING, TH_ARRAY, TH_TABLE,
@@ -21,13 +18,15 @@ typedef struct {
 } HeapValue;
 KHASH_MAP_INIT_INT64(HEAP, HeapValue)
 
-typedef struct {
+struct Heap {
     khash_t(HEAP) *items;
-} Heap;
+};
 
-static void heap_init(Heap* h)
+Heap* heap_new()
 {
+    Heap* h = calloc(1, sizeof(Heap));
     h->items = kh_init(HEAP);
+    return h;
 }
 
 static void heap_free_item(HeapValue value)
@@ -42,10 +41,12 @@ static void heap_free_item(HeapValue value)
         case TH_TABLE:
             abort();  // not implemented yet
             break;
+        default:
+            __builtin_unreachable();
     }
 }
 
-static void heap_finalize(Heap* h)
+void heap_destroy(Heap* h)
 {
     for (khiter_t k = kh_begin(h->items); k != kh_end(h->items); ++k) {
         if (kh_exist(h->items, k)) {
@@ -54,9 +55,10 @@ static void heap_finalize(Heap* h)
         }
     }
     kh_destroy(HEAP, h->items);
+    free(h);
 }
 
-static HEAP_KEY heap_add_string(Heap* h, const char* value)
+HEAP_KEY heap_add_string(Heap* h, const char* value)
 {
     int ret;
     khiter_t k;
@@ -76,8 +78,7 @@ static HEAP_KEY heap_add_string(Heap* h, const char* value)
     return key;
 }
 
-#include <stdio.h>
-static TYC_RESULT heap_get_string(Heap* h, HEAP_KEY key, const char** value)
+TYC_RESULT heap_get_string(Heap* h, HEAP_KEY key, const char** value)
 {
     khiter_t k = kh_get(HEAP, h->items, key);
     bool is_missing = (k == kh_end(h->items));
@@ -87,7 +88,7 @@ static TYC_RESULT heap_get_string(Heap* h, HEAP_KEY key, const char** value)
     return T_OK;
 }
 
-static size_t heap_size(Heap* h)
+size_t heap_size(Heap* h)
 {
     return kh_size(h->items);
 }
@@ -98,7 +99,7 @@ static size_t heap_size(Heap* h)
 
 KHASH_MAP_INIT_INT64(MARK, bool)
 
-static void heap_gc(Heap* h, VALUE const* roots, size_t n_roots)
+void heap_gc(Heap* h, VALUE const* roots, size_t n_roots)
 {
     //
     // mark

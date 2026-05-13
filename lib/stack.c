@@ -1,20 +1,21 @@
-#include "value.c"
+#include "priv.h"
 
+#include <assert.h>
 #include <stdlib.h>
 
-typedef struct {
+struct Stack {
     VALUE*    stack;
     size_t    stack_n;
     size_t    stack_cap;
     uint32_t* fp;
     size_t    fp_n;
     size_t    fp_cap;
-} Stack;
+};
 
-static TYC_RESULT stack_push_fp(Stack* s);
-
-static void stack_init(Stack* s)
+Stack* stack_new()
 {
+    Stack* s = calloc(1, sizeof(Stack));
+
     s->stack_n = s->fp_n = 0;
     s->stack_cap = 64;
     s->fp_cap = 8;
@@ -25,15 +26,18 @@ static void stack_init(Stack* s)
     assert(s->fp);
 
     stack_push_fp(s);
+
+    return s;
 }
 
-static void stack_finalize(Stack* s)
+void stack_destroy(Stack* s)
 {
     free(s->stack);
     free(s->fp);
+    free(s);
 }
 
-static TYC_RESULT stack_push(Stack* s, VALUE v)
+TYC_RESULT stack_push(Stack* s, VALUE v)
 {
     if (s->stack_n == s->stack_cap) {
         s->stack_cap *= 2;
@@ -46,12 +50,12 @@ static TYC_RESULT stack_push(Stack* s, VALUE v)
     return T_OK;
 }
 
-static size_t stack_top_fp(Stack* s)
+size_t stack_top_fp(Stack* s)
 {
     return s->fp[s->fp_n - 1];
 }
 
-static TYC_RESULT stack_peek(Stack* s, VALUE* v_out)
+TYC_RESULT stack_peek(Stack* s, VALUE* v_out)
 {
     if (s->stack_n <= stack_top_fp(s))
         return T_ERR_STACK_UNDERFLOW;
@@ -60,7 +64,7 @@ static TYC_RESULT stack_peek(Stack* s, VALUE* v_out)
     return T_OK;
 }
 
-static TYC_RESULT stack_pop(Stack* s, VALUE* v_out)
+TYC_RESULT stack_pop(Stack* s, VALUE* v_out)
 {
     TYC_RESULT err = stack_peek(s, v_out);
     if (err)
@@ -69,12 +73,12 @@ static TYC_RESULT stack_pop(Stack* s, VALUE* v_out)
     return T_OK;
 }
 
-static size_t stack_len(Stack* s)
+size_t stack_len(Stack* s)
 {
     return s->stack_n - stack_top_fp(s);
 }
 
-static TYC_RESULT stack_at(Stack* s, int32_t key, VALUE* v)
+TYC_RESULT stack_at(Stack* s, int32_t key, VALUE* v)
 {
     if (key >= 0) {
         if ((int) stack_top_fp(s) + key >= (int) s->stack_n)
@@ -89,7 +93,7 @@ static TYC_RESULT stack_at(Stack* s, int32_t key, VALUE* v)
     return T_OK;
 }
 
-static TYC_RESULT stack_set(Stack* s, int32_t key, VALUE v)
+TYC_RESULT stack_set(Stack* s, int32_t key, VALUE v)
 {
     if (key >= 0) {
         if ((int) stack_top_fp(s) + key >= (int) s->stack_n)
@@ -104,7 +108,7 @@ static TYC_RESULT stack_set(Stack* s, int32_t key, VALUE v)
     return T_OK;
 }
 
-static TYC_RESULT stack_push_fp(Stack* s)
+TYC_RESULT stack_push_fp(Stack* s)
 {
     if (s->fp_n == s->fp_cap) {
         s->fp_cap *= 2;
@@ -117,7 +121,7 @@ static TYC_RESULT stack_push_fp(Stack* s)
     return T_OK;
 }
 
-static TYC_RESULT stack_pop_fp(Stack* s)
+TYC_RESULT stack_pop_fp(Stack* s)
 {
     if (s->fp_n == 1)
         return T_ERR_STACK_FP_UNDERFLOW;
@@ -126,7 +130,7 @@ static TYC_RESULT stack_pop_fp(Stack* s)
     return T_OK;
 }
 
-static size_t stack_fp_level(Stack* s)
+size_t stack_fp_level(Stack* s)
 {
     return s->fp_n;
 }

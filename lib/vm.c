@@ -1,1 +1,1 @@
-#include "heap.c"
+#include "priv.h"
