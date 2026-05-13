@@ -16,15 +16,20 @@ typedef struct {
         // TODO - array and table
     } value;
 } HeapValue;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
 KHASH_MAP_INIT_INT64(HEAP, HeapValue)
+KHASH_MAP_INIT_INT64(MARK, bool)
+#pragma GCC diagnostic pop
 
 struct Heap {
     khash_t(HEAP) *items;
 };
 
-Heap* heap_new()
+Heap* heap_new(void)
 {
-    Heap* h = calloc(1, sizeof(Heap));
+    Heap* h = xcalloc(1, sizeof(Heap));
     h->items = kh_init(HEAP);
     return h;
 }
@@ -65,7 +70,7 @@ HEAP_KEY heap_add_string(Heap* h, const char* value)
     HEAP_KEY key;
 
     do {
-        key = rand();
+        key = (HEAP_KEY) rand();
         k = kh_get(HEAP, h->items, key);
     } while (k != kh_end(h->items));
 
@@ -97,8 +102,6 @@ size_t heap_size(Heap* h)
 // GC
 //
 
-KHASH_MAP_INIT_INT64(MARK, bool)
-
 void heap_gc(Heap* h, VALUE const* roots, size_t n_roots)
 {
     //
@@ -112,6 +115,8 @@ void heap_gc(Heap* h, VALUE const* roots, size_t n_roots)
             int ret;
             uint32_t key = value_idx(roots[i]);
             khiter_t k = kh_put(MARK, marked, key, &ret);
+            if (ret < 0)
+                out_of_memory();
             kh_value(marked, k) = true;
         }
     }
@@ -122,7 +127,7 @@ void heap_gc(Heap* h, VALUE const* roots, size_t n_roots)
 
     for (khiter_t k = kh_begin(h->items); k != kh_end(h->items); ++k) {
         if (kh_exist(h->items, k)) {
-            HEAP_KEY key = kh_key(h->items, k);
+            HEAP_KEY key = (HEAP_KEY) kh_key(h->items, k);
             if (kh_get(MARK, marked, key) == kh_end(marked)) {
                 khiter_t kk = kh_get(HEAP, h->items, key);
                 heap_free_item(kh_value(h->items, kk));

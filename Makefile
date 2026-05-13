@@ -76,17 +76,10 @@ uninstall:
 .PHONY: all check clean install uninstall
 
 #
-# intermediate rules
-#
-
-%.o: %.c
-	$(CC) $(CFLAGS) -c -o $@ $^
-
-#
 # executable files
 #
 
-LIB_SRC=lib/value.o lib/stack.o lib/heap.o lib/vm.o
+LIB_SRC=lib/value.o lib/stack.o lib/heap.o lib/vm.o lib/utils.o
 
 tyche: CFLAGS += ${RELEASE_CFLAGS}
 tyche: LDFLAGS += ${RELEASE_LDFLAGS}

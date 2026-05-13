@@ -36,7 +36,7 @@ uint32_t value_idx(VALUE v)
     return v.v.idx;
 }
 
-VALUE create_value_nil()
+VALUE create_value_nil(void)
 {
     return (VALUE) { .type = TT_NIL };
 }

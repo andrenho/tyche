@@ -8,6 +8,15 @@
 #include <stddef.h>
 
 //
+// UTILS
+//
+
+__attribute__((noreturn)) void out_of_memory(void);
+void* xmalloc(size_t n);
+void* xcalloc(size_t n, size_t size);
+void* xrealloc(void* p, size_t n);
+
+//
 // VALUE
 //
 
@@ -26,7 +35,7 @@ float    value_real(VALUE v);
 uint32_t value_idx(VALUE v);
 bool     value_is_zero(VALUE v);
 
-VALUE create_value_nil();
+VALUE create_value_nil(void);
 VALUE create_value_integer(int32_t v);
 VALUE create_value_real(float f);
 VALUE create_value_idx(TYC_TYPE type, uint32_t idx);
@@ -37,7 +46,7 @@ VALUE create_value_idx(TYC_TYPE type, uint32_t idx);
 
 typedef struct Stack Stack;
 
-Stack*     stack_new();
+Stack*     stack_new(void);
 void       stack_destroy(Stack* s);
 
 TYC_RESULT stack_push(Stack* s, VALUE v);
@@ -60,9 +69,9 @@ size_t     stack_fp_level(Stack* s);
 
 typedef struct Heap Heap;
 
-typedef int HEAP_KEY;
+typedef uint32_t HEAP_KEY;
 
-Heap*    heap_new();
+Heap*    heap_new(void);
 void     heap_destroy(Heap* h);
 
 HEAP_KEY   heap_add_string(Heap* h, const char* value);

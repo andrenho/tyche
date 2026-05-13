@@ -12,15 +12,16 @@ struct Stack {
     size_t    fp_cap;
 };
 
-Stack* stack_new()
+Stack* stack_new(void)
 {
-    Stack* s = calloc(1, sizeof(Stack));
+    Stack* s = xcalloc(1, sizeof(Stack));
 
-    s->stack_n = s->fp_n = 0;
+    s->stack_n = 0;
+    s->fp_n = 0;
     s->stack_cap = 64;
     s->fp_cap = 8;
-    s->stack = malloc(s->stack_cap * sizeof s->stack[0]);
-    s->fp = malloc(s->stack_cap * sizeof s->fp[0]);
+    s->stack = xmalloc(s->stack_cap * sizeof s->stack[0]);
+    s->fp = xmalloc(s->stack_cap * sizeof s->fp[0]);
 
     assert(s->stack);
     assert(s->fp);
@@ -41,7 +42,7 @@ TYC_RESULT stack_push(Stack* s, VALUE v)
 {
     if (s->stack_n == s->stack_cap) {
         s->stack_cap *= 2;
-        s->stack = realloc(s->stack, s->stack_cap * sizeof s->stack[0]);
+        s->stack = xrealloc(s->stack, s->stack_cap * sizeof s->stack[0]);
         assert(s->stack);
     }
 
@@ -112,7 +113,7 @@ TYC_RESULT stack_push_fp(Stack* s)
 {
     if (s->fp_n == s->fp_cap) {
         s->fp_cap *= 2;
-        s->fp = realloc(s->fp, s->fp_cap * sizeof s->fp[0]);
+        s->fp = xrealloc(s->fp, s->fp_cap * sizeof s->fp[0]);
         assert(s->fp);
     }
 
