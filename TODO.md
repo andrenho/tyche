@@ -9,8 +9,11 @@ Decisions:
 - [x] VALUE
 - [x] Stack
   - [x] Test application
-- [ ] Heap
-  - [ ] Heap value
+- [x] Heap
+  - [x] Heap value
+  - [x] Strings
+  - [ ] Arrays
+  - [ ] Tables
 - [ ] VM
   - [ ] (Lua interface) call assembler
   - [ ] (Lua) generate bytecode
