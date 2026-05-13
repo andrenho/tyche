@@ -93,7 +93,7 @@ int main()
     }
 
     {
-        printf("### Heap\n");
+        printf("### Heap - strings\n");
 
         Heap h;
         heap_init(&h);
@@ -107,5 +107,36 @@ int main()
         assert(heap_get_string(&h, 1000, &value) == T_ERR_HEAP_KEY_NOT_FOUND);
 
         heap_finalize(&h);
+    }
+
+    {
+        printf("### Heap - string GC\n");
+
+        Stack s;
+        stack_init(&s);
+
+        Heap h;
+        heap_init(&h);
+
+        stack_push(&s, create_value_idx(TT_STRING, heap_add_string(&h, "item1")));
+        stack_push(&s, create_value_idx(TT_STRING, heap_add_string(&h, "item2")));
+        stack_push(&s, create_value_idx(TT_STRING, heap_add_string(&h, "item3")));
+
+        assert(heap_size(&h) == 3);
+        heap_gc(&h, s.stack, s.stack_n);
+        assert(heap_size(&h) == 3);
+
+        stack_pop(&s, NULL);
+
+        assert(heap_size(&h) == 3);
+        heap_gc(&h, s.stack, s.stack_n);
+        assert(heap_size(&h) == 2);
+
+        stack_pop(&s, NULL);
+        heap_gc(&h, s.stack, s.stack_n);
+        assert(heap_size(&h) == 1);
+
+        heap_finalize(&h);
+        stack_finalize(&s);
     }
 }
