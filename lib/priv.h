@@ -68,6 +68,20 @@ size_t     stack_fp_level(Stack* s);
 size_t     stack_collectable_array(Stack* s, VALUE** values);
 
 //
+// HEAP ARRAY
+//
+
+typedef struct Array Array;
+
+Array* array_new(void);
+void   array_destroy(Array* a);
+
+size_t array_len(Array* a);
+VALUE  array_get(Array* a, size_t pos);
+void   array_set(Array* a, size_t pos, VALUE v);
+void   array_append(Array* a, VALUE v);
+
+//
 // HEAP
 //
 

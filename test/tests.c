@@ -92,6 +92,28 @@ int main()
     }
 
     {
+        printf("### Arrays\n");
+
+        Array* a = array_new();
+        assert(array_len(a) == 0);
+
+        array_set(a, 1, create_value_integer(40));
+        assert(array_len(a) == 2);
+        assert(value_type(array_get(a, 0)) == TT_NIL);
+        assert(value_type(array_get(a, 1)) == TT_INTEGER);
+
+        array_append(a, create_value_integer(50));
+        assert(array_len(a) == 3);
+        assert(value_integer(array_get(a, 2)) == 50);
+
+        array_set(a, 2, create_value_integer(60));
+        assert(array_len(a) == 3);
+        assert(value_integer(array_get(a, 2)) == 60);
+
+        array_destroy(a);
+    }
+
+    {
         printf("### Heap - strings\n");
 
         Heap* h = heap_new();
