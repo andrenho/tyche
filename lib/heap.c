@@ -83,7 +83,7 @@ HEAP_KEY heap_add_string(Heap* h, const char* value)
     return key;
 }
 
-TYC_RESULT heap_get_string(Heap* h, HEAP_KEY key, const char** value)
+TYC_RESULT heap_get_string(Heap const* h, HEAP_KEY key, const char** value)
 {
     khiter_t k = kh_get(HEAP, h->items, key);
     bool is_missing = (k == kh_end(h->items));
@@ -93,7 +93,7 @@ TYC_RESULT heap_get_string(Heap* h, HEAP_KEY key, const char** value)
     return T_OK;
 }
 
-size_t heap_size(Heap* h)
+size_t heap_size(Heap const* h)
 {
     return kh_size(h->items);
 }

@@ -77,7 +77,7 @@ uninstall:
 # executable files
 #
 
-LIB_SRC=lib/value.o lib/stack.o lib/array.o lib/heap.o lib/vm.o lib/utils.o
+LIB_SRC=lib/value.o lib/stack.o lib/array.o lib/table.o lib/heap.o lib/vm.o lib/utils.o
 
 tyche: CFLAGS += ${RELEASE_CFLAGS}
 tyche: LDFLAGS += ${RELEASE_LDFLAGS}

@@ -24,12 +24,12 @@ void array_destroy(Array* a)
     free(a);
 }
 
-size_t array_len(Array* a)
+size_t array_len(Array const* a)
 {
     return a->n;
 }
 
-VALUE array_get(Array* a, size_t pos)
+VALUE array_get(Array const* a, size_t pos)
 {
     if (pos >= a->n)
         return create_value_nil();

@@ -51,12 +51,12 @@ TYC_RESULT stack_push(Stack* s, VALUE v)
     return T_OK;
 }
 
-size_t stack_top_fp(Stack* s)
+size_t stack_top_fp(Stack const* s)
 {
     return s->fp[s->fp_n - 1];
 }
 
-TYC_RESULT stack_peek(Stack* s, VALUE* v_out)
+TYC_RESULT stack_peek(Stack const* s, VALUE* v_out)
 {
     if (s->stack_n <= stack_top_fp(s))
         return T_ERR_STACK_UNDERFLOW;
@@ -74,12 +74,12 @@ TYC_RESULT stack_pop(Stack* s, VALUE* v_out)
     return T_OK;
 }
 
-size_t stack_len(Stack* s)
+size_t stack_len(Stack const* s)
 {
     return s->stack_n - stack_top_fp(s);
 }
 
-TYC_RESULT stack_at(Stack* s, int32_t key, VALUE* v)
+TYC_RESULT stack_at(Stack const* s, int32_t key, VALUE* v)
 {
     if (key >= 0) {
         if ((int) stack_top_fp(s) + key >= (int) s->stack_n)
@@ -131,12 +131,12 @@ TYC_RESULT stack_pop_fp(Stack* s)
     return T_OK;
 }
 
-size_t stack_fp_level(Stack* s)
+size_t stack_fp_level(Stack const* s)
 {
     return s->fp_n;
 }
 
-size_t stack_collectable_array(Stack* s, VALUE** values)
+size_t stack_collectable_array(Stack const* s, VALUE** values)
 {
     size_t j = 0;
     *values = xmalloc(stack_len(s) * sizeof(VALUE));
