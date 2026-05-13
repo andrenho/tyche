@@ -114,6 +114,27 @@ int main()
     }
 
     {
+        printf("### Table - integer index\n");
+
+        Heap* h = heap_new();
+        Table* t = table_new(h);
+
+        table_set(t, create_value_integer(10), create_value_integer(100));
+        table_set(t, create_value_integer(20), create_value_integer(200));
+
+        VALUE v;
+        assert(table_get(t, create_value_integer(10), &v) == T_OK); assert(value_integer(v) == 100);
+        assert(table_get(t, create_value_integer(20), &v) == T_OK); assert(value_integer(v) == 200);
+
+        table_del(t, create_value_integer(20));
+        assert(table_get(t, create_value_integer(10), &v) == T_OK);
+        assert(table_get(t, create_value_integer(20), &v) == T_ERR_TABLE_KEY_NOT_FOUND);
+
+        table_destroy(t);
+        heap_destroy(h);
+    }
+
+    {
         printf("### Heap - strings\n");
 
         Heap* h = heap_new();

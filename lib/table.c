@@ -66,7 +66,7 @@ static TABLE_HASH value_hash(VALUE v)
     return 0;
 }
 
-VALUE table_get(Table const* t, VALUE key)
+TYC_RESULT table_get(Table const* t, VALUE key, VALUE* value)
 {
     if (value_type(key) == TT_STRING) {
         const char* skey;
@@ -74,16 +74,18 @@ VALUE table_get(Table const* t, VALUE key)
             abort();
         khiter_t k = kh_get(TABLE_STR, t->tbl_str, skey);
         if (k == kh_end(t->tbl_str))
-            __builtin_unreachable();
-        return kh_value(t->tbl_str, k);
+            return T_ERR_TABLE_KEY_NOT_FOUND;
+        *value = kh_value(t->tbl_str, k);
 
     } else {
         TABLE_HASH hash = value_hash(key);
         khiter_t k = kh_get(TABLE_INT, t->tbl_int, hash);
         if (k == kh_end(t->tbl_int))
-            __builtin_unreachable();
-        return kh_value(t->tbl_int, k);
+            return T_ERR_TABLE_KEY_NOT_FOUND;
+        *value = kh_value(t->tbl_int, k);
     }
+
+    return T_OK;
 }
 
 void table_set(Table* t, VALUE key, VALUE value)
@@ -105,5 +107,25 @@ void table_set(Table* t, VALUE key, VALUE value)
         if (ret < 0)
             out_of_memory();
         kh_value(t->tbl_int, k) = value;
+    }
+}
+
+void table_del(Table* t, VALUE key)
+{
+    if (value_type(key) == TT_STRING) {
+        const char* skey;
+        if (heap_get_string(t->heap, value_idx(key), &skey) != T_OK)
+            abort();
+        khiter_t k = kh_get(TABLE_STR, t->tbl_str, skey);
+        if (k == kh_end(t->tbl_str))
+            return;
+        kh_del(TABLE_STR, t->tbl_str, k);
+
+    } else {
+        TABLE_HASH hash = value_hash(key);
+        khiter_t k = kh_get(TABLE_INT, t->tbl_int, hash);
+        if (k == kh_end(t->tbl_int))
+            return;
+        kh_del(TABLE_INT, t->tbl_int, k);
     }
 }

@@ -96,9 +96,10 @@ void   array_append(Array* a, VALUE v);
 Table* table_new(Heap const* heap);
 void   table_destroy(Table* t);
 
-size_t table_len(Table* t);
-VALUE  table_get(Table const* t, VALUE key);
-void   table_set(Table* t, VALUE key, VALUE value);
+size_t     table_len(Table* t);
+TYC_RESULT table_get(Table const* t, VALUE key, VALUE* value);
+void       table_set(Table* t, VALUE key, VALUE value);
+void       table_del(Table* t, VALUE key);
 
 //
 // HEAP
