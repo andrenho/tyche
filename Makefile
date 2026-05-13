@@ -55,9 +55,7 @@ LDFLAGS+=
 
 all: tyche libtyche.a libtyche.so.${VERSION}
 
-check:
-	$(MAKE) clean
-	$(MAKE) tyche-test
+check: tyche-test
 	./tyche-test
 
 clean:
