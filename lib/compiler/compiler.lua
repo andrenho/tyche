@@ -100,6 +100,22 @@ local function assemble(proto)
         return #bin - 4
     end
 
+    local replace32 = function(pos, data)
+        bin[pos] = data & 0xff
+        bin[pos + 1] = (data >> 8) & 0xff
+        bin[pos + 2] = (data >> 16) & 0xff
+        bin[pos + 3] = (data >> 24) & 0xff
+    end
+
+    local float_to_le_bytes = function(f)
+        local bytes = {}
+        local packed = string.pack("<f", f)
+        for i = 1, 4 do
+            bytes[i] = packed:byte(i)
+        end
+        return bytes
+    end
+
     -- header
     push32(MAGIC)
     push16(VERSION)
@@ -107,11 +123,36 @@ local function assemble(proto)
 
     -- constants
     local code_addr_pos = push32(0) -- code address, to be replaced
-    push32(0)                       -- number of constants
+    push32(#proto.constants)        -- number of constants
+    local const_idx = {}
+    for _, _ in ipairs(proto.constants) do
+        table.insert(const_idx, push32(0)) -- constant address, to be replaced
+    end
+    for i, const in ipairs(proto.constants) do
+        replace32(const_idx[i], #bin)
+        if type(const) == 'string' then
+            table.insert(bin, 0) -- string type
+            push32(#const)
+            for c in const:gmatch('.') do
+                table.insert(bin, c:byte())
+            end
+        elseif type(const) == 'number' then
+            table.insert(bin, 0) -- float type
+            push32(float_to_le_bytes(const))
+        end
+    end
+
+    replace32(code_addr_pos, #bin)
 
     -- code
     push32(0) -- debug address (TODO)
-    push32(0) -- number of functions
+    push32(#proto.functions) -- number of functions
+    for _,func in ipairs(proto.functions) do
+        local next_function_pos = #bin
+        push32(0)  -- to be replaced with next function address
+        -- TODO - add code
+        replace32(next_function_pos, #bin)
+    end
 
     return string.char(table.unpack(bin))
 end
