@@ -213,4 +213,35 @@ int main()
         heap_destroy(h);
         stack_destroy(s);
     }
+
+    {
+        printf("### Bytecode\n");
+        const char* assembly_code =
+                ".const\n"
+                "    0: 3.14\n"
+                "    1: \"Hello world\"\n"
+                "\n"
+                ".func 0\n"
+                "    pushi   2   ; this is a comment\n"
+                "    pushi   3\n"
+                "    sum\n"
+                "    ret\n"
+                ".func 1\n"
+                "    pushi   5000\n"
+                "    ret";
+
+        uint8_t* bytecode; size_t bytecode_sz;
+        assert(code_assemble(assembly_code, &bytecode, &bytecode_sz) == T_OK);
+
+        Code* code = code_new(bytecode, bytecode_sz);
+
+        assert(code_n_consts(code) == 2);
+        assert(code_const_type(code, 0) == TC_REAL);
+        assert(code_const_type(code, 1) == TC_STRING);
+        assert(code_const_real(code, 0) >= 3.13 && code_const_real(code, 0) <= 3.15);
+        assert(strcmp(code_const_string(code, 1), "Hello world\n") == 0);
+        assert(code_n_functions(code) == 2);
+
+        free(bytecode);
+    }
 }

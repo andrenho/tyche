@@ -29,6 +29,10 @@ typedef struct Code  Code;
 typedef uint32_t HEAP_KEY;
 typedef uint64_t TABLE_HASH;
 
+typedef enum {
+    TC_STRING, TC_REAL,
+} TYC_CONST_TYPE;
+
 //
 // UTILS
 //
@@ -122,9 +126,15 @@ void     heap_gc(Heap* h, VALUE const* roots, size_t n_roots);
 
 TYC_RESULT code_assemble(const char* code, uint8_t** bytecode, size_t* bytecode_sz);
 
-Code* code_load_bytecode(uint8_t* bytecode, size_t bytecode_sz);
-Code* code_load_bytecode_cb(void(*read_bytes)(size_t, void*), void* data);
-
+Code* code_new(uint8_t* bytecode, size_t bytecode_sz);
 void  code_destroy(Code* code);
+
+size_t         code_n_consts(Code const* code);
+TYC_CONST_TYPE code_const_type(Code const* code, size_t n);
+
+T_REAL         code_const_real(Code const* code, size_t n);
+const char*    code_const_string(Code const* code, size_t n);
+
+size_t         code_n_functions(Code const* code);
 
 #endif //TYCHE_PRIV_H

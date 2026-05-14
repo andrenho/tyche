@@ -13,4 +13,6 @@ typedef enum {
     T_ERR_ASSEMBLER_SYNTAX_ERROR = -30,
 } TYC_RESULT;
 
+#define T_REAL float
+
 #endif //TYCHE_TYCHE_H

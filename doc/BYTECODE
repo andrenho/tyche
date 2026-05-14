@@ -21,10 +21,10 @@ The bytecode file is composed of the following sections:
        [1..4]: real
 
  * CODE
+   [0:3]: Debug start address (or zero)
+   [4:7]: Number of functions
    Each function:
      [0:3] Address of next function
-     [4:5] Number of parameters
-     [6:7] Number of variables
      [...] Code
        [0] : Opcode
        [between 1 and 4] : Operand
