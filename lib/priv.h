@@ -24,6 +24,7 @@ typedef struct Stack Stack;
 typedef struct Array Array;
 typedef struct Table Table;
 typedef struct Heap  Heap;
+typedef struct Code  Code;
 
 typedef uint32_t HEAP_KEY;
 typedef uint64_t TABLE_HASH;
@@ -114,5 +115,16 @@ TYC_RESULT heap_get_string(Heap const* h, HEAP_KEY key, const char** value);
 size_t   heap_size(Heap const* h);
 
 void     heap_gc(Heap* h, VALUE const* roots, size_t n_roots);
+
+//
+// CODE
+//
+
+TYC_RESULT code_assemble(const char* code, uint8_t** bytecode, size_t* bytecode_sz);
+
+Code* code_load_bytecode(uint8_t* bytecode, size_t bytecode_sz);
+Code* code_load_bytecode_cb(void(*read_bytes)(size_t, void*), void* data);
+
+void  code_destroy(Code* code);
 
 #endif //TYCHE_PRIV_H

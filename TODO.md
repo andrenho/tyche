@@ -12,8 +12,8 @@ Decisions:
 - [x] Heap
   - [x] Heap value
   - [x] Strings
-  - [ ] Arrays
-  - [ ] Tables
+  - [x] Arrays
+  - [x] Tables
 - [ ] VM
   - [ ] (Lua interface) call assembler
   - [ ] (Lua) generate bytecode
