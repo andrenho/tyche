@@ -48,7 +48,6 @@ RELEASE_LDFLAGS=-flto=auto
 CFLAGS+=-std=c99 -D_GNU_SOURCE -fPIC -fvisibility=hidden -isystem lib/contrib -MMD -MP
 LDFLAGS+=
 
-
 #
 # generic targets
 #
@@ -59,7 +58,7 @@ check: tyche-test
 	./tyche-test
 
 clean:
-	rm -f tyche libtyche.a libtyche.so* tyche-test **/*.o **/*.d
+	rm -f tyche libtyche.a libtyche.so* tyche-test **/*.o **/*.d compiler/compiler.h
 
 install: tyche libtyche.a libtyche.so.${VERSION} lib/tyche.h
 	install -m 644 libtyche.a libtyche.so.${VERSION} ${PREFIX}/lib
@@ -74,10 +73,20 @@ uninstall:
 .PHONY: all check clean install uninstall
 
 #
+# TODO - temporary, using Lua for compilation for now
+#
+LDFLAGS+=-llua -lm
+lib/compiler/compiler.lua.h:
+	luac -o lib/compiler/compiler.out lib/compiler/compiler.lua
+	xxd -i lib/compiler/compiler.out > lib/compiler/compiler.lua.h
+	rm lib/compiler/compiler.out
+lib/compiler.o: lib/compiler.c lib/compiler/compiler.lua.h
+
+#
 # executable files
 #
 
-LIB_SRC=lib/value.o lib/stack.o lib/array.o lib/table.o lib/heap.o lib/vm.o lib/utils.o
+LIB_SRC=lib/value.o lib/stack.o lib/array.o lib/table.o lib/heap.o lib/vm.o lib/compiler.o lib/code.o lib/utils.o
 
 tyche: CFLAGS += ${RELEASE_CFLAGS}
 tyche: LDFLAGS += ${RELEASE_LDFLAGS}
