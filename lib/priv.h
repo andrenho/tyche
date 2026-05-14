@@ -126,8 +126,10 @@ void     heap_gc(Heap* h, VALUE const* roots, size_t n_roots);
 
 TYC_RESULT code_assemble(const char* code, uint8_t** bytecode, size_t* bytecode_sz);
 
-Code* code_new(uint8_t* bytecode, size_t bytecode_sz);
+Code* code_new();
 void  code_destroy(Code* code);
+
+TYC_RESULT     code_load_bytecode(Code* code, uint8_t* bytecode, size_t bytecode_sz);
 
 size_t         code_n_consts(Code const* code);
 TYC_CONST_TYPE code_const_type(Code const* code, size_t n);

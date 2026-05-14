@@ -233,7 +233,9 @@ int main()
         uint8_t* bytecode; size_t bytecode_sz;
         assert(code_assemble(assembly_code, &bytecode, &bytecode_sz) == T_OK);
 
-        Code* code = code_new(bytecode, bytecode_sz);
+        Code* code = code_new();
+
+        assert(code_load_bytecode(code, bytecode, bytecode_sz) == T_OK);
 
         assert(code_n_consts(code) == 2);
         assert(code_const_type(code, 0) == TC_REAL);

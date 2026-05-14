@@ -4,7 +4,7 @@
 --                  --
 ----------------------
 
-local function assemble(source)
+local function parse_assembly(source)
     local proto = {
         constants = {},
         functions = {},
@@ -15,8 +15,8 @@ local function assemble(source)
 
     local next_label = nil
     for line in source:gmatch("([^\n]+)") do
-        local line = line:gsub("%s*;.*$", "")   -- remove comments
-        line = line:match("^%s*(.-)%s*$")       -- trim
+        local line = line:gsub("%s*;.*$", "") -- remove comments
+        line = line:match("^%s*(.-)%s*$")     -- trim
 
         if #line == 0 then goto continue end
 
@@ -37,23 +37,23 @@ local function assemble(source)
             end
         elseif section == 'function' then
             local regexes = {
-                "^%s*(%a+)%s+(%d+)%s*$",                -- instruction + parameter
-                "^%s*(%a+)%s+(@[%a_][%a%d_]*)%s*$",     -- instruction + label
-                "^%s*(%a+)%s*$",                        -- instruction only
-                "^(@[%a_][%a%d_]*):%s*$",                      -- label
+                "^%s*(%a+)%s+(%d+)%s*$",            -- instruction + parameter
+                "^%s*(%a+)%s+(@[%a_][%a%d_]*)%s*$", -- instruction + label
+                "^%s*(%a+)%s*$",                    -- instruction only
+                "^(@[%a_][%a%d_]*):%s*$",           -- label
             }
             local match = false
-            for i,regex in ipairs(regexes) do
+            for i, regex in ipairs(regexes) do
                 local inst, par = line:match(regex)
                 if inst then
                     match = true
-                    if i == 1 then       -- instruction + parameter
+                    if i == 1 then     -- instruction + parameter
                         table.insert(proto.functions[current_f_id], { inst, tonumber(par), labels = next_label })
-                    elseif i == 2 then   -- instruction + label
+                    elseif i == 2 then -- instruction + label
                         table.insert(proto.functions[current_f_id], { inst, par, labels = next_label })
-                    elseif i == 3 then   -- instruction only
+                    elseif i == 3 then -- instruction only
                         table.insert(proto.functions[current_f_id], { inst, labels = next_label })
-                    elseif i == 4 then   -- label
+                    elseif i == 4 then -- label
                         if not next_label then
                             next_label = { inst }
                         else
@@ -76,11 +76,52 @@ end
 
 ----------------------
 --                  --
+--     BINARY       --
+--                  --
+----------------------
+
+local MAGIC = 0xa7d6e9b1
+local VERSION = 1
+
+local function assemble(proto)
+    local bin = {}
+
+    local push16 = function(data)
+        table.insert(bin, data & 0xff)
+        table.insert(bin, (data >> 8) & 0xff)
+        return #bin - 2
+    end
+
+    local push32 = function(data)
+        table.insert(bin, data & 0xff)
+        table.insert(bin, (data >> 8) & 0xff)
+        table.insert(bin, (data >> 16) & 0xff)
+        table.insert(bin, (data >> 24) & 0xff)
+        return #bin - 4
+    end
+
+    -- header
+    push32(MAGIC)
+    push16(VERSION)
+    push16(0)
+
+    -- constants
+    local code_addr_pos = push32(0) -- code address, to be replaced
+    push32(0)                       -- number of constants
+
+    -- code
+    push32(0) -- debug address (TODO)
+    push32(0) -- number of functions
+
+    return string.char(table.unpack(bin))
+end
+
+----------------------
+--                  --
 --     GENERIC      --
 --                  --
 ----------------------
 
 return function(source)
-    print('test')
-    return { 0, 1, 2, 3, 4 }
+    return assemble(parse_assembly(source))
 end

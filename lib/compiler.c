@@ -33,15 +33,11 @@ TYC_RESULT code_assemble(const char* code, uint8_t** bytecode, size_t* bytecode_
         return T_ERR_ASSEMBLER_SYNTAX_ERROR;
     }
 
-    if (!lua_istable(L, -1))
+    if (!lua_isstring(L, -1))
         abort();
     *bytecode_sz = luaL_len(L, -1);
     *bytecode = malloc(*bytecode_sz);
-    for (size_t i = 0; i < *bytecode_sz; ++i) {
-        lua_geti(L, -1, i + 1);
-        (*bytecode)[i] = (uint8_t) lua_tointeger(L, -1);
-        lua_pop(L, 1);
-    }
+    memcpy(*bytecode, lua_tostring(L, -1), *bytecode_sz);
 
     lua_close(L);
     return T_OK;

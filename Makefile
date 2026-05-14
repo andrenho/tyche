@@ -58,7 +58,7 @@ check: tyche-test
 	./tyche-test
 
 clean:
-	rm -f tyche libtyche.a libtyche.so* tyche-test **/*.o **/*.d compiler/compiler.h
+	rm -f tyche libtyche.a libtyche.so* tyche-test **/*.o **/*.d lib/compiler/compiler.h
 
 install: tyche libtyche.a libtyche.so.${VERSION} lib/tyche.h
 	install -m 644 libtyche.a libtyche.so.${VERSION} ${PREFIX}/lib
@@ -76,7 +76,7 @@ uninstall:
 # TODO - temporary, using Lua for compilation for now
 #
 LDFLAGS+=-llua -lm
-lib/compiler/compiler.lua.h:
+lib/compiler/compiler.lua.h: lib/compiler/compiler.lua
 	luac -o lib/compiler/compiler.out lib/compiler/compiler.lua
 	xxd -i lib/compiler/compiler.out > lib/compiler/compiler.lua.h
 	rm lib/compiler/compiler.out
