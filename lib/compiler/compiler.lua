@@ -286,7 +286,7 @@ local function assemble(proto)
         replace32(next_function_pos, #bin)
     end
 
-    for _, b in ipairs(bin) do io.write(string.format("%02x", b) .. ' ') end; print()
+    -- for _, b in ipairs(bin) do io.write(string.format("%02x", b) .. ' ') end; print()
     return string.char(table.unpack(bin))
 
 end
