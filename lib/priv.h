@@ -225,4 +225,10 @@ const char*    code_const_string(Code const* code, size_t n);
 uint32_t       code_n_functions(Code const* code);
 Instruction    code_next_instruction(Code const* code, uint32_t function_id, uint32_t pc);
 
+//
+// VM
+//
+
+TYC_RESULT step(TycheVM* T);
+
 #endif //TYCHE_PRIV_H
