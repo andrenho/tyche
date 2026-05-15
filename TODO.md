@@ -17,7 +17,7 @@ Decisions:
 - [ ] VM
   - [x] (Lua interface) call assembler
   - [x] (Lua) generate bytecode
-    - [ ] Labels
+    - [x] Labels
   - [ ] Code
     - [ ] Interpret bytecode (fast)
   - [ ] Execution loop (fast)
