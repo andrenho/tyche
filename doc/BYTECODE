@@ -14,8 +14,7 @@ The bytecode file is composed of the following sections:
    Each constant:
      [0]: Type (0 = string, 1 = real)
      if string:
-       [1..4]: string size
-       [...]:  string
+       [...]:  string (NULL terminated)
      if real
        [1..4]: real
 

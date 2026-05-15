@@ -107,13 +107,9 @@ local function assemble(proto)
         bin[pos + 3] = (data >> 24) & 0xff
     end
 
-    local float_to_le_bytes = function(f)
-        local bytes = {}
-        local packed = string.pack("<f", f)
-        for i = 1, 4 do
-            bytes[i] = packed:byte(i)
-        end
-        return bytes
+    local function float_to_bits(f)
+        local bytes = string.pack("<f", f)
+        return string.unpack("<I4", bytes)
     end
 
     -- header
@@ -123,34 +119,35 @@ local function assemble(proto)
 
     -- constants
     local code_addr_pos = push32(0) -- code address, to be replaced
-    print(code_addr_pos)
-    push32(#proto.constants)        -- number of constants
-    for i, const in ipairs(proto.constants) do
+    push32(#proto.constants + 1)        -- number of constants
+    for i=0,#proto.constants do
+        local const = proto.constants[i]
         if type(const) == 'string' then
             table.insert(bin, 0) -- string type
-            push32(#const)
             for c in const:gmatch('.') do
                 table.insert(bin, c:byte())
             end
+            table.insert(bin, 0) -- string terminator
         elseif type(const) == 'number' then
-            table.insert(bin, 0) -- float type
-            push32(float_to_le_bytes(const))
+            table.insert(bin, 1) -- float type
+            push32(float_to_bits(const))
         end
     end
 
     replace32(code_addr_pos, #bin)
 
     -- code
-    push32(0) -- debug address (TODO)
-    push32(#proto.functions) -- number of functions
-    for _,func in ipairs(proto.functions) do
-        local next_function_pos = #bin
+    push32(0)                    -- debug address (TODO)
+    push32(#proto.functions + 1) -- number of functions
+    for i=0,#proto.functions do
+        local func = proto.functions[i]
+        local next_function_pos = #bin + 1
         push32(0)  -- to be replaced with next function address
         -- TODO - add code
         replace32(next_function_pos, #bin)
     end
-
     return string.char(table.unpack(bin))
+
 end
 
 ----------------------

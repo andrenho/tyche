@@ -35,7 +35,7 @@ TYC_RESULT code_assemble(const char* code, uint8_t** bytecode, size_t* bytecode_
 
     if (!lua_isstring(L, -1))
         abort();
-    *bytecode_sz = luaL_len(L, -1);
+    *bytecode_sz = (size_t) luaL_len(L, -1);
     *bytecode = malloc(*bytecode_sz);
     memcpy(*bytecode, lua_tostring(L, -1), *bytecode_sz);
 

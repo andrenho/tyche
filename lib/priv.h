@@ -30,7 +30,7 @@ typedef uint32_t HEAP_KEY;
 typedef uint64_t TABLE_HASH;
 
 typedef enum {
-    TC_STRING, TC_REAL,
+    TC_STRING, TC_REAL, TC_INVALID_TYPE
 } TYC_CONST_TYPE;
 
 //
@@ -124,19 +124,19 @@ void     heap_gc(Heap* h, VALUE const* roots, size_t n_roots);
 // CODE
 //
 
-TYC_RESULT code_assemble(const char* code, uint8_t** bytecode, size_t* bytecode_sz);
+TYC_RESULT     code_assemble(const char* code, uint8_t** bytecode, size_t* bytecode_sz);
 
-Code* code_new();
-void  code_destroy(Code* code);
+Code*          code_new(void);
+void           code_destroy(Code* code);
 
 TYC_RESULT     code_load_bytecode(Code* code, uint8_t* bytecode, size_t bytecode_sz);
 
-size_t         code_n_consts(Code const* code);
+uint32_t       code_n_consts(Code const* code);
 TYC_CONST_TYPE code_const_type(Code const* code, size_t n);
 
 T_REAL         code_const_real(Code const* code, size_t n);
 const char*    code_const_string(Code const* code, size_t n);
 
-size_t         code_n_functions(Code const* code);
+uint32_t       code_n_functions(Code const* code);
 
 #endif //TYCHE_PRIV_H

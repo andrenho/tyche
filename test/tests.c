@@ -241,9 +241,10 @@ int main()
         assert(code_const_type(code, 0) == TC_REAL);
         assert(code_const_type(code, 1) == TC_STRING);
         assert(code_const_real(code, 0) >= 3.13 && code_const_real(code, 0) <= 3.15);
-        assert(strcmp(code_const_string(code, 1), "Hello world\n") == 0);
+        assert(strcmp(code_const_string(code, 1), "Hello world") == 0);
         assert(code_n_functions(code) == 2);
 
+        code_destroy(code);
         free(bytecode);
     }
 }
