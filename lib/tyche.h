@@ -35,6 +35,7 @@ TYC_RESULT tyc_load_bytecode(TycheVM* T, uint8_t const* bytecode, size_t bytecod
 TYC_RESULT tyc_call(TycheVM* t, uint16_t n_pars);
 
 // stack manipulation and query
+size_t     tyc_stack_size(TycheVM* T);
 void       tyc_pushinteger(TycheVM* T, int32_t value);
 TYC_RESULT tyc_type(TycheVM* T, int idx, TYC_TYPE* type);
 TYC_RESULT tyc_tointeger(TycheVM* T, int idx, int32_t* value);

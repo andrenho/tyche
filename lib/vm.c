@@ -35,6 +35,11 @@ TYC_RESULT tyc_call(TycheVM* T, uint16_t n_pars)
     abort();  // TODO
 }
 
+size_t tyc_stack_size(TycheVM* T)
+{
+    return stack_len(T->stack);
+}
+
 void tyc_pushinteger(TycheVM* T, int32_t value)
 {
     stack_push(T->stack, create_value_integer(value));

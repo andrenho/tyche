@@ -331,9 +331,9 @@ static void run_assembly_tests(void)
     lua_call(L, 0, 1);
     assert(lua_istable(L, -1));
 
-    int len = luaL_len(L, -1);
-    for (int i = 0; i < len; ++i) {
-        lua_geti(L, -1, i + 1);
+    size_t len = (size_t) luaL_len(L, -1);
+    for (size_t i = 0; i < len; ++i) {
+        lua_geti(L, -1, (int)i + 1);
         run_assembly_test(L);
         lua_pop(L, 1);
     }
@@ -343,7 +343,41 @@ static void run_assembly_tests(void)
 
 static void run_assembly_test(lua_State* L)
 {
+    TycheVM* T = tyc_new();
+
+    // print test name
     lua_getfield(L, -1, "name");
     printf("   - %s\n", lua_tostring(L, -1));
-    lua_pop(L, -1);
+    lua_pop(L, 1);
+
+    // load code
+    uint8_t* bytecode; size_t bytecode_sz;
+    lua_getfield(L, -1, "code");
+    assert(code_assemble(lua_tostring(L, -1), &bytecode, &bytecode_sz) == T_OK);
+    lua_pop(L, 1);
+
+    // run code
+    assert(tyc_load_bytecode(T, bytecode, bytecode_sz) == T_OK);
+    assert(tyc_call(T, 0) == T_OK);
+
+    // check stack size
+    lua_getfield(L, -1, "expected_stack_size");
+    if (!lua_isnil(L, -1))
+        assert(tyc_stack_size(T) == (size_t) lua_tointeger(L, -1));
+    lua_pop(L, 1);
+
+    // check stack top
+    lua_getfield(L, -1, "expected_stack_size");
+    if (lua_isinteger(L, -1)) {
+        int32_t v;
+        assert(tyc_tointeger(T, -1, &v) == T_OK);
+        assert(v == lua_tointeger(L, -1));
+    }
+    else if (!lua_isnil(L, -1))
+        abort();
+    lua_pop(L, 1);
+
+    // cleanup
+    free(bytecode);
+    tyc_destroy(T);
 }
