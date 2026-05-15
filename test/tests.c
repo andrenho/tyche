@@ -15,7 +15,7 @@
 static void run_assembly_tests(void);
 static void run_assembly_test(lua_State* L);
 
-int main()
+int main(void)
 {
     {
         printf("## Values\n");

@@ -1,3 +1,5 @@
 -Wshadow-all
 -Wcomma
 -Wassign-enum
+-Wno-newline-eof
+-Wno-unused-command-line-argument

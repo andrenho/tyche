@@ -75,7 +75,8 @@ uninstall:
 #
 # TODO - temporary, using Lua for compilation for now
 #
-LDFLAGS+=-llua -lm
+CFLAGS+=`pkg-config --cflags lua`
+LDFLAGS+=`pkg-config --libs lua`
 lib/compiler/compiler.lua.h: lib/compiler/compiler.lua
 	luac -o lib/compiler/compiler.out lib/compiler/compiler.lua
 	xxd -i lib/compiler/compiler.out > lib/compiler/compiler.lua.h
