@@ -193,7 +193,7 @@ TYC_RESULT tyc_expr(TycheVM* T, TYC_EXPR expr)
 
 static TYC_RESULT step(TycheVM* T)
 {
-    VALUE a, b;
+    VALUE a;
     TYC_RESULT r;
 
     Location* loc = location_top(T);
@@ -208,8 +208,6 @@ static TYC_RESULT step(TycheVM* T)
             break;
 
         case TO_SUM:
-            TRY(stack_pop(T->stack, &b))
-            TRY(stack_pop(T->stack, &a))
             TRY(tyc_expr(T, TX_SUM))
             break;
 

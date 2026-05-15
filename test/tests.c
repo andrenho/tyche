@@ -369,9 +369,8 @@ static void run_assembly_test(lua_State* L)
     // check stack top
     lua_getfield(L, -1, "expected_stack_top");
     if (lua_isinteger(L, -1)) {
-        int32_t v;
-        assert(tyc_tointeger(T, -1, &v) == T_OK);
-        assert(v == lua_tointeger(L, -1));
+        TYC_TYPE type; assert(tyc_type(T, -1, &type) == T_OK); assert(type == TT_INTEGER);
+        int32_t v; assert(tyc_tointeger(T, -1, &v) == T_OK); assert(v == lua_tointeger(L, -1));
     }
     else if (!lua_isnil(L, -1))
         abort();
