@@ -6,12 +6,19 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "lua.h"
+#include "lauxlib.h"
+#include "lualib.h"
+
 #define EQ(a, b) (memcmp(a, b) == 0)
+
+static void run_assembly_tests(void);
+static void run_assembly_test(lua_State* L);
 
 int main()
 {
     {
-        printf("### Values\n");
+        printf("## Values\n");
         assert(value_type(create_value_integer(42)) == TT_INTEGER);
         assert(value_integer(create_value_integer(-42)) == -42);
         assert(fabsf(value_real(create_value_real(42.4f)) - 42.4f) < 0.00001f);
@@ -19,7 +26,7 @@ int main()
     }
 
     {
-        printf("### Stack\n");
+        printf("## Stack\n");
 
         Stack* s = stack_new();
 
@@ -53,7 +60,7 @@ int main()
     }
 
     {
-        printf("### Stack with frame pointer\n");
+        printf("## Stack with frame pointer\n");
 
         Stack* s = stack_new();
 
@@ -92,7 +99,7 @@ int main()
     }
 
     {
-        printf("### Arrays\n");
+        printf("## Arrays\n");
 
         Array* a = array_new();
         assert(array_len(a) == 0);
@@ -114,7 +121,7 @@ int main()
     }
 
     {
-        printf("### Table - integer index\n");
+        printf("## Table - integer index\n");
 
         Heap* h = heap_new();
         Table* t = table_new(h);
@@ -135,7 +142,7 @@ int main()
     }
 
     {
-        printf("### Table - string index\n");
+        printf("## Table - string index\n");
 
         Heap* h = heap_new();
         Table* t = table_new(h);
@@ -162,7 +169,7 @@ int main()
     }
 
     {
-        printf("### Heap - strings\n");
+        printf("## Heap - strings\n");
 
         Heap* h = heap_new();
 
@@ -178,7 +185,7 @@ int main()
     }
 
     {
-        printf("### Heap - string GC\n");
+        printf("## Heap - string GC\n");
 
         Stack* s = stack_new();
         Heap* h = heap_new();
@@ -215,7 +222,7 @@ int main()
     }
 
     {
-        printf("### Bytecode\n");
+        printf("## Bytecode\n");
         const char* assembly_code =
                 ".const\n"
                 "    0: 3.14\n"
@@ -271,7 +278,7 @@ int main()
     }
 
     {
-        printf("### Bytecode - labels\n");
+        printf("## Bytecode - labels\n");
         const char* assembly_code =
                 ".func 0\n"
                 "    jmp    @my_label\n"
@@ -293,4 +300,50 @@ int main()
         code_destroy(code);
         free(bytecode);
     }
+
+    {
+        printf("## VM - Basic\n");
+
+        TycheVM* T = tyc_new();
+
+        tyc_pushinteger(T, 2);
+        tyc_pushinteger(T, 3);
+        tyc_expr(T, TX_SUM);
+        int32_t result; assert(tyc_tointeger(T, -1, &result) == T_OK);
+        assert(result == 5);
+
+        tyc_destroy(T);
+    }
+
+    {
+        printf("## Assembly tests\n");
+        run_assembly_tests();
+    }
+}
+
+static void run_assembly_tests(void)
+{
+    lua_State* L = luaL_newstate();
+    luaL_openlibs(L);
+
+    int r = luaL_loadfile(L, "./test/code-tests.lua");
+    assert(r == LUA_OK);
+    lua_call(L, 0, 1);
+    assert(lua_istable(L, -1));
+
+    int len = luaL_len(L, -1);
+    for (int i = 0; i < len; ++i) {
+        lua_geti(L, -1, i + 1);
+        run_assembly_test(L);
+        lua_pop(L, 1);
+    }
+
+    lua_close(L);
+}
+
+static void run_assembly_test(lua_State* L)
+{
+    lua_getfield(L, -1, "name");
+    printf("   - %s\n", lua_tostring(L, -1));
+    lua_pop(L, -1);
 }

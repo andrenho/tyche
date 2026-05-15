@@ -214,7 +214,7 @@ TYC_RESULT     code_assemble(const char* code, uint8_t** bytecode, size_t* bytec
 Code*          code_new(void);
 void           code_destroy(Code* code);
 
-TYC_RESULT     code_load_bytecode(Code* code, uint8_t* bytecode, size_t bytecode_sz);
+TYC_RESULT     code_load_bytecode(Code* code, uint8_t const* bytecode, size_t bytecode_sz);
 
 uint32_t       code_n_consts(Code const* code);
 TYC_CONST_TYPE code_const_type(Code const* code, size_t n);

@@ -1,6 +1,9 @@
 #ifndef TYCHE_TYCHE_H
 #define TYCHE_TYCHE_H
 
+#include <stdint.h>
+#include <stddef.h>
+
 typedef enum {
     TT_NIL, TT_INTEGER, TT_REAL, TT_STRING, TT_STRING_CONST, TT_ARRAY, TT_TABLE, TT_FUNCTION, TT_NATIVE_PTR,
 } TYC_TYPE;
@@ -12,8 +15,29 @@ typedef enum {
     T_ERR_TABLE_KEY_NOT_FOUND = -20,
     T_ERR_ASSEMBLER_SYNTAX_ERROR = -30,
     T_ERR_BYTECODE_TOO_SMALL = -40, T_ERR_BYTECODE_INVALID_MAGIC = -41,
+    T_ERR_TYPE_UNEXPECTED = -50,
 } TYC_RESULT;
 
+typedef enum {
+    TX_SUM,
+} TYC_EXPR;
+
 #define T_REAL float
+
+typedef struct TycheVM TycheVM;
+
+// create/destroy VM
+TycheVM*   tyc_new(void);
+void       tyc_destroy(TycheVM* t);
+
+// code loading and execution
+TYC_RESULT tyc_load_bytecode(TycheVM* T, uint8_t const* bytecode, size_t bytecode_sz);
+TYC_RESULT tyc_call(TycheVM* t, uint16_t n_pars);
+
+// stack manipulation and query
+void       tyc_pushinteger(TycheVM* T, int32_t value);
+TYC_RESULT tyc_type(TycheVM* T, int idx, TYC_TYPE* type);
+TYC_RESULT tyc_tointeger(TycheVM* T, int idx, int32_t* value);
+TYC_RESULT tyc_expr(TycheVM* T, TYC_EXPR expr);
 
 #endif //TYCHE_TYCHE_H

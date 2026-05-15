@@ -40,14 +40,14 @@ void code_destroy(Code* code)
     free(code);
 }
 
-TYC_RESULT code_load_bytecode(Code* code, uint8_t* bytecode, size_t bytecode_sz)
+TYC_RESULT code_load_bytecode(Code* code, uint8_t const* bytecode, size_t bytecode_sz)
 {
     // TODO - linking
 
     if (bytecode_sz < 24)
         return T_ERR_BYTECODE_TOO_SMALL;
 
-    uint32_t magic = *(uint32_t*) &bytecode[0];
+    uint32_t magic = *(uint32_t const*) &bytecode[0];
     if (magic != MAGIC)
         return T_ERR_BYTECODE_INVALID_MAGIC;
 

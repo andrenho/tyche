@@ -9,6 +9,6 @@ return {
                 ret
         ]],
         expected_stack_size = 1,
-        expected_stack_top = { integer = 5 },
+        expected_stack_top = 5,
     },
 }
