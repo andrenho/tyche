@@ -367,7 +367,7 @@ static void run_assembly_test(lua_State* L)
     lua_pop(L, 1);
 
     // check stack top
-    lua_getfield(L, -1, "expected_stack_size");
+    lua_getfield(L, -1, "expected_stack_top");
     if (lua_isinteger(L, -1)) {
         int32_t v;
         assert(tyc_tointeger(T, -1, &v) == T_OK);
