@@ -80,6 +80,81 @@ end
 --                  --
 ----------------------
 
+local instructions = {
+    -- stack operations
+    pushi = 0xa0,
+    pushc = 0xa1,
+    pushf = 0xa2,
+    pushn = 0x00,
+    pushz = 0x01,
+    pusht = 0x02,
+    newa  = 0x03,
+    newt  = 0x04,
+    pop   = 0x05,
+    dup   = 0x06,
+
+    -- local variables
+    pushv = 0xa3,
+    set   = 0xa4,
+    dupv  = 0xa5,
+    setg  = 0xa6,
+    getg  = 0xa7,
+
+    -- function operations
+    call = 0xa7,
+    ret  = 0x10,
+    reti = 0x11,
+
+    -- table and array operations
+    getkv = 0x16,
+    setkv = 0x17,
+    geti  = 0xa8,
+    seti  = 0xa9,
+    appnd = 0x18,
+    next  = 0x19,
+    smt   = 0x1a,
+    mt    = 0x1b,
+
+    -- logical/arithmetic
+    sum     = 0x20,
+    sub     = 0x21,
+    mul     = 0x22,
+    div     = 0x23,
+    idiv    = 0x24,
+    mod     = 0x25,
+    eq      = 0x26,
+    neq     = 0x27,
+    lt      = 0x28,
+    lte     = 0x29,
+    gt      = 0x2a,
+    gte     = 0x2b,
+    ['and'] = 0x2c,
+    ['or']  = 0x2d,
+    xor     = 0x2e,
+    pow     = 0x2f,
+    shl     = 0x30,
+    shr     = 0x31,
+
+    -- other value operations
+    len  = 0x40,
+    type = 0x41,
+    cast = 0xaa,
+    ver  = 0x42,
+
+    -- external code
+    cmpl  = 0x48,
+    asmbl = 0x49,
+    load  = 0x4a,
+
+    -- control flow
+    bz  = 0xca,
+    bnz = 0xcb,
+    jmp = 0xcc,
+
+    -- memory management
+    gc = 0x4b,
+}
+
 local MAGIC = 0xa7d6e9b1
 local VERSION = 1
 
@@ -143,7 +218,27 @@ local function assemble(proto)
         local func = proto.functions[i]
         local next_function_pos = #bin + 1
         push32(0)  -- to be replaced with next function address
-        -- TODO - add code
+        for _,inst in ipairs(func) do
+            local opcode, operand = instructions[inst[1]], inst[2]
+            if opcode == nil then error("Unknown instruction " .. inst[1]) end
+            if operand == nil then
+                table.insert(bin, opcode)
+            else
+                if opcode >= 0xc0 and opcode < 0xe0 then
+                    table.insert(bin, opcode)
+                    push16(operand)
+                elseif operand >= -128 and operand <= 127 then
+                    table.insert(bin, opcode)
+                    table.insert(bin, operand)
+                elseif operand >= -32768 and operand <= 32767 then
+                    table.insert(bin, opcode + 0x20)
+                    push16(operand)
+                else
+                    table.insert(bin, opcode + 0x40)
+                    push32(operand)
+                end
+            end
+        end
         replace32(next_function_pos, #bin)
     end
     return string.char(table.unpack(bin))

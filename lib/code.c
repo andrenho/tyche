@@ -15,6 +15,10 @@
 #define N_CONST_ADDR        0x0c
 #define CONST_START         0x10
 
+#define OP_8BIT_OPERAND  0xa0
+#define OP_16BIT_OPERAND 0xc0
+#define OP_32BIT_OPERAND 0xe0
+
 struct Code {
     uint8_t const* bytecode;
     size_t         bytecode_sz;
@@ -125,4 +129,35 @@ const char* code_const_string(Code const* code, size_t n)
 uint32_t code_n_functions(Code const* code)
 {
     return code->fn_count;
+}
+
+Instruction code_next_instruction(Code const* code, uint32_t function_id, uint32_t pc)
+{
+    uint32_t addr = code->fn_addr[function_id] + 4 + pc;
+    uint8_t opcode = code->bytecode[addr];
+    int32_t operand = 0;
+    uint8_t sz = 1;
+
+    if (opcode >= OP_8BIT_OPERAND && opcode < OP_16BIT_OPERAND) {
+        operand = code->bytecode[addr + 1];
+        sz = 2;
+    } else if (opcode >= OP_16BIT_OPERAND && opcode < OP_32BIT_OPERAND) {
+        opcode -= 0x20;
+        operand = (uint16_t) code->bytecode[addr + 1] |
+                  (uint16_t) (code->bytecode[addr + 2] << 8);
+        sz = 3;
+    } else if (opcode >= OP_32BIT_OPERAND) {
+        opcode -= 0x40;
+        operand = (uint32_t) code->bytecode[addr + 1] |
+                  (uint32_t) (code->bytecode[addr + 2] << 8) |
+                  (uint32_t) (code->bytecode[addr + 3] << 16) |
+                  (uint32_t) (code->bytecode[addr + 4] << 24);
+        sz = 5;
+    }
+
+    return (Instruction) {
+        .operator = (TYC_INST) opcode,
+        .operand = operand,
+        .sz = sz,
+    };
 }

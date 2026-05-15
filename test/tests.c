@@ -223,7 +223,7 @@ int main()
                 "\n"
                 ".func 0\n"
                 "    pushi   2   ; this is a comment\n"
-                "    pushi   3\n"
+                "    pushi   -3\n"
                 "    sum\n"
                 "    ret\n"
                 ".func 1\n"
@@ -240,9 +240,31 @@ int main()
         assert(code_n_consts(code) == 2);
         assert(code_const_type(code, 0) == TC_REAL);
         assert(code_const_type(code, 1) == TC_STRING);
-        assert(code_const_real(code, 0) >= 3.13 && code_const_real(code, 0) <= 3.15);
+        assert(code_const_real(code, 0) > 3.13f && code_const_real(code, 0) < 3.15f);
         assert(strcmp(code_const_string(code, 1), "Hello world") == 0);
         assert(code_n_functions(code) == 2);
+
+        uint32_t addr = 0;
+        Instruction inst = code_next_instruction(code, 0, addr);
+        assert(inst.operator == TO_PUSHI);
+        assert(inst.operand == 2);
+        assert(inst.sz == 2);
+        addr += inst.sz;
+
+        inst = code_next_instruction(code, 0, addr);
+        assert(inst.operator == TO_PUSHI);
+        assert(inst.operand == -3);
+        addr += inst.sz;
+
+        inst = code_next_instruction(code, 0, addr);
+        assert(inst.operator == TO_SUM);
+        assert(inst.operand == 0);
+        addr += inst.sz;
+
+        inst = code_next_instruction(code, 1, 0);
+        assert(inst.operator == TO_PUSHI);
+        assert(inst.operand == 5000);
+        assert(inst.sz == 3);
 
         code_destroy(code);
         free(bytecode);

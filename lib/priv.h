@@ -8,6 +8,85 @@
 #include <stddef.h>
 
 //
+// INSTRUCTIONS
+//
+
+typedef enum {
+    // STACK OPERATIONS
+    TO_PUSHI = 0XA0,
+    TO_PUSHC = 0XA1,
+    TO_PUSHF = 0XA2,
+    TO_PUSHN = 0X00,
+    TO_PUSHZ = 0X01,
+    TO_PUSHT = 0X02,
+    TO_NEWA  = 0X03,
+    TO_NEWT  = 0X04,
+    TO_POP   = 0X05,
+    TO_DUP   = 0X06,
+
+    // LOCAL VARIABLES
+    TO_PUSHV = 0XA3,
+    TO_SET   = 0XA4,
+    TO_DUPV  = 0XA5,
+    TO_SETG  = 0XA6,
+    TO_GETG  = 0XA7,
+
+    // FUNCTION OPERATIONS
+    TO_CALL = 0XA7,
+    TO_RET  = 0X10,
+    TO_RETI = 0X11,
+
+    // TABLE AND ARRAY OPERATIONS
+    TO_GETKV = 0X16,
+    TO_SETKV = 0X17,
+    TO_GETI  = 0XA8,
+    TO_SETI  = 0XA9,
+    TO_APPND = 0X18,
+    TO_NEXT  = 0X19,
+    TO_SMT   = 0X1A,
+    TO_MT    = 0X1B,
+
+    // LOGICAL/ARITHMETIC
+    TO_SUM     = 0X20,
+    TO_SUB     = 0X21,
+    TO_MUL     = 0X22,
+    TO_DIV     = 0X23,
+    TO_IDIV    = 0X24,
+    TO_MOD     = 0X25,
+    TO_EQ      = 0X26,
+    TO_NEQ     = 0X27,
+    TO_LT      = 0X28,
+    TO_LTE     = 0X29,
+    TO_GT      = 0X2A,
+    TO_GTE     = 0X2B,
+    TO_AND     = 0X2C,
+    TO_OR      = 0X2D,
+    TO_XOR     = 0X2E,
+    TO_POW     = 0X2F,
+    TO_SHL     = 0X30,
+    TO_SHR     = 0X31,
+
+    // OTHER VALUE OPERATIONS
+    TO_LEN  = 0X40,
+    TO_TYPE = 0X41,
+    TO_CAST = 0XAA,
+    TO_VER  = 0X42,
+
+    // EXTERNAL CODE
+    TO_CMPL  = 0X48,
+    TO_ASMBL = 0X49,
+    TO_LOAD  = 0X4A,
+
+    // CONTROL FLOW
+    TO_BZ  = 0XCA,
+    TO_BNZ = 0XCB,
+    TO_JMP = 0XCC,
+
+    // MEMORY MANAGEMENT
+    TO_GC = 0X4B,
+} TYC_INST;
+
+//
 // TYPE DECLARATION
 //
 
@@ -32,6 +111,12 @@ typedef uint64_t TABLE_HASH;
 typedef enum {
     TC_STRING, TC_REAL, TC_INVALID_TYPE
 } TYC_CONST_TYPE;
+
+typedef struct Instruction {
+    TYC_INST operator;
+    int32_t  operand;
+    uint8_t  sz;
+} Instruction;
 
 //
 // UTILS
@@ -138,5 +223,6 @@ T_REAL         code_const_real(Code const* code, size_t n);
 const char*    code_const_string(Code const* code, size_t n);
 
 uint32_t       code_n_functions(Code const* code);
+Instruction    code_next_instruction(Code const* code, uint32_t function_id, uint32_t pc);
 
 #endif //TYCHE_PRIV_H
