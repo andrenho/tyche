@@ -37,7 +37,7 @@ local function parse_assembly(source)
             end
         elseif section == 'function' then
             local regexes = {
-                "^%s*(%a+)%s+(%d+)%s*$",            -- instruction + parameter
+                "^%s*(%a+)%s+(-?%d+)%s*$",          -- instruction + parameter
                 "^%s*(%a+)%s+(@[%a_][%a%d_]*)%s*$", -- instruction + label
                 "^%s*(%a+)%s*$",                    -- instruction only
                 "^(@[%a_][%a%d_]*):%s*$",           -- label
@@ -161,6 +161,10 @@ local VERSION = 1
 local function assemble(proto)
     local bin = {}
 
+    local push8 = function(data)
+        table.insert(bin, data & 0xff)
+    end
+
     local push16 = function(data)
         table.insert(bin, data & 0xff)
         table.insert(bin, (data >> 8) & 0xff)
@@ -198,13 +202,13 @@ local function assemble(proto)
     for i=0,#proto.constants do
         local const = proto.constants[i]
         if type(const) == 'string' then
-            table.insert(bin, 0) -- string type
+            push8(0) -- string type
             for c in const:gmatch('.') do
-                table.insert(bin, c:byte())
+                push8(c:byte())
             end
-            table.insert(bin, 0) -- string terminator
+            push8(0) -- string terminator
         elseif type(const) == 'number' then
-            table.insert(bin, 1) -- float type
+            push8(1) -- float type
             push32(float_to_bits(const))
         end
     end
@@ -214,33 +218,35 @@ local function assemble(proto)
     -- code
     push32(0)                    -- debug address (TODO)
     push32(#proto.functions + 1) -- number of functions
-    for i=0,#proto.functions do
+    for i = 0, #proto.functions do
         local func = proto.functions[i]
         local next_function_pos = #bin + 1
-        push32(0)  -- to be replaced with next function address
-        for _,inst in ipairs(func) do
+        push32(0) -- to be replaced with next function address
+        for _, inst in ipairs(func) do
             local opcode, operand = instructions[inst[1]], inst[2]
             if opcode == nil then error("Unknown instruction " .. inst[1]) end
             if operand == nil then
-                table.insert(bin, opcode)
+                push8(opcode)
             else
                 if opcode >= 0xc0 and opcode < 0xe0 then
-                    table.insert(bin, opcode)
+                    push8(opcode)
                     push16(operand)
                 elseif operand >= -128 and operand <= 127 then
-                    table.insert(bin, opcode)
-                    table.insert(bin, operand)
+                    push8(opcode)
+                    push8(operand)
                 elseif operand >= -32768 and operand <= 32767 then
-                    table.insert(bin, opcode + 0x20)
+                    push8(opcode + 0x20)
                     push16(operand)
                 else
-                    table.insert(bin, opcode + 0x40)
+                    push8(opcode + 0x40)
                     push32(operand)
                 end
             end
         end
         replace32(next_function_pos, #bin)
     end
+
+    -- for _, b in ipairs(bin) do io.write(b .. ' ') end; print()
     return string.char(table.unpack(bin))
 
 end

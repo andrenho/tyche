@@ -139,19 +139,19 @@ Instruction code_next_instruction(Code const* code, uint32_t function_id, uint32
     uint8_t sz = 1;
 
     if (opcode >= OP_8BIT_OPERAND && opcode < OP_16BIT_OPERAND) {
-        operand = code->bytecode[addr + 1];
+        operand = (int8_t) code->bytecode[addr + 1];
         sz = 2;
     } else if (opcode >= OP_16BIT_OPERAND && opcode < OP_32BIT_OPERAND) {
         opcode -= 0x20;
-        operand = (uint16_t) code->bytecode[addr + 1] |
-                  (uint16_t) (code->bytecode[addr + 2] << 8);
+        operand = (int16_t) ((uint16_t) code->bytecode[addr + 1] |
+                             (uint16_t) (code->bytecode[addr + 2] << 8));
         sz = 3;
     } else if (opcode >= OP_32BIT_OPERAND) {
         opcode -= 0x40;
-        operand = (uint32_t) code->bytecode[addr + 1] |
-                  (uint32_t) (code->bytecode[addr + 2] << 8) |
-                  (uint32_t) (code->bytecode[addr + 3] << 16) |
-                  (uint32_t) (code->bytecode[addr + 4] << 24);
+        operand = (int32_t) ((uint32_t) code->bytecode[addr + 1] |
+                             (uint32_t) (code->bytecode[addr + 2] << 8) |
+                             (uint32_t) (code->bytecode[addr + 3] << 16) |
+                             (uint32_t) (code->bytecode[addr + 4] << 24));
         sz = 5;
     }
 
