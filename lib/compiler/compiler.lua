@@ -179,6 +179,11 @@ local function assemble(proto)
         return #bin - 3
     end
 
+    local replace16 = function(pos, data)
+        bin[pos] = data & 0xff
+        bin[pos + 1] = (data >> 8) & 0xff
+    end
+
     local replace32 = function(pos, data)
         bin[pos] = data & 0xff
         bin[pos + 1] = (data >> 8) & 0xff
@@ -198,7 +203,14 @@ local function assemble(proto)
 
     -- constants
     local code_addr_pos = push32(0) -- code address, to be replaced
-    push32(#proto.constants + 1)        -- number of constants
+
+    -- number of constants
+    if proto.constants[0] then
+        push32(#proto.constants + 1)
+    else
+        push32(0)
+    end
+
     for i=0,#proto.constants do
         local const = proto.constants[i]
         if type(const) == 'string' then
@@ -218,19 +230,32 @@ local function assemble(proto)
     -- code
     push32(0)                    -- debug address (TODO)
     push32(#proto.functions + 1) -- number of functions
+
     for i = 0, #proto.functions do
+
         local func = proto.functions[i]
         local next_function_pos = #bin + 1
         push32(0) -- to be replaced with next function address
+
+        local function_start = #bin
+        local labels = {}
+
         for _, inst in ipairs(func) do
+            -- add labels
+            if inst.labels then
+                for _, lbl in ipairs(inst.labels) do
+                    labels[lbl] = #bin - function_start - 1
+                end
+            end
+
             local opcode, operand = instructions[inst[1]], inst[2]
             if opcode == nil then error("Unknown instruction " .. inst[1]) end
             if operand == nil then
                 push8(opcode)
             elseif type(operand) == 'string' then
-                -- TODO
                 push8(opcode)
-                push16(0)
+                table.insert(bin, operand) -- insert the label
+                push8(0)  -- byte to be replaced (label is 16-bit)
             else
                 if opcode >= 0xc0 and opcode < 0xe0 then
                     push8(opcode)
@@ -246,11 +271,22 @@ local function assemble(proto)
                     push32(operand)
                 end
             end
+
         end
+
+        -- replace labels
+        for i=function_start,#bin do
+            if type(bin[i]) == 'string' then
+                local label_addr = labels[bin[i]]
+                if label_addr == nil then error("Label not found: " .. bin[i]) end
+                replace32(i, label_addr)
+            end
+        end
+
         replace32(next_function_pos, #bin)
     end
 
-    -- for _, b in ipairs(bin) do io.write(b .. ' ') end; print()
+    for _, b in ipairs(bin) do io.write(string.format("%02x", b) .. ' ') end; print()
     return string.char(table.unpack(bin))
 
 end

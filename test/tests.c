@@ -285,6 +285,11 @@ int main()
         Code* code = code_new();
         assert(code_load_bytecode(code, bytecode, bytecode_sz) == T_OK);
 
+        Instruction inst = code_next_instruction(code, 0, 0);
+        assert(inst.operator == TO_JMP);
+        assert(inst.operand == 3);
+        assert(inst.sz == 3);
+
         code_destroy(code);
         free(bytecode);
     }

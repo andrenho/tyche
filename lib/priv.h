@@ -78,9 +78,9 @@ typedef enum {
     TO_LOAD  = 0X4A,
 
     // CONTROL FLOW
-    TO_BZ  = 0XCA,
-    TO_BNZ = 0XCB,
-    TO_JMP = 0XCC,
+    TO_BZ  = 0XAA,
+    TO_BNZ = 0XAB,
+    TO_JMP = 0XAC,
 
     // MEMORY MANAGEMENT
     TO_GC = 0X4B,
