@@ -87,7 +87,7 @@ lib/compiler.o: lib/compiler.c lib/compiler/compiler.lua.h
 # executable files
 #
 
-LIB_SRC=lib/value.o lib/stack.o lib/array.o lib/table.o lib/heap.o lib/vm.o lib/step.o lib/compiler.o lib/code.o lib/utils.o
+LIB_SRC=lib/value.o lib/stack.o lib/array.o lib/table.o lib/heap.o lib/vm.o lib/compiler.o lib/code.o lib/utils.o
 
 tyche: CFLAGS += ${RELEASE_CFLAGS}
 tyche: LDFLAGS += ${RELEASE_LDFLAGS}

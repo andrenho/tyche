@@ -20,6 +20,10 @@ struct TycheVM {
     LocationStack location_stack;
 };
 
+static TYC_RESULT step(TycheVM* T);
+
+#define TRY(x) if ((r = (x)) != T_OK) { return r; }
+
 //
 // CREATE/DESTROY VM
 //
@@ -65,6 +69,22 @@ static void push_location(TycheVM* T, uint32_t function_id, uint32_t pc)
     ++T->location_stack.sz;
 }
 
+static Location* location_top(TycheVM* T)
+{
+    if (T->location_stack.sz == 0)
+        abort();
+
+    return &T->location_stack.locations[T->location_stack.sz - 1];
+}
+
+static void location_pop(TycheVM* T)
+{
+    if (T->location_stack.sz == 0)
+        abort();
+
+    --T->location_stack.sz;
+}
+
 //
 // CODE LOADING AND EXECUTION
 //
@@ -72,10 +92,8 @@ static void push_location(TycheVM* T, uint32_t function_id, uint32_t pc)
 TYC_RESULT tyc_load_bytecode(TycheVM* T, uint8_t const* bytecode, size_t bytecode_sz)
 {
     TYC_RESULT r;
-    if ((r = code_load_bytecode(T->code, bytecode, bytecode_sz)) != T_OK)
-        return r;
-    if ((r = stack_push(T->stack, create_value_idx(TT_FUNCTION, 0 /* main */))) != T_OK)
-        return r;
+    TRY(code_load_bytecode(T->code, bytecode, bytecode_sz))
+    TRY(stack_push(T->stack, create_value_idx(TT_FUNCTION, 0 /* main */)))
     return T_OK;
 }
 
@@ -86,13 +104,11 @@ static TYC_RESULT enter_function(TycheVM* T, uint16_t n_pars)
     // get parameters
     VALUE params[n_pars + 1];
     for (uint16_t i = 0; i < n_pars; ++i)
-        if ((r = stack_pop(T->stack, &params[i])) != T_OK)
-            return r;
+        TRY(stack_pop(T->stack, &params[i]))
 
     // get function
     VALUE function;
-    if ((r = stack_pop(T->stack, &function)) != T_OK)
-        return r;
+    TRY(stack_pop(T->stack, &function))
     if (value_type(function) != TT_FUNCTION)
         return T_ERR_TYPE_UNEXPECTED;
 
@@ -102,8 +118,7 @@ static TYC_RESULT enter_function(TycheVM* T, uint16_t n_pars)
 
     // pass parameters
     for (int i = n_pars-1; i >= 0; --i)
-        if ((r = stack_push(T->stack, params[i])) != T_OK)
-            return r;
+        TRY(stack_push(T->stack, params[i]))
 
     return T_OK;
 }
@@ -114,8 +129,7 @@ static TYC_RESULT run_until_return(TycheVM* T)
 
     size_t level = stack_fp_level(T->stack);
     while (stack_fp_level(T->stack) >= level)
-        if ((r = step(T)) != T_OK)
-            return r;
+        TRY(step(T))
 
     return T_OK;
 }
@@ -123,10 +137,8 @@ static TYC_RESULT run_until_return(TycheVM* T)
 TYC_RESULT tyc_call(TycheVM* T, uint16_t n_pars)
 {
     TYC_RESULT r;
-    if ((r = enter_function(T, n_pars)) != T_OK)
-        return r;
-    if ((r = run_until_return(T)) != T_OK)
-        return r;
+    TRY(enter_function(T, n_pars))
+    TRY(run_until_return(T))
     return T_OK;
 }
 
@@ -172,5 +184,49 @@ TYC_RESULT tyc_expr(TycheVM* T, TYC_EXPR expr)
     stack_pop(T->stack, &v2);
     stack_pop(T->stack, &v1);
     stack_push(T->stack, create_value_integer(value_integer(v1) + value_integer(v2)));
+    return T_OK;
+}
+
+//
+// STEP
+//
+
+static TYC_RESULT step(TycheVM* T)
+{
+    VALUE a, b;
+    TYC_RESULT r;
+
+    Location* loc = location_top(T);
+    Instruction inst = code_next_instruction(T->code, loc->function_id, loc->pc);
+
+    // TODO - debug instruction
+
+    switch (inst.operator) {
+
+        case TO_PUSHI:
+            tyc_pushinteger(T, inst.operand);
+            break;
+
+        case TO_SUM:
+            TRY(stack_pop(T->stack, &b))
+            TRY(stack_pop(T->stack, &a))
+            TRY(tyc_expr(T, TX_SUM))
+            break;
+
+        case TO_RET:
+            TRY(stack_pop(T->stack, &a))
+            TRY(stack_pop_fp(T->stack))
+            TRY(stack_push(T->stack, a))
+            location_pop(T);
+            // TODO - print stack
+            return T_OK;
+
+        default:
+            return T_ERR_INVALID_OPCODE;
+    }
+
+    // TODO - print stack
+    loc->pc += inst.sz;
+
     return T_OK;
 }
