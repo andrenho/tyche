@@ -89,7 +89,7 @@ local function assemble(proto)
     local push16 = function(data)
         table.insert(bin, data & 0xff)
         table.insert(bin, (data >> 8) & 0xff)
-        return #bin - 2
+        return #bin - 1
     end
 
     local push32 = function(data)
@@ -97,7 +97,7 @@ local function assemble(proto)
         table.insert(bin, (data >> 8) & 0xff)
         table.insert(bin, (data >> 16) & 0xff)
         table.insert(bin, (data >> 24) & 0xff)
-        return #bin - 4
+        return #bin - 3
     end
 
     local replace32 = function(pos, data)
@@ -123,13 +123,9 @@ local function assemble(proto)
 
     -- constants
     local code_addr_pos = push32(0) -- code address, to be replaced
+    print(code_addr_pos)
     push32(#proto.constants)        -- number of constants
-    local const_idx = {}
-    for _, _ in ipairs(proto.constants) do
-        table.insert(const_idx, push32(0)) -- constant address, to be replaced
-    end
     for i, const in ipairs(proto.constants) do
-        replace32(const_idx[i], #bin)
         if type(const) == 'string' then
             table.insert(bin, 0) -- string type
             push32(#const)

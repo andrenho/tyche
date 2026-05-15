@@ -11,7 +11,6 @@ The bytecode file is composed of the following sections:
  * CONSTANTS
    [0:3]: Code start address
    [4:7]: Number of constants
-   [...]: Constant index
    Each constant:
      [0]: Type (0 = string, 1 = real)
      if string:
