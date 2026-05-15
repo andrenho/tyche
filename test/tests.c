@@ -269,4 +269,23 @@ int main()
         code_destroy(code);
         free(bytecode);
     }
+
+    {
+        printf("### Bytecode - labels\n");
+        const char* assembly_code =
+                ".func 0\n"
+                "    jmp    @my_label\n"
+                "    pushi  \n"
+                "@my_label:\n"
+                "    ret";
+
+        uint8_t* bytecode; size_t bytecode_sz;
+        assert(code_assemble(assembly_code, &bytecode, &bytecode_sz) == T_OK);
+
+        Code* code = code_new();
+        assert(code_load_bytecode(code, bytecode, bytecode_sz) == T_OK);
+
+        code_destroy(code);
+        free(bytecode);
+    }
 }

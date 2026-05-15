@@ -15,8 +15,8 @@ Decisions:
   - [x] Arrays
   - [x] Tables
 - [ ] VM
-  - [ ] (Lua interface) call assembler
-  - [ ] (Lua) generate bytecode
+  - [x] (Lua interface) call assembler
+  - [x] (Lua) generate bytecode
     - [ ] Labels
   - [ ] Code
     - [ ] Interpret bytecode (fast)

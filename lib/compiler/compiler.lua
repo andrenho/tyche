@@ -227,6 +227,10 @@ local function assemble(proto)
             if opcode == nil then error("Unknown instruction " .. inst[1]) end
             if operand == nil then
                 push8(opcode)
+            elseif type(operand) == 'string' then
+                -- TODO
+                push8(opcode)
+                push16(0)
             else
                 if opcode >= 0xc0 and opcode < 0xe0 then
                     push8(opcode)
