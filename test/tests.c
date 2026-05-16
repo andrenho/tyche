@@ -14,6 +14,8 @@
 
 static void run_assembly_tests(void);
 static void run_assembly_test(lua_State* L);
+static void run_assembly_test_code(lua_State* L);
+static void run_assembly_test_template(lua_State* L);
 
 int main(void)
 {
@@ -343,12 +345,34 @@ static void run_assembly_tests(void)
 
 static void run_assembly_test(lua_State* L)
 {
-    TycheVM* T = tyc_new();
-
     // print test name
     lua_getfield(L, -1, "name");
     printf("   - %s\n", lua_tostring(L, -1));
     lua_pop(L, 1);
+
+    // has code?
+    lua_getfield(L, -1, "code");
+    if (!lua_isnil(L, -1)) {
+        lua_pop(L, 1);
+        run_assembly_test_code(L);
+        return;
+    } else {
+        lua_pop(L, 1);
+    }
+
+    // has template
+    lua_getfield(L, -1, "template");
+    if (!lua_isnil(L, -1)) {
+        lua_pop(L, 1);
+        run_assembly_test_template(L);
+    } else {
+        lua_pop(L, 1);
+    }
+}
+
+static void run_assembly_test_code(lua_State* L)
+{
+    TycheVM* T = tyc_new();
 
     // load code
     uint8_t* bytecode; size_t bytecode_sz;
@@ -379,4 +403,8 @@ static void run_assembly_test(lua_State* L)
     // cleanup
     free(bytecode);
     tyc_destroy(T);
+}
+
+static void run_assembly_test_template(lua_State* L)
+{
 }
