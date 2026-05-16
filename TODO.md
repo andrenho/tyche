@@ -23,7 +23,7 @@ Decisions:
   - [x] Execution loop (fast)
 - [ ] VM operations
   - [x] Expressions
-  - [ ] Local variables
+  - [x] Local variables
   - [ ] Functions
     - [ ] With parameters
   - [ ] Control flow

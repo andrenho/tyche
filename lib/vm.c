@@ -154,6 +154,11 @@ size_t tyc_stack_size(TycheVM* T)
     return stack_len(T->stack);
 }
 
+void tyc_pushnil(TycheVM* T)
+{
+    stack_push(T->stack, create_value_nil());
+}
+
 void tyc_pushinteger(TycheVM* T, int32_t value)
 {
     stack_push(T->stack, create_value_integer(value));
@@ -213,8 +218,47 @@ static TYC_RESULT step(TycheVM* T)
         // stack manipulation
         //
 
+        case TO_PUSHN:
+            tyc_pushnil(T);
+            break;
+
         case TO_PUSHI:
             tyc_pushinteger(T, inst.operand);
+            break;
+
+        case TO_PUSHF:
+            if (inst.operand < 0 || inst.operand > code_n_functions(T->code))
+                return T_ERR_VALUE_OUT_OF_RANGE;
+            TRY(stack_push(T->stack, create_value_idx(TT_FUNCTION, inst.operand)))
+            break;
+
+        case TO_POP:
+            TRY(stack_pop(T->stack, NULL))
+            break;
+
+        //
+        // local variables
+        //
+
+        case TO_PUSHV:
+            if (inst.operand <= 0)
+                return T_ERR_VALUE_OUT_OF_RANGE;
+            for (size_t i = 0; i < inst.operand; ++i)
+                tyc_pushnil(T);
+            break;
+
+        case TO_SET:
+            if (inst.operand < 0)
+                return T_ERR_VALUE_OUT_OF_RANGE;
+            TRY(stack_pop(T->stack, &a))
+            TRY(stack_set(T->stack, inst.operand, a))
+            break;
+
+        case TO_DUPV:
+            if (inst.operand < 0)
+                return T_ERR_VALUE_OUT_OF_RANGE;
+            TRY(stack_at(T->stack, inst.operand, &a))
+            stack_push(T->stack, a);
             break;
 
         //

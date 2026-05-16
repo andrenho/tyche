@@ -41,5 +41,20 @@ return {
             { parameters = { 20, 3, 'shr' },  name = "Shift right", expected_stack_top = 2},
             { parameters = { 20, 3, 'mod' },  name = "Modulo", expected_stack_top = 2 },
         },
-    }
+    },
+    {
+        name = "VM: local variables",
+        code = [[
+            .func 0
+                pushv 2         ; local a, b
+                pushi 3         ; a = 3
+                set   0
+                pushi 4         ; b = 4
+                set   1
+                dupv  0         ; return a
+                ret
+        ]],
+        expected_stack_size = 1,
+        expected_stack_top = 3,
+    },
 }
