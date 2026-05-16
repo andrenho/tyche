@@ -20,8 +20,8 @@ return {
                 %s
                 ret
         ]],
-        replacements = {
-            { 2, 3, 'sum', expected_stack_top = 5 },
+        scenarios = {
+            { parameters = { 2, 3, 'sum' }, name = "Sum", expected_stack_top = 5 },
         },
     }
 }

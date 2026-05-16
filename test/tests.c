@@ -407,4 +407,31 @@ static void run_assembly_test_code(lua_State* L)
 
 static void run_assembly_test_template(lua_State* L)
 {
+    lua_getfield(L, -1, "template");
+    const char* template = strdup(lua_tostring(L, -1));
+    lua_pop(L, 1);
+
+    lua_getfield(L, -1, "scenarios");
+    assert(!lua_isnil(L, -1));
+
+    long n_scenarios = luaL_len(L, -1);
+    for (long i = 0; i < n_scenarios; ++i) {
+        lua_geti(L, -1, (int)i + 1);
+
+        lua_getfield(L, -1, "name");
+        printf("     .. %s\n", lua_tostring(L, -1));
+        lua_pop(L, 1);
+
+        // format code
+        lua_dostring(L, "string.format");
+        lua_pushstring(L, template);
+
+        lua_pop(L, 1);
+    }
+
+    uint8_t* bytecode; size_t bytecode_sz;
+    // assert(code_assemble(lua_tostring(L, -1), &bytecode, &bytecode_sz) == T_OK);
+
+    lua_pop(L, 1);
+    free(template);
 }
