@@ -227,9 +227,9 @@ static TYC_RESULT step(TycheVM* T)
             break;
 
         case TO_PUSHF:
-            if (inst.operand < 0 || inst.operand > code_n_functions(T->code))
+            if (inst.operand < 0 || inst.operand > (int) code_n_functions(T->code))
                 return T_ERR_VALUE_OUT_OF_RANGE;
-            TRY(stack_push(T->stack, create_value_idx(TT_FUNCTION, inst.operand)))
+            TRY(stack_push(T->stack, create_value_idx(TT_FUNCTION, (uint32_t) inst.operand)))
             break;
 
         case TO_POP:
@@ -243,7 +243,7 @@ static TYC_RESULT step(TycheVM* T)
         case TO_PUSHV:
             if (inst.operand <= 0)
                 return T_ERR_VALUE_OUT_OF_RANGE;
-            for (size_t i = 0; i < inst.operand; ++i)
+            for (int i = 0; i < inst.operand; ++i)
                 tyc_pushnil(T);
             break;
 
@@ -286,6 +286,12 @@ static TYC_RESULT step(TycheVM* T)
         //
         // function calls
         //
+
+        case TO_CALL:
+            if (inst.operand < 0)
+                return T_ERR_VALUE_OUT_OF_RANGE;
+            enter_function(T, (uint16_t) inst.operand);
+            break;
 
         case TO_RET:
             TRY(stack_pop(T->stack, &a))

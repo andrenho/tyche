@@ -47,7 +47,8 @@ TYC_RESULT code_load_bytecode(Code* code, uint8_t const* bytecode, size_t byteco
     if (bytecode_sz < 24)
         return T_ERR_BYTECODE_TOO_SMALL;
 
-    uint32_t magic = *(uint32_t const*) &bytecode[0];
+    uint32_t magic;
+    memcpy(&magic, bytecode, sizeof(magic));
     if (magic != MAGIC)
         return T_ERR_BYTECODE_INVALID_MAGIC;
 

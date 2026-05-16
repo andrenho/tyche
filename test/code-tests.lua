@@ -57,4 +57,22 @@ return {
         expected_stack_size = 1,
         expected_stack_top = 3,
     },
+    {
+        name = "VM: functions",
+        code = [[
+        .func 0
+            pushf   1
+            pushi   2
+            pushi   3
+            call    2
+            ret
+        .func 1
+            dupv    0
+            dupv    1
+            sub
+            ret
+        ]],
+        expected_stack_size = 1,
+        expected_stack_top = -1,
+    },
 }
