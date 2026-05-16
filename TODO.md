@@ -18,11 +18,11 @@ Decisions:
   - [x] (Lua interface) call assembler
   - [x] (Lua) generate bytecode
     - [x] Labels
-  - [ ] Code
-    - [ ] Interpret bytecode (fast)
-  - [ ] Execution loop (fast)
+  - [x] Code
+    - [x] Interpret bytecode (fast)
+  - [x] Execution loop (fast)
 - [ ] VM operations
-  - [ ] Expressions
+  - [x] Expressions
   - [ ] Local variables
   - [ ] Functions
     - [ ] With parameters

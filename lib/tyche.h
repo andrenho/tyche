@@ -20,7 +20,8 @@ typedef enum {
 } TYC_RESULT;
 
 typedef enum {
-    TX_SUM, TX_SUBTRACT,
+    TX_SUM, TX_SUB, TX_MUL, TX_IDIV, TX_EQ, TX_NEQ, TX_LT, TX_LTE, TX_GT, TX_GTE, TX_AND, TX_OR, TX_XOR, TX_POW,
+    TX_SHL, TX_SHR, TX_MOD,
     TX_COUNT__
 } TYC_EXPR;
 

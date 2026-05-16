@@ -140,6 +140,7 @@ uint32_t value_idx(VALUE v);
 bool     value_is_zero(VALUE v);
 
 VALUE create_value_nil(void);
+VALUE create_value_from_bool(bool b);
 VALUE create_value_integer(int32_t v);
 VALUE create_value_real(float f);
 VALUE create_value_idx(TYC_TYPE type, uint32_t idx);

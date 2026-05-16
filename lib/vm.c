@@ -221,8 +221,23 @@ static TYC_RESULT step(TycheVM* T)
         // expressions
         //
 
-        case TO_SUM: TRY(tyc_expr(T, TX_SUM)); break;
-        case TO_SUB: TRY(tyc_expr(T, TX_SUBTRACT)); break;
+        case TO_SUM:  TRY(tyc_expr(T, TX_SUM));  break;
+        case TO_SUB:  TRY(tyc_expr(T, TX_SUB));  break;
+        case TO_MUL:  TRY(tyc_expr(T, TX_MUL));  break;
+        case TO_IDIV: TRY(tyc_expr(T, TX_IDIV)); break;
+        case TO_EQ:   TRY(tyc_expr(T, TX_EQ));   break;
+        case TO_NEQ:  TRY(tyc_expr(T, TX_NEQ));  break;
+        case TO_LT:   TRY(tyc_expr(T, TX_LT));   break;
+        case TO_LTE:  TRY(tyc_expr(T, TX_LTE));  break;
+        case TO_GT:   TRY(tyc_expr(T, TX_GT));   break;
+        case TO_GTE:  TRY(tyc_expr(T, TX_GTE));  break;
+        case TO_AND:  TRY(tyc_expr(T, TX_AND));  break;
+        case TO_OR:   TRY(tyc_expr(T, TX_OR));   break;
+        case TO_XOR:  TRY(tyc_expr(T, TX_XOR));  break;
+        case TO_POW:  TRY(tyc_expr(T, TX_POW));  break;
+        case TO_SHL:  TRY(tyc_expr(T, TX_SHL));  break;
+        case TO_SHR:  TRY(tyc_expr(T, TX_SHR));  break;
+        case TO_MOD:  TRY(tyc_expr(T, TX_MOD));  break;
 
         //
         // function calls

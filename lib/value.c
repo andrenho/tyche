@@ -46,6 +46,11 @@ VALUE create_value_nil(void)
     return (VALUE) { .type = TT_NIL };
 }
 
+VALUE create_value_from_bool(bool b)
+{
+    return b ? create_value_integer(1) : create_value_integer(0);
+}
+
 VALUE create_value_integer(int32_t v)
 {
     return (VALUE) { .type = TT_INTEGER, .v = { .i = v } };
