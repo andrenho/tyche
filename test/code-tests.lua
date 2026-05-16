@@ -22,6 +22,7 @@ return {
         ]],
         scenarios = {
             { parameters = { 2, 3, 'sum' }, name = "Sum", expected_stack_top = 5 },
+            { parameters = { 2, 3, 'sub' }, name = "Subtraction", expected_stack_top = -1 },
         },
     }
 }
