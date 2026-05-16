@@ -423,15 +423,45 @@ static void run_assembly_test_template(lua_State* L)
         lua_pop(L, 1);
 
         // format code
-        lua_dostring(L, "string.format");
+        luaL_dostring(L, "return string.format");
+        assert(lua_isfunction(L, -1));
         lua_pushstring(L, template);
 
+        lua_getfield(L, -3, "parameters");
+        assert(!lua_isnil(L, -1));
+        int n_params = (int) luaL_len(L, -1);
+        for (long j = 0; j < n_params; ++j)
+            lua_geti(L, -(j + 1), j + 1);
+        lua_remove(L, -(n_params + 1));
+
+        lua_call(L, n_params + 1, 1);
+        const char* formatted_code = strdup(lua_tostring(L, -1));
+        lua_pop(L, 1);
+
+        // run code
+        TycheVM* T = tyc_new();
+        uint8_t* bytecode; size_t bytecode_sz;
+        assert(code_assemble(formatted_code, &bytecode, &bytecode_sz) == T_OK);
+        assert(tyc_load_bytecode(T, bytecode, bytecode_sz) == T_OK);
+        assert(tyc_call(T, 0) == T_OK);
+
+        // check stack top
+        lua_getfield(L, -1, "expected_stack_top");
+        if (lua_isinteger(L, -1)) {
+            TYC_TYPE type; assert(tyc_type(T, -1, &type) == T_OK); assert(type == TT_INTEGER);
+            int32_t v; assert(tyc_tointeger(T, -1, &v) == T_OK); assert(v == lua_tointeger(L, -1));
+        } else if (!lua_isnil(L, -1)) {
+            abort();
+        }
+        lua_pop(L, 1);
+
+        // cleanup
+        free(bytecode);
+        tyc_destroy(T);
+        free(formatted_code);
         lua_pop(L, 1);
     }
 
-    uint8_t* bytecode; size_t bytecode_sz;
-    // assert(code_assemble(lua_tostring(L, -1), &bytecode, &bytecode_sz) == T_OK);
-
-    lua_pop(L, 1);
+    lua_pop(L, 2);
     free(template);
 }
