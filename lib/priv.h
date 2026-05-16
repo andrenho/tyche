@@ -225,4 +225,11 @@ const char*    code_const_string(Code const* code, size_t n);
 uint32_t       code_n_functions(Code const* code);
 Instruction    code_next_instruction(Code const* code, uint32_t function_id, uint32_t pc);
 
+//
+// EXPRESSIONS
+//
+
+void       expr_init(void);
+TYC_RESULT binary_expr(TYC_EXPR op, VALUE a, VALUE b, VALUE* result);
+
 #endif //TYCHE_PRIV_H

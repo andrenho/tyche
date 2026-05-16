@@ -39,6 +39,9 @@ TycheVM* tyc_new(void)
         .cap = 4,
         .sz = 0,
     };
+
+    expr_init();
+
     return t;
 }
 
@@ -177,13 +180,16 @@ TYC_RESULT tyc_tointeger(TycheVM* T, int idx, int32_t* value)
     return r;
 }
 
-TYC_RESULT tyc_expr(TycheVM* T, TYC_EXPR expr)
+TYC_RESULT tyc_expr(TycheVM* T, TYC_EXPR op)
 {
-    // TODO
-    VALUE v1, v2;
+    TYC_RESULT r;
+    VALUE v1, v2, result;
+
     stack_pop(T->stack, &v2);
     stack_pop(T->stack, &v1);
-    stack_push(T->stack, create_value_integer(value_integer(v1) + value_integer(v2)));
+    TRY(binary_expr(op, v1, v2, &result))
+    stack_push(T->stack, result);
+
     return T_OK;
 }
 
@@ -203,13 +209,24 @@ static TYC_RESULT step(TycheVM* T)
 
     switch (inst.operator) {
 
+        //
+        // stack manipulation
+        //
+
         case TO_PUSHI:
             tyc_pushinteger(T, inst.operand);
             break;
 
-        case TO_SUM:
-            TRY(tyc_expr(T, TX_SUM))
-            break;
+        //
+        // expressions
+        //
+
+        case TO_SUM: TRY(tyc_expr(T, TX_SUM)); break;
+        case TO_SUB: TRY(tyc_expr(T, TX_SUBTRACT)); break;
+
+        //
+        // function calls
+        //
 
         case TO_RET:
             TRY(stack_pop(T->stack, &a))

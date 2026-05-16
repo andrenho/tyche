@@ -310,7 +310,7 @@ int main(void)
 
         tyc_pushinteger(T, 2);
         tyc_pushinteger(T, 3);
-        tyc_expr(T, TX_SUM);
+        assert(tyc_expr(T, TX_SUM) == T_OK);
         int32_t result; assert(tyc_tointeger(T, -1, &result) == T_OK);
         assert(result == 5);
 
@@ -408,7 +408,7 @@ static void run_assembly_test_code(lua_State* L)
 static void run_assembly_test_template(lua_State* L)
 {
     lua_getfield(L, -1, "template");
-    const char* template = strdup(lua_tostring(L, -1));
+    char* template = strdup(lua_tostring(L, -1));
     lua_pop(L, 1);
 
     lua_getfield(L, -1, "scenarios");
@@ -430,12 +430,12 @@ static void run_assembly_test_template(lua_State* L)
         lua_getfield(L, -3, "parameters");
         assert(!lua_isnil(L, -1));
         int n_params = (int) luaL_len(L, -1);
-        for (long j = 0; j < n_params; ++j)
+        for (int j = 0; j < n_params; ++j)
             lua_geti(L, -(j + 1), j + 1);
         lua_remove(L, -(n_params + 1));
 
         lua_call(L, n_params + 1, 1);
-        const char* formatted_code = strdup(lua_tostring(L, -1));
+        char* formatted_code = strdup(lua_tostring(L, -1));
         lua_pop(L, 1);
 
         // run code

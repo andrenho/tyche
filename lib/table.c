@@ -59,6 +59,7 @@ static TABLE_HASH value_hash(VALUE v)
         case TT_NATIVE_PTR:
             return (TABLE_HASH) value_idx(v) | ((TABLE_HASH) 1 << 37);
         case TT_STRING:
+        case TT_COUNT__:
         default:
             __builtin_unreachable();
     }
