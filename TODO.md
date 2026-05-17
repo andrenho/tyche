@@ -26,9 +26,9 @@ Decisions:
   - [x] Local variables
   - [x] Functions
     - [x] With parameters
-  - [ ] Debug VM execution
-  - [ ] Control flow
-    - [ ] Recursion
+  - [x] Debug VM execution
+  - [x] Control flow
+    - [x] Recursion
   - [ ] Strings
     - [ ] From constants
     - [ ] Garbage collection

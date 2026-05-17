@@ -93,8 +93,40 @@ return {
                 pushi   7           ; 18
                 ret                 ; 20
         ]],
-        decompile = true,
-        debug = true,
+        --debug_bytecode = true,
+        --decompile = true,
+        --debug = true,
         expected_stack_top = 6,
     },
+    {
+        name = "VM: jumps (bz)",
+        code = [[
+        .func 0
+            jmp     @x1
+            pushi   5
+        @x1:
+            pushi   0
+            bnz     @x2
+            pushi   0
+            bz      @x3
+        @x2:
+            pushi   6
+            ret
+        @x3:
+            pushi   7
+            ret
+        ]],
+        expected_stack_top = 7,
+    },
+    {
+        name = "VM: string from const",
+        code = [[
+            .const
+                0: "Hello"
+            .func 0
+                pushc   0
+                ret
+        ]],
+        expected_stack_top = "Hello"
+    }
 }

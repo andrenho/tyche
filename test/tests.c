@@ -14,8 +14,8 @@
 
 static void run_assembly_tests(void);
 static void run_assembly_test(lua_State* L);
-static void run_assembly_test_code(lua_State* L, bool debug, bool decompile);
-static void run_assembly_test_template(lua_State* L, bool debug, bool decompile);
+static void run_assembly_test_code(lua_State* L, bool debug, bool decompile, bool debug_bytecode);
+static void run_assembly_test_template(lua_State* L, bool debug, bool decompile, bool debug_bytecode);
 
 int main(void)
 {
@@ -357,16 +357,21 @@ static void run_assembly_test(lua_State* L)
     bool debug = lua_isboolean(L, -1) && lua_toboolean(L, -1);
     lua_pop(L, 1);
 
-    // decompile
+    // decompile?
     lua_getfield(L, -1, "decompile");
     bool decompile = lua_isboolean(L, -1) && lua_toboolean(L, -1);
+    lua_pop(L, 1);
+
+    // decompile?
+    lua_getfield(L, -1, "debug_bytecode");
+    bool debug_bytecode = lua_isboolean(L, -1) && lua_toboolean(L, -1);
     lua_pop(L, 1);
 
     // has code?
     lua_getfield(L, -1, "code");
     if (!lua_isnil(L, -1)) {
         lua_pop(L, 1);
-        run_assembly_test_code(L, debug, decompile);
+        run_assembly_test_code(L, debug, decompile, debug_bytecode);
         return;
     } else {
         lua_pop(L, 1);
@@ -376,13 +381,35 @@ static void run_assembly_test(lua_State* L)
     lua_getfield(L, -1, "template");
     if (!lua_isnil(L, -1)) {
         lua_pop(L, 1);
-        run_assembly_test_template(L, debug, decompile);
+        run_assembly_test_template(L, debug, decompile, debug_bytecode);
     } else {
         lua_pop(L, 1);
     }
 }
 
-static void run_assembly_test_code(lua_State* L, bool debug, bool decompile)
+static void check_expected_top(lua_State* L, TycheVM* T)
+{
+    // check stack size
+    lua_getfield(L, -1, "expected_stack_size");
+    if (!lua_isnil(L, -1))
+        assert(tyc_stack_size(T) == (size_t) lua_tointeger(L, -1));
+    lua_pop(L, 1);
+
+    // check stack top
+    lua_getfield(L, -1, "expected_stack_top");
+    if (lua_isinteger(L, -1)) {
+        TYC_TYPE type; assert(tyc_type(T, -1, &type) == T_OK); assert(type == TT_INTEGER);
+        int32_t v; assert(tyc_tointeger(T, -1, &v) == T_OK); assert(v == lua_tointeger(L, -1));
+    } else if (lua_isstring(L, -1)) {
+        TYC_TYPE type; assert(tyc_type(T, -1, &type) == T_OK); assert(type == TT_STRING || type == TT_STRING_CONST);
+        const char* str; assert(tyc_tostring(T, -1, &str) == T_OK); assert(strcmp(str, lua_tostring(L, -1)) == 0);
+    } else if (!lua_isnil(L, -1)) {
+        abort();
+    }
+    lua_pop(L, 1);
+}
+
+static void run_assembly_test_code(lua_State* L, bool debug, bool decompile, bool debug_bytecode)
 {
     TycheVM* T = tyc_new();
     tyc_debug_to_console(T, debug);
@@ -395,32 +422,21 @@ static void run_assembly_test_code(lua_State* L, bool debug, bool decompile)
 
     // run code
     assert(tyc_load_bytecode(T, bytecode, bytecode_sz) == T_OK);
+    if (debug_bytecode)
+        tyc_print_bytecode(T);
     if (decompile)
         tyc_assembly_decompile(T);
     assert(tyc_call(T, 0) == T_OK);
 
-    // check stack size
-    lua_getfield(L, -1, "expected_stack_size");
-    if (!lua_isnil(L, -1))
-        assert(tyc_stack_size(T) == (size_t) lua_tointeger(L, -1));
-    lua_pop(L, 1);
-
-    // check stack top
-    lua_getfield(L, -1, "expected_stack_top");
-    if (lua_isinteger(L, -1)) {
-        TYC_TYPE type; assert(tyc_type(T, -1, &type) == T_OK); assert(type == TT_INTEGER);
-        int32_t v; assert(tyc_tointeger(T, -1, &v) == T_OK); assert(v == lua_tointeger(L, -1));
-    } else if (!lua_isnil(L, -1)) {
-        abort();
-    }
-    lua_pop(L, 1);
+    // assert
+    check_expected_top(L, T);
 
     // cleanup
     free(bytecode);
     tyc_destroy(T);
 }
 
-static void run_assembly_test_template(lua_State* L, bool debug, bool decompile)
+static void run_assembly_test_template(lua_State* L, bool debug, bool decompile, bool debug_bytecode)
 {
     lua_getfield(L, -1, "template");
     char* template = strdup(lua_tostring(L, -1));
@@ -459,19 +475,14 @@ static void run_assembly_test_template(lua_State* L, bool debug, bool decompile)
         uint8_t* bytecode; size_t bytecode_sz;
         assert(code_assemble(formatted_code, &bytecode, &bytecode_sz) == T_OK);
         assert(tyc_load_bytecode(T, bytecode, bytecode_sz) == T_OK);
+        if (debug_bytecode)
+            tyc_print_bytecode(T);
         if (decompile)
             tyc_assembly_decompile(T);
         assert(tyc_call(T, 0) == T_OK);
 
-        // check stack top
-        lua_getfield(L, -1, "expected_stack_top");
-        if (lua_isinteger(L, -1)) {
-            TYC_TYPE type; assert(tyc_type(T, -1, &type) == T_OK); assert(type == TT_INTEGER);
-            int32_t v; assert(tyc_tointeger(T, -1, &v) == T_OK); assert(v == lua_tointeger(L, -1));
-        } else if (!lua_isnil(L, -1)) {
-            abort();
-        }
-        lua_pop(L, 1);
+        // assert
+        check_expected_top(L, T);
 
         // cleanup
         free(bytecode);

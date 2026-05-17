@@ -144,6 +144,11 @@ void tyc_assembly_decompile(TycheVM* T)
     code_decompile(T->code);
 }
 
+void tyc_print_bytecode(TycheVM* T)
+{
+    code_debug_bytecode(T->code);
+}
+
 #endif
 
 //
@@ -269,13 +274,26 @@ TYC_RESULT tyc_type(TycheVM* T, int idx, TYC_TYPE* type)
 TYC_RESULT tyc_tointeger(TycheVM* T, int idx, int32_t* value)
 {
     VALUE v;
-    TYC_RESULT r = stack_at(T->stack, idx, &v);
-    if (r == T_OK) {
-        if (v.type != TT_INTEGER)
-            return T_ERR_TYPE_UNEXPECTED;
-        *value = value_integer(v);
-    }
-    return r;
+    TYC_RESULT r;
+    TRY(stack_at(T->stack, idx, &v))
+    if (v.type != TT_INTEGER)
+        return T_ERR_TYPE_UNEXPECTED;
+    *value = value_integer(v);
+    return T_OK;
+}
+
+TYC_RESULT tyc_tostring(TycheVM* T, int idx, const char** str)
+{
+    VALUE v;
+    TYC_RESULT r;
+    TRY(stack_at(T->stack, idx, &v))
+    if (v.type == TT_STRING)
+        return heap_get_string(T->heap, value_idx(v), str);
+    else if (v.type == TT_STRING_CONST)
+        *str = code_const_string(T->code, value_idx(v));
+    else
+        return T_ERR_TYPE_UNEXPECTED;
+    return T_OK;
 }
 
 TYC_RESULT tyc_expr(TycheVM* T, TYC_EXPR op)
@@ -322,9 +340,19 @@ static TYC_RESULT step(TycheVM* T)
             break;
 
         case TO_PUSHF:
-            if (inst.operand < 0 || inst.operand > (int) code_n_functions(T->code))
+            if (inst.operand < 0 || inst.operand >= (int) code_n_functions(T->code))
                 return T_ERR_VALUE_OUT_OF_RANGE;
             TRY(stack_push(T->stack, create_value_idx(TT_FUNCTION, (uint32_t) inst.operand)))
+            break;
+
+        case TO_PUSHC:
+            if (inst.operand < 0 || inst.operand >= (int) code_n_consts(T->code))
+                return T_ERR_VALUE_OUT_OF_RANGE;
+            if (code_const_type(T->code, (size_t) inst.operand) == TC_STRING) {
+                TRY(stack_push(T->stack, create_value_idx(TT_STRING_CONST, inst.operand)))
+            } else {
+                abort();  // REAL consts not supported for now
+            }
             break;
 
         case TO_POP:
@@ -400,14 +428,14 @@ static TYC_RESULT step(TycheVM* T)
         //
 
         case TO_JMP:
-            if (inst.operand < 0)
-                return T_ERR_VALUE_OUT_OF_RANGE;  // TODO - also check function size
+            if (inst.operand < 0 || inst.operand >= code_function_sz(T->code, loc->function_id))
+                return T_ERR_VALUE_OUT_OF_RANGE;
             loc->pc = (uint32_t) inst.operand;
             goto dont_update_pc;
 
         case TO_BZ:
-            if (inst.operand < 0)
-                return T_ERR_VALUE_OUT_OF_RANGE;  // TODO - also check function size
+            if (inst.operand < 0 || inst.operand >= code_function_sz(T->code, loc->function_id))
+                return T_ERR_VALUE_OUT_OF_RANGE;
             TRY(stack_pop(T->stack, &a))
             if (value_is_zero(a)) {
                 loc->pc = (uint32_t) inst.operand;
@@ -416,8 +444,8 @@ static TYC_RESULT step(TycheVM* T)
             break;
 
         case TO_BNZ:
-            if (inst.operand < 0)
-                return T_ERR_VALUE_OUT_OF_RANGE;  // TODO - also check function size
+            if (inst.operand < 0 || inst.operand >= code_function_sz(T->code, loc->function_id))
+                return T_ERR_VALUE_OUT_OF_RANGE;
             TRY(stack_pop(T->stack, &a))
             if (!value_is_zero(a)) {
                 loc->pc = (uint32_t) inst.operand;

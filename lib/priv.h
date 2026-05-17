@@ -227,6 +227,7 @@ uint32_t       code_n_functions(Code const* code);
 uint32_t       code_function_sz(Code const* code, uint32_t f_id);
 Instruction    code_next_instruction(Code const* code, uint32_t function_id, uint32_t pc);
 
+void           code_debug_bytecode(Code const* code);
 void           code_decompile(Code const* code);
 void           code_parse_instruction(Instruction inst, char* outbuf, size_t sz);
 

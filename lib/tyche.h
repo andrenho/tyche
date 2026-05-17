@@ -37,6 +37,7 @@ void       tyc_destroy(TycheVM* t);
 // debugging (DEBUG_ASSEMBLY needs to be setup in compilation options)
 void       tyc_debug_to_console(TycheVM* T, bool activate);
 void       tyc_assembly_decompile(TycheVM* T);
+void       tyc_print_bytecode(TycheVM* T);
 
 // code loading and execution
 TYC_RESULT tyc_load_bytecode(TycheVM* T, uint8_t const* bytecode, size_t bytecode_sz);
@@ -48,6 +49,7 @@ void       tyc_pushnil(TycheVM* T);
 void       tyc_pushinteger(TycheVM* T, int32_t value);
 TYC_RESULT tyc_type(TycheVM* T, int idx, TYC_TYPE* type);
 TYC_RESULT tyc_tointeger(TycheVM* T, int idx, int32_t* value);
+TYC_RESULT tyc_tostring(TycheVM* T, int idx, const char** str);
 TYC_RESULT tyc_expr(TycheVM* T, TYC_EXPR expr);
 
 #endif //TYCHE_TYCHE_H

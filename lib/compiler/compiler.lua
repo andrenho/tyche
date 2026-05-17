@@ -279,7 +279,7 @@ local function assemble(proto)
             if type(bin[i]) == 'string' then
                 local label_addr = labels[bin[i]]
                 if label_addr == nil then error("Label not found: " .. bin[i]) end
-                replace32(i, label_addr)
+                replace16(i, label_addr)
             end
         end
 

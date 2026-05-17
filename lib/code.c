@@ -176,6 +176,18 @@ Instruction code_next_instruction(Code const* code, uint32_t function_id, uint32
 
 #ifdef DEBUG_ASSEMBLY
 
+void code_debug_bytecode(Code const* code)
+{
+    for (int i = 0; i < code->bytecode_sz; ++i) {
+        if (i % 16 == 0)
+            printf("%04X : ", i);
+        printf("%02X ", code->bytecode[i]);
+        if (i % 16 == 15)
+            printf("\n");
+    }
+    printf("\n");
+}
+
 void code_decompile(Code const* code)
 {
     if (code_n_consts(code) > 0)
