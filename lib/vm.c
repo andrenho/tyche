@@ -105,7 +105,7 @@ static TYC_RESULT enter_function(TycheVM* T, uint16_t n_pars)
     TYC_RESULT r;
 
     // get parameters
-    VALUE params[n_pars + 1];
+    VALUE* params = xcalloc(n_pars + 1, sizeof(VALUE));
     for (uint16_t i = 0; i < n_pars; ++i)
         TRY(stack_pop(T->stack, &params[i]))
 
@@ -123,6 +123,7 @@ static TYC_RESULT enter_function(TycheVM* T, uint16_t n_pars)
     for (int i = n_pars-1; i >= 0; --i)
         TRY(stack_push(T->stack, params[i]))
 
+    free(params);
     return T_OK;
 }
 

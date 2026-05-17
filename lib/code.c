@@ -67,7 +67,7 @@ TYC_RESULT code_load_bytecode(Code* code, uint8_t const* bytecode, size_t byteco
     */
 
     uint32_t n_consts = code_n_consts(code);
-    code->const_addr = calloc(n_consts, sizeof(uint32_t));
+    code->const_addr = xcalloc(n_consts, sizeof(uint32_t));
     uint32_t addr = CONST_START;
     for (size_t i = 0; i < n_consts; ++i) {
         code->const_addr[i] = addr;
@@ -90,7 +90,7 @@ TYC_RESULT code_load_bytecode(Code* code, uint8_t const* bytecode, size_t byteco
     memcpy(&code->fn_count, &bytecode[addr], sizeof(uint32_t));  // number of functions
     addr += 4;
 
-    code->fn_addr = calloc(code->fn_count, sizeof(uint32_t));
+    code->fn_addr = xcalloc(code->fn_count, sizeof(uint32_t));
     code->fn_addr[0] = addr;
     for (size_t i = 1; i < code->fn_count; ++i) {
         uint32_t addr_next;
