@@ -74,7 +74,7 @@ TYC_RESULT stack_pop(Stack* s, VALUE* v_out)
     return T_OK;
 }
 
-size_t stack_len(Stack const* s)
+size_t stack_size(Stack const* s)
 {
     return s->stack_n - stack_top_fp(s);
 }
@@ -139,7 +139,7 @@ size_t stack_fp_level(Stack const* s)
 size_t stack_collectable_array(Stack const* s, VALUE** values)
 {
     size_t j = 0;
-    *values = xmalloc(stack_len(s) * sizeof(VALUE));
+    *values = xmalloc(stack_size(s) * sizeof(VALUE));
 
     for (size_t i = 0; i < s->stack_n; ++i)
         if (type_is_collectable(s->stack[i].type))

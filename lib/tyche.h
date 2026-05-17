@@ -1,6 +1,7 @@
 #ifndef TYCHE_TYCHE_H
 #define TYCHE_TYCHE_H
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
 
@@ -32,6 +33,10 @@ typedef struct TycheVM TycheVM;
 // create/destroy VM
 TycheVM*   tyc_new(void);
 void       tyc_destroy(TycheVM* t);
+
+// debugging (DEBUG_ASSEMBLY needs to be setup in compilation options)
+void       tyc_debug_to_console(TycheVM* T, bool activate);
+void       tyc_assembly_decompile(TycheVM* T);
 
 // code loading and execution
 TYC_RESULT tyc_load_bytecode(TycheVM* T, uint8_t const* bytecode, size_t bytecode_sz);

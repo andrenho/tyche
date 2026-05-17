@@ -24,8 +24,9 @@ Decisions:
 - [ ] VM operations
   - [x] Expressions
   - [x] Local variables
-  - [ ] Functions
-    - [ ] With parameters
+  - [x] Functions
+    - [x] With parameters
+  - [ ] Debug VM execution
   - [ ] Control flow
     - [ ] Recursion
   - [ ] Strings

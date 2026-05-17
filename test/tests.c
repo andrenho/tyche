@@ -14,8 +14,8 @@
 
 static void run_assembly_tests(void);
 static void run_assembly_test(lua_State* L);
-static void run_assembly_test_code(lua_State* L);
-static void run_assembly_test_template(lua_State* L);
+static void run_assembly_test_code(lua_State* L, bool debug, bool decompile);
+static void run_assembly_test_template(lua_State* L, bool debug, bool decompile);
 
 int main(void)
 {
@@ -37,7 +37,7 @@ int main(void)
         stack_push(s, create_value_integer(30));
 
         VALUE v;
-        assert(stack_len(s) == 3);
+        assert(stack_size(s) == 3);
         assert(stack_at(s, 0, &v) == T_OK); assert(value_integer(v) == 10);
         assert(stack_at(s, 1, &v) == T_OK); assert(value_integer(v) == 20);
         assert(stack_at(s, -1, &v) == T_OK); assert(value_integer(v) == 30);
@@ -54,7 +54,7 @@ int main(void)
         assert(stack_pop(s, NULL) == T_OK);
         assert(stack_at(s, -1, &v) == T_OK); assert(value_integer(v) == 10);
         assert(stack_pop(s, NULL) == T_OK);
-        assert(stack_len(s) == 0);
+        assert(stack_size(s) == 0);
 
         assert(stack_pop(s, NULL) == T_ERR_STACK_UNDERFLOW);
 
@@ -74,7 +74,7 @@ int main(void)
         stack_push(s, create_value_integer(50));
 
         VALUE v;
-        assert(stack_len(s) == 3);
+        assert(stack_size(s) == 3);
         assert(stack_at(s, 0, &v) == T_OK); assert(value_integer(v) == 30);
         assert(stack_at(s, 1, &v) == T_OK); assert(value_integer(v) == 40);
         assert(stack_at(s, -1, &v) == T_OK); assert(value_integer(v) == 50);
@@ -88,7 +88,7 @@ int main(void)
 
         stack_pop_fp(s);
 
-        assert(stack_len(s) == 2);
+        assert(stack_size(s) == 2);
         assert(stack_at(s, 0, &v) == T_OK); assert(value_integer(v) == 10);
         assert(stack_at(s, 1, &v) == T_OK); assert(value_integer(v) == 20);
         assert(stack_at(s, -1, &v) == T_OK); assert(value_integer(v) == 20);
@@ -252,6 +252,8 @@ int main(void)
         assert(code_const_real(code, 0) > 3.13f && code_const_real(code, 0) < 3.15f);
         assert(strcmp(code_const_string(code, 1), "Hello world") == 0);
         assert(code_n_functions(code) == 2);
+        assert(code_function_sz(code, 0) == 6);
+        assert(code_function_sz(code, 1) == 4);
 
         uint32_t addr = 0;
         Instruction inst = code_next_instruction(code, 0, addr);
@@ -296,7 +298,7 @@ int main(void)
 
         Instruction inst = code_next_instruction(code, 0, 0);
         assert(inst.operator == TO_JMP);
-        assert(inst.operand == 3);
+        assert(inst.operand == 4);
         assert(inst.sz == 3);
 
         code_destroy(code);
@@ -350,11 +352,21 @@ static void run_assembly_test(lua_State* L)
     printf("   - %s\n", lua_tostring(L, -1));
     lua_pop(L, 1);
 
+    // debug?
+    lua_getfield(L, -1, "debug");
+    bool debug = lua_isboolean(L, -1) && lua_toboolean(L, -1);
+    lua_pop(L, 1);
+
+    // decompile
+    lua_getfield(L, -1, "decompile");
+    bool decompile = lua_isboolean(L, -1) && lua_toboolean(L, -1);
+    lua_pop(L, 1);
+
     // has code?
     lua_getfield(L, -1, "code");
     if (!lua_isnil(L, -1)) {
         lua_pop(L, 1);
-        run_assembly_test_code(L);
+        run_assembly_test_code(L, debug, decompile);
         return;
     } else {
         lua_pop(L, 1);
@@ -364,15 +376,16 @@ static void run_assembly_test(lua_State* L)
     lua_getfield(L, -1, "template");
     if (!lua_isnil(L, -1)) {
         lua_pop(L, 1);
-        run_assembly_test_template(L);
+        run_assembly_test_template(L, debug, decompile);
     } else {
         lua_pop(L, 1);
     }
 }
 
-static void run_assembly_test_code(lua_State* L)
+static void run_assembly_test_code(lua_State* L, bool debug, bool decompile)
 {
     TycheVM* T = tyc_new();
+    tyc_debug_to_console(T, debug);
 
     // load code
     uint8_t* bytecode; size_t bytecode_sz;
@@ -382,6 +395,8 @@ static void run_assembly_test_code(lua_State* L)
 
     // run code
     assert(tyc_load_bytecode(T, bytecode, bytecode_sz) == T_OK);
+    if (decompile)
+        tyc_assembly_decompile(T);
     assert(tyc_call(T, 0) == T_OK);
 
     // check stack size
@@ -405,7 +420,7 @@ static void run_assembly_test_code(lua_State* L)
     tyc_destroy(T);
 }
 
-static void run_assembly_test_template(lua_State* L)
+static void run_assembly_test_template(lua_State* L, bool debug, bool decompile)
 {
     lua_getfield(L, -1, "template");
     char* template = strdup(lua_tostring(L, -1));
@@ -440,9 +455,12 @@ static void run_assembly_test_template(lua_State* L)
 
         // run code
         TycheVM* T = tyc_new();
+        tyc_debug_to_console(T, debug);
         uint8_t* bytecode; size_t bytecode_sz;
         assert(code_assemble(formatted_code, &bytecode, &bytecode_sz) == T_OK);
         assert(tyc_load_bytecode(T, bytecode, bytecode_sz) == T_OK);
+        if (decompile)
+            tyc_assembly_decompile(T);
         assert(tyc_call(T, 0) == T_OK);
 
         // check stack top

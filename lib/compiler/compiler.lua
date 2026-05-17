@@ -95,10 +95,10 @@ local instructions = {
 
     -- local variables
     pushv = 0xa3,
-    set   = 0xa4,
-    dupv  = 0xa5,
-    setg  = 0xa6,
-    getg  = 0xa7,
+    set   = 0xae,
+    dupv  = 0xa4,
+    setg  = 0xa5,
+    getg  = 0xa6,
 
     -- function operations
     call = 0xa7,
@@ -138,7 +138,7 @@ local instructions = {
     -- other value operations
     len  = 0x40,
     type = 0x41,
-    cast = 0xaa,
+    cast = 0xad,
     ver  = 0x42,
 
     -- external code
@@ -244,7 +244,7 @@ local function assemble(proto)
             -- add labels
             if inst.labels then
                 for _, lbl in ipairs(inst.labels) do
-                    labels[lbl] = #bin - function_start - 1
+                    labels[lbl] = #bin - function_start
                 end
             end
 

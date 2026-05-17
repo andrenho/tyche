@@ -32,7 +32,7 @@ Stack operations:
 
 Local variables:
    a3  c3 e3    pushv [int]          Push n nil values into the stack (used to init local vars)
-   ab  cb eb    set [index]          Set value in stack position (set local variable)
+   ae  ce ee    set [index]          Set value in stack position (set local variable)
    a4  c4 e4    dupv [index]         Duplicate stack value (load local variable)
    a5  c5 e5    setg [int]           Set global variable
    a6  c6 e6    getg [int]           Get global variable
@@ -75,7 +75,7 @@ Logical/arithmetic:
 Other value operations:
 40              len                  Get table, array or string size
 41              type                 Get type from value at the top of the stack
-   aa           cast [type]          Cast type to another type
+   ad           cast [type]          Cast type to another type
 42              ver                  Return VM version
 
 External code:

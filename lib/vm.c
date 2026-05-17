@@ -1,6 +1,7 @@
 #include "priv.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 
 typedef struct Location {
     uint32_t function_id;
@@ -18,6 +19,7 @@ struct TycheVM {
     Heap*         heap;
     Code*         code;
     LocationStack location_stack;
+    bool          debug;
 };
 
 static TYC_RESULT step(TycheVM* T);
@@ -39,6 +41,7 @@ TycheVM* tyc_new(void)
         .cap = 4,
         .sz = 0,
     };
+    t->debug = false;
 
     expr_init();
 
@@ -53,6 +56,95 @@ void tyc_destroy(TycheVM* t)
     stack_destroy(t->stack);
     free(t);
 }
+
+//
+// DEBUGGING
+//
+
+void tyc_debug_to_console(TycheVM* T, bool activate)
+{
+    T->debug = activate;
+}
+
+#ifdef DEBUG_ASSEMBLY
+
+static void debug_instruction(TycheVM* T, Location* loc, Instruction inst)
+{
+    if (!T->debug)
+        return;
+
+    char buf[50];
+    code_parse_instruction(inst, buf, sizeof(buf));
+    printf(": %02d-%04d   %s    ", loc->function_id, loc->pc, buf);
+}
+
+static void debug_value(TycheVM* T, VALUE a)
+{
+    switch (value_type(a)) {
+        case TT_NIL:
+            printf("[nil]");
+            break;
+        case TT_INTEGER:
+            printf("[%d]", value_integer(a));
+            break;
+        case TT_REAL:
+            printf("[%f]", (double) value_real(a));
+            break;
+        case TT_STRING: {
+            const char* str;
+            if (heap_get_string(T->heap, value_idx(a), &str) == T_OK)
+                printf("[\"%s\"]", str);
+            else
+                printf("[\"(not found)\"]");
+            break;
+        }
+        case TT_STRING_CONST: {
+            if (code_const_type(T->code, value_idx(a)) != TC_STRING)
+                printf("[\"(const not a string)\"]");
+            else
+                printf("[\"%s\"]", code_const_string(T->code, value_idx(a)));
+            break;
+        }
+        case TT_ARRAY:
+            printf("[(not implemented)]\n");
+            abort();
+        case TT_TABLE:
+            printf("[(not implemented )]\n");
+            abort();
+        case TT_FUNCTION:
+            printf("[func %d]", value_idx(a));
+            break;
+        case TT_NATIVE_PTR:
+            printf("[ptr %p]", (void *) (intptr_t) value_idx(a));
+            break;
+        case TT_COUNT__:
+            __builtin_unreachable();
+    }
+}
+
+static void debug_stack(TycheVM* T)
+{
+    if (!T->debug)
+        return;
+    if (stack_size(T->stack) == 0) {
+        printf("|empty|\n");
+        return;
+    }
+    for (size_t i = 0; i < stack_size(T->stack); ++i) {
+        VALUE a;
+        stack_at(T->stack, (int32_t) i, &a);
+        debug_value(T, a);
+        printf(" ");
+    }
+    printf("\n");
+}
+
+void tyc_assembly_decompile(TycheVM* T)
+{
+    code_decompile(T->code);
+}
+
+#endif
 
 //
 // LOCATION STACK
@@ -152,7 +244,7 @@ TYC_RESULT tyc_call(TycheVM* T, uint16_t n_pars)
 
 size_t tyc_stack_size(TycheVM* T)
 {
-    return stack_len(T->stack);
+    return stack_size(T->stack);
 }
 
 void tyc_pushnil(TycheVM* T)
@@ -211,7 +303,9 @@ static TYC_RESULT step(TycheVM* T)
     Location* loc = location_top(T);
     Instruction inst = code_next_instruction(T->code, loc->function_id, loc->pc);
 
-    // TODO - debug instruction
+#ifdef DEBUG_ASSEMBLY
+    debug_instruction(T, loc, inst);
+#endif
 
     switch (inst.operator) {
 
@@ -299,8 +393,37 @@ static TYC_RESULT step(TycheVM* T)
             TRY(stack_pop_fp(T->stack))
             TRY(stack_push(T->stack, a))
             location_pop(T);
-            // TODO - print stack
-            return T_OK;
+            goto dont_update_pc;
+
+        //
+        // jumps/branching
+        //
+
+        case TO_JMP:
+            if (inst.operand < 0)
+                return T_ERR_VALUE_OUT_OF_RANGE;  // TODO - also check function size
+            loc->pc = (uint32_t) inst.operand;
+            goto dont_update_pc;
+
+        case TO_BZ:
+            if (inst.operand < 0)
+                return T_ERR_VALUE_OUT_OF_RANGE;  // TODO - also check function size
+            TRY(stack_pop(T->stack, &a))
+            if (value_is_zero(a)) {
+                loc->pc = (uint32_t) inst.operand;
+                goto dont_update_pc;
+            }
+            break;
+
+        case TO_BNZ:
+            if (inst.operand < 0)
+                return T_ERR_VALUE_OUT_OF_RANGE;  // TODO - also check function size
+            TRY(stack_pop(T->stack, &a))
+            if (!value_is_zero(a)) {
+                loc->pc = (uint32_t) inst.operand;
+                goto dont_update_pc;
+            }
+            break;
 
         default:
             return T_ERR_INVALID_OPCODE;
@@ -309,5 +432,9 @@ static TYC_RESULT step(TycheVM* T)
     // TODO - print stack
     loc->pc += inst.sz;
 
+dont_update_pc:
+#ifdef DEBUG_ASSEMBLY
+    debug_stack(T);
+#endif
     return T_OK;
 }

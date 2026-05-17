@@ -26,10 +26,10 @@ typedef enum {
 
     // LOCAL VARIABLES
     TO_PUSHV = 0XA3,
-    TO_SET   = 0XA4,
-    TO_DUPV  = 0XA5,
-    TO_SETG  = 0XA6,
-    TO_GETG  = 0XA7,
+    TO_SET   = 0XAE,
+    TO_DUPV  = 0XA4,
+    TO_SETG  = 0XA5,
+    TO_GETG  = 0XA6,
 
     // FUNCTION OPERATIONS
     TO_CALL = 0XA7,
@@ -69,7 +69,7 @@ typedef enum {
     // OTHER VALUE OPERATIONS
     TO_LEN  = 0X40,
     TO_TYPE = 0X41,
-    TO_CAST = 0XAA,
+    TO_CAST = 0XAD,
     TO_VER  = 0X42,
 
     // EXTERNAL CODE
@@ -156,7 +156,7 @@ TYC_RESULT stack_push(Stack* s, VALUE v);
 TYC_RESULT stack_peek(Stack const* s, VALUE* v_out);
 TYC_RESULT stack_pop(Stack* s, VALUE* v_out);
 
-size_t     stack_len(Stack const* s);
+size_t     stack_size(Stack const* s);
 
 TYC_RESULT stack_at(Stack const* s, int32_t key, VALUE* v);
 TYC_RESULT stack_set(Stack* s, int32_t key, VALUE v);
@@ -224,7 +224,11 @@ T_REAL         code_const_real(Code const* code, size_t n);
 const char*    code_const_string(Code const* code, size_t n);
 
 uint32_t       code_n_functions(Code const* code);
+uint32_t       code_function_sz(Code const* code, uint32_t f_id);
 Instruction    code_next_instruction(Code const* code, uint32_t function_id, uint32_t pc);
+
+void           code_decompile(Code const* code);
+void           code_parse_instruction(Instruction inst, char* outbuf, size_t sz);
 
 //
 // EXPRESSIONS

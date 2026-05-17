@@ -3,7 +3,10 @@
 #
 
 # install prefix
-PREFIX=/usr/local
+PREFIX ?= /usr/local
+
+# add functions to debug assembly to console
+DEBUG_ASSEMBLY ?= 0
 
 #
 # internal flags/options
@@ -48,6 +51,10 @@ RELEASE_LDFLAGS=-flto=auto
 CFLAGS+=-std=c99 -D_GNU_SOURCE -fPIC -fvisibility=hidden -isystem lib/contrib -MMD -MP
 LDFLAGS+=
 
+ifeq ($(DEBUG_ASSEMBLY),1)
+    CFLAGS += -DDEBUG_ASSEMBLY
+endif
+
 #
 # generic targets
 #
@@ -58,7 +65,7 @@ check: tyche-test
 	./tyche-test
 
 clean:
-	rm -f tyche libtyche.a libtyche.so* tyche-test **/*.o **/*.d lib/compiler/compiler.h
+	rm -f tyche libtyche.a libtyche.so* tyche-test **/*.o **/*.d lib/compiler/compiler.lua.h
 
 install: tyche libtyche.a libtyche.so.${VERSION} lib/tyche.h
 	install -m 644 libtyche.a libtyche.so.${VERSION} ${PREFIX}/lib
@@ -95,7 +102,7 @@ tyche: src/tyche.o libtyche.a
 	$(CC) -o $@ $^ ${LDFLAGS}
 	strip $@
 
-tyche-test: CFLAGS += ${DEBUG_CFLAGS}
+tyche-test: CFLAGS += ${DEBUG_CFLAGS} -DDEBUG_ASSEMBLY
 tyche-test: LDFLAGS += ${DEBUG_LDFLAGS}
 tyche-test: test/tests.o libtyche.a
 	$(CC) -o $@ $^ ${LDFLAGS} -I../lib

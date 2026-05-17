@@ -60,19 +60,41 @@ return {
     {
         name = "VM: functions",
         code = [[
-        .func 0
-            pushf   1
-            pushi   2
-            pushi   3
-            call    2
-            ret
-        .func 1
-            dupv    0
-            dupv    1
-            sub
-            ret
+            .func 0
+                pushf   1
+                pushi   2
+                pushi   3
+                call    2
+                ret
+            .func 1
+                dupv    0
+                dupv    1
+                sub
+                ret
         ]],
         expected_stack_size = 1,
         expected_stack_top = -1,
+    },
+    {
+        name = "VM: jumps (jmp + bnz)",
+        code = [[
+            .func 0
+                jmp     @x1         ; 0
+                pushi   5           ; 3
+            @x1:
+                pushi   1           ; 5
+                bnz     @x2         ; 7
+                pushi   1           ; 10
+                bz      @x3         ; 12
+            @x2:
+                pushi   6           ; 15
+                ret                 ; 17
+            @x3:
+                pushi   7           ; 18
+                ret                 ; 20
+        ]],
+        decompile = true,
+        debug = true,
+        expected_stack_top = 6,
     },
 }
