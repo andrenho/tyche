@@ -620,7 +620,7 @@ static TYC_RESULT step(TycheVM* T)
             break;
 
         //
-        // local variables
+        // variables
         //
 
         case TO_PUSHV:
@@ -642,6 +642,10 @@ static TYC_RESULT step(TycheVM* T)
                 ERROR("Value out of range")
             TRY(stack_at(T->stack, inst.operand, &a))
             stack_push(T->stack, a);
+            break;
+
+        case TO_GLBL:
+            TRY(stack_push(T->stack, create_value_idx(TT_TABLE, T->global_table)))
             break;
 
         //

@@ -98,7 +98,7 @@ local instructions = {
     set   = 0xae,
     dupv  = 0xa4,
     setg  = 0xa5,
-    getg  = 0xa6,
+    glbl  = 0xa6,
 
     -- function operations
     call = 0xa7,

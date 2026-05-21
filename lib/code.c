@@ -232,7 +232,7 @@ void code_parse_instruction(Instruction inst, char* outbuf, size_t sz)
         case TO_SET:   n = snprintf(outbuf, sz, "set    "); break;
         case TO_DUPV:  n = snprintf(outbuf, sz, "dupv   "); break;
         case TO_SETG:  n = snprintf(outbuf, sz, "setg   "); break;
-        case TO_GETG:  n = snprintf(outbuf, sz, "getg   "); break;
+        case TO_GLBL:  n = snprintf(outbuf, sz, "glbl   "); break;
         case TO_CALL:  n = snprintf(outbuf, sz, "call   "); break;
         case TO_RET:   n = snprintf(outbuf, sz, "ret    "); break;
         case TO_RETI:  n = snprintf(outbuf, sz, "reti   "); break;

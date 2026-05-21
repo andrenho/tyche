@@ -30,7 +30,7 @@ typedef enum {
     TO_SET   = 0XAE,
     TO_DUPV  = 0XA4,
     TO_SETG  = 0XA5,
-    TO_GETG  = 0XA6,
+    TO_GLBL  = 0XA6,
 
     // FUNCTION OPERATIONS
     TO_CALL = 0XA7,
