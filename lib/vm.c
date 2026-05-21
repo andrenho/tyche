@@ -24,7 +24,18 @@ struct TycheVM {
 
 static TYC_RESULT step(TycheVM* T);
 
-#define TRY(x) if ((r = (x)) != T_OK) { return r; }
+//
+// ERROR MANAGEMENT
+//
+
+__thread char last_err_msg[256] = {0};
+
+bool abort_on_errors = true;  // only in debug mode
+
+const char* tyc_last_error()
+{
+    return last_err_msg;
+}
 
 //
 // CREATE/DESTROY VM
@@ -241,7 +252,7 @@ static TYC_RESULT enter_function(TycheVM* T, uint16_t n_pars)
     VALUE function;
     TRY(stack_pop(T->stack, &function))
     if (value_type(function) != TT_FUNCTION)
-        return T_ERR_TYPE_UNEXPECTED;
+        ERROR("Expected function")
 
     // enter function
     push_location(T, value_idx(function), 0);
@@ -323,7 +334,7 @@ TYC_RESULT tyc_tointeger(TycheVM* T, int idx, int32_t* value)
     TYC_RESULT r;
     TRY(stack_at(T->stack, idx, &v))
     if (v.type != TT_INTEGER)
-        return T_ERR_TYPE_UNEXPECTED;
+        ERROR("Expected integer")
     *value = value_integer(v);
     return T_OK;
 }
@@ -336,7 +347,7 @@ TYC_RESULT tyc_tostring(TycheVM* T, int idx, const char** str)
     if (v.type == TT_STRING)
         return heap_get_string(T->heap, value_heap_key(v), str);
     else
-        return T_ERR_TYPE_UNEXPECTED;
+        ERROR("Expected string")
     return T_OK;
 }
 
@@ -449,7 +460,7 @@ TYC_RESULT tyc_next(TycheVM* T, int index)
         if (value_type(current_idx_value) == TT_INTEGER) {
             current_idx = value_integer(current_idx_value) + 1;
         } else if (value_type(current_idx_value) != TT_NIL) {
-            return T_ERR_TYPE_UNEXPECTED;
+            ERROR("Expected nil or integer key")
         }
 
         // add information to stack
@@ -476,7 +487,7 @@ TYC_RESULT tyc_next(TycheVM* T, int index)
         }
 
     } else {
-        return T_ERR_TYPE_UNEXPECTED;
+        ERROR("Expected array or table")
     }
 
     return T_OK;
@@ -527,13 +538,13 @@ static TYC_RESULT step(TycheVM* T)
 
         case TO_PUSHF:
             if (inst.operand < 0 || inst.operand >= (int) code_n_functions(T->code))
-                return T_ERR_VALUE_OUT_OF_RANGE;
+                ERROR("Value out of range")
             TRY(stack_push(T->stack, create_value_idx(TT_FUNCTION, (uint32_t) inst.operand)))
             break;
 
         case TO_PUSHC:
             if (inst.operand < 0 || inst.operand >= (int) code_n_consts(T->code))
-                return T_ERR_VALUE_OUT_OF_RANGE;
+                ERROR("Value out of range")
             if (code_const_type(T->code, (size_t) inst.operand) == TC_STRING) {
                 const char* string = code_const_string(T->code, (uint32_t) inst.operand);
                 HEAP_KEY key = heap_add_string(T->heap, string, true);
@@ -561,7 +572,7 @@ static TYC_RESULT step(TycheVM* T)
 
         case TO_CALL:
             if (inst.operand < 0)
-                return T_ERR_VALUE_OUT_OF_RANGE;
+                ERROR("Value out of range")
             enter_function(T, (uint16_t) inst.operand);
             break;
 
@@ -578,13 +589,13 @@ static TYC_RESULT step(TycheVM* T)
 
         case TO_GETI:
             if (inst.operand < 0)
-                return T_ERR_VALUE_OUT_OF_RANGE;
+                ERROR("Value out of range")
             TRY(tyc_geti(T, -1, (size_t) inst.operand))
             break;
 
         case TO_SETI:
             if (inst.operand < 0)
-                return T_ERR_VALUE_OUT_OF_RANGE;
+                ERROR("Value out of range")
             TRY(tyc_seti(T, -2, (size_t) inst.operand))
             break;
 
@@ -610,21 +621,21 @@ static TYC_RESULT step(TycheVM* T)
 
         case TO_PUSHV:
             if (inst.operand <= 0)
-                return T_ERR_VALUE_OUT_OF_RANGE;
+                ERROR("Value out of range")
             for (int i = 0; i < inst.operand; ++i)
                 tyc_pushnil(T);
             break;
 
         case TO_SET:
             if (inst.operand < 0)
-                return T_ERR_VALUE_OUT_OF_RANGE;
+                ERROR("Value out of range")
             TRY(stack_pop(T->stack, &a))
             TRY(stack_set(T->stack, inst.operand, a))
             break;
 
         case TO_DUPV:
             if (inst.operand < 0)
-                return T_ERR_VALUE_OUT_OF_RANGE;
+                ERROR("Value out of range")
             TRY(stack_at(T->stack, inst.operand, &a))
             stack_push(T->stack, a);
             break;
@@ -657,13 +668,13 @@ static TYC_RESULT step(TycheVM* T)
 
         case TO_JMP:
             if (inst.operand < 0 || inst.operand >= (int) code_function_sz(T->code, loc->function_id))
-                return T_ERR_VALUE_OUT_OF_RANGE;
+                ERROR("Value out of range")
             loc->pc = (uint32_t) inst.operand;
             goto dont_update_pc;
 
         case TO_BZ:
             if (inst.operand < 0 || inst.operand >= (int) code_function_sz(T->code, loc->function_id))
-                return T_ERR_VALUE_OUT_OF_RANGE;
+                ERROR("Value out of range")
             TRY(stack_peek(T->stack, &a))
             if (value_is_zero(a)) {
                 loc->pc = (uint32_t) inst.operand;
@@ -673,7 +684,7 @@ static TYC_RESULT step(TycheVM* T)
 
         case TO_BNIL:
             if (inst.operand < 0 || inst.operand >= (int) code_function_sz(T->code, loc->function_id))
-                return T_ERR_VALUE_OUT_OF_RANGE;
+                ERROR("Value out of range")
             TRY(stack_peek(T->stack, &a))
             if (value_type(a) == TT_NIL) {
                 loc->pc = (uint32_t) inst.operand;
@@ -683,7 +694,7 @@ static TYC_RESULT step(TycheVM* T)
 
         case TO_BNZ:
             if (inst.operand < 0 || inst.operand >= (int) code_function_sz(T->code, loc->function_id))
-                return T_ERR_VALUE_OUT_OF_RANGE;
+                ERROR("Value out of range")
             TRY(stack_peek(T->stack, &a))
             if (!value_is_zero(a)) {
                 loc->pc = (uint32_t) inst.operand;
@@ -700,13 +711,9 @@ static TYC_RESULT step(TycheVM* T)
             break;
 
         default:
-#ifdef DEBUG_ASSEMBLY
-            abort();
-#endif
-            return T_ERR_INVALID_OPCODE;
+            ERROR("Invalid opcode 0x%x", inst.operator)
     }
 
-    // TODO - print stack
     loc->pc += inst.sz;
 
 dont_update_pc:

@@ -105,7 +105,7 @@ static TYC_RESULT heap_get_item(Heap const* h, HEAP_KEY key, HeapValue** out_val
     khiter_t k = kh_get(HEAP, h->items, key);
     bool is_missing = (k == kh_end(h->items));
     if (is_missing)
-        return T_ERR_HEAP_KEY_NOT_FOUND;
+        ERROR("Heap key 0x%0x not found", key)
     *out_value = &kh_value(h->items, k);
     return T_OK;
 }

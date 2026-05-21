@@ -13,13 +13,7 @@ typedef enum {
 } TYC_TYPE;
 
 typedef enum {
-    T_OK = 0,
-    T_ERR_STACK_UNDERFLOW = -1, T_ERR_STACK_FP_UNDERFLOW = -2, T_ERR_STACK_ACCESS_OUT_OF_RANGE = -3,
-    T_ERR_HEAP_KEY_NOT_FOUND = -10,
-    T_ERR_TABLE_KEY_NOT_FOUND = -20,
-    T_ERR_ASSEMBLER_SYNTAX_ERROR = -30,
-    T_ERR_BYTECODE_TOO_SMALL = -40, T_ERR_BYTECODE_INVALID_MAGIC = -41,
-    T_ERR_TYPE_UNEXPECTED = -50, T_ERR_INVALID_OPCODE = -51, T_ERR_EXPR_INCORRECT_TYPES = -52, T_ERR_VALUE_OUT_OF_RANGE = -53,
+    T_OK = 0, T_ERR = -1,
 } TYC_RESULT;
 
 typedef enum {
@@ -31,6 +25,9 @@ typedef enum {
 #define T_REAL float
 
 typedef struct TycheVM TycheVM;
+
+// error management
+const char* tyc_last_error();
 
 // create/destroy VM
 TycheVM*   tyc_new(void);

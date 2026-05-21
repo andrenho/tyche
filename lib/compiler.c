@@ -30,7 +30,7 @@ TYC_RESULT code_assemble(const char* code, uint8_t** bytecode, size_t* bytecode_
         abort();
     } else if (r == LUA_ERRRUN) {
         fprintf(stderr, "%s\n", lua_tostring(L, -1));
-        return T_ERR_ASSEMBLER_SYNTAX_ERROR;
+        ERROR("Assembler: syntax error")
     }
 
     if (!lua_isstring(L, -1))

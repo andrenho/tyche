@@ -59,7 +59,7 @@ size_t stack_top_fp(Stack const* s)
 TYC_RESULT stack_peek(Stack const* s, VALUE* v_out)
 {
     if (s->stack_n <= stack_top_fp(s))
-        return T_ERR_STACK_UNDERFLOW;
+        ERROR("Stack underflow")
     if (v_out)
         *v_out = s->stack[s->stack_n - 1];
     return T_OK;
@@ -79,31 +79,31 @@ size_t stack_size(Stack const* s)
     return s->stack_n - stack_top_fp(s);
 }
 
-TYC_RESULT stack_at(Stack const* s, int32_t key, VALUE* v)
+TYC_RESULT stack_at(Stack const* s, int32_t pos, VALUE* v)
 {
-    if (key >= 0) {
-        if ((int) stack_top_fp(s) + key >= (int) s->stack_n)
-            return T_ERR_STACK_ACCESS_OUT_OF_RANGE;
-        *v = s->stack[(int) stack_top_fp(s) + key];
+    if (pos >= 0) {
+        if ((int) stack_top_fp(s) + pos >= (int) s->stack_n)
+            ERROR("Stack index %d out of range", pos)
+        *v = s->stack[(int) stack_top_fp(s) + pos];
     } else {
-        if ((int) s->stack_n + key < (int) stack_top_fp(s))
-            return T_ERR_STACK_ACCESS_OUT_OF_RANGE;
-        *v = s->stack[(int) s->stack_n + key];
+        if ((int) s->stack_n + pos < (int) stack_top_fp(s))
+            ERROR("Stack index %d out of range", pos)
+        *v = s->stack[(int) s->stack_n + pos];
     }
 
     return T_OK;
 }
 
-TYC_RESULT stack_set(Stack* s, int32_t key, VALUE v)
+TYC_RESULT stack_set(Stack* s, int32_t pos, VALUE v)
 {
-    if (key >= 0) {
-        if ((int) stack_top_fp(s) + key >= (int) s->stack_n)
-            return T_ERR_STACK_ACCESS_OUT_OF_RANGE;
-        s->stack[(int) stack_top_fp(s) + key] = v;
+    if (pos >= 0) {
+        if ((int) stack_top_fp(s) + pos >= (int) s->stack_n)
+            ERROR("Stack index %d out of range", pos)
+        s->stack[(int) stack_top_fp(s) + pos] = v;
     } else {
-        if ((int) s->stack_n + key < (int) stack_top_fp(s))
-            return T_ERR_STACK_ACCESS_OUT_OF_RANGE;
-        s->stack[(int) s->stack_n + key] = v;
+        if ((int) s->stack_n + pos < (int) stack_top_fp(s))
+            ERROR("Stack index %d out of range", pos)
+        s->stack[(int) s->stack_n + pos] = v;
     }
 
     return T_OK;
@@ -125,7 +125,7 @@ TYC_RESULT stack_push_fp(Stack* s)
 TYC_RESULT stack_pop_fp(Stack* s)
 {
     if (s->fp_n == 1)
-        return T_ERR_STACK_FP_UNDERFLOW;
+        ERROR("Stack frame pointer underflow")
     s->stack_n = stack_top_fp(s);
     --s->fp_n;
     return T_OK;

@@ -14,7 +14,7 @@ static BIN_EXPR_FN bin_expr_fn[TX_COUNT__][TT_COUNT__][TT_COUNT__];
 
 static TYC_RESULT default_bin_op(TycheVM* T, VALUE a, VALUE b, VALUE* r) {
     (void) T; (void) a; (void) b, (void) r;
-    return T_ERR_EXPR_INCORRECT_TYPES;
+    ERROR("Incorrect types in expression: %s and %s", type_name(value_type(a)), type_name(value_type(b)))
 }
 
 #define BIN_OP(name) static TYC_RESULT name(TycheVM* T, VALUE a, VALUE b, VALUE* r)

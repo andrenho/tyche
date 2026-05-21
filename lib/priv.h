@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
+#include <stdio.h>
 
 //
 // INSTRUCTIONS
@@ -88,6 +89,33 @@ typedef enum {
 } TYC_INST;
 
 //
+// ERROR MANAGEMENT
+//
+
+extern __thread char last_err_msg[256];
+extern bool abort_on_errors;   // only on debug mode
+
+#ifdef DEBUG_ASSEMBLY
+#define ERROR(...) {                                            \
+    snprintf(last_err_msg, sizeof last_err_msg, __VA_ARGS__);   \
+    if (abort_on_errors) {                                      \
+        fprintf(stderr, "%s\n", last_err_msg);                  \
+        abort();                                                \
+    }                                                           \
+    return T_ERR;                                               \
+}
+#else
+#define ERROR(...) {                                            \
+    snprintf(last_err_msg, sizeof last_err_msg, __VA_ARGS__);   \
+    fprintf(stderr, "%s\n", last_err_msg);                      \
+    return T_ERR;                                               \
+}
+#endif
+
+#define TRY(x) if ((r = (x)) != T_OK) { return r; }
+
+
+//
 // TYPE DECLARATION
 //
 
@@ -135,8 +163,10 @@ void* xrealloc(void* p, size_t n);
 // VALUE
 //
 
-TYC_TYPE value_type(VALUE v);
-bool     type_is_collectable(TYC_TYPE t);
+TYC_TYPE    value_type(VALUE v);
+
+const char* type_name(TYC_TYPE t);
+bool        type_is_collectable(TYC_TYPE t);
 
 int32_t  value_integer(VALUE v);
 float    value_real(VALUE v);
@@ -164,8 +194,8 @@ TYC_RESULT stack_pop(Stack* s, VALUE* v_out);
 
 size_t     stack_size(Stack const* s);
 
-TYC_RESULT stack_at(Stack const* s, int32_t key, VALUE* v);
-TYC_RESULT stack_set(Stack* s, int32_t key, VALUE v);
+TYC_RESULT stack_at(Stack const* s, int32_t pos, VALUE* v);
+TYC_RESULT stack_set(Stack* s, int32_t pos, VALUE v);
 
 size_t     stack_top_fp(Stack const* s);
 TYC_RESULT stack_push_fp(Stack* s);

@@ -225,8 +225,9 @@ static void test_stack(void)
         assert(stack_at(s, -1, &v) == T_OK); assert(value_integer(v) == 30);
         assert(stack_at(s, -2, &v) == T_OK); assert(value_integer(v) == 20);
 
-        assert(stack_at(s, 3, &v) == T_ERR_STACK_ACCESS_OUT_OF_RANGE);
-        assert(stack_at(s, -4, &v) == T_ERR_STACK_ACCESS_OUT_OF_RANGE);
+        abort_on_errors = false;
+        assert(stack_at(s, 3, &v) == T_ERR);
+        assert(stack_at(s, -4, &v) == T_ERR);
 
         assert(stack_set(s, 1, create_value_integer(99)) == T_OK);
         assert(stack_at(s, 1, &v) == T_OK); assert(value_integer(v) == 99);
@@ -238,7 +239,9 @@ static void test_stack(void)
         assert(stack_pop(s, NULL) == T_OK);
         assert(stack_size(s) == 0);
 
-        assert(stack_pop(s, NULL) == T_ERR_STACK_UNDERFLOW);
+        assert(stack_pop(s, NULL) == T_ERR);
+
+        abort_on_errors = true;
 
         stack_destroy(s);
     }
@@ -265,8 +268,9 @@ static void test_stack(void)
         assert(stack_set(s, -2, create_value_integer(99)) == T_OK);
         assert(stack_at(s, -2, &v) == T_OK); assert(value_integer(v) == 99);
 
-        assert(stack_at(s, 3, &v) == T_ERR_STACK_ACCESS_OUT_OF_RANGE);
-        assert(stack_at(s, -4, &v) == T_ERR_STACK_ACCESS_OUT_OF_RANGE);
+        abort_on_errors = false;
+        assert(stack_at(s, 3, &v) == T_ERR);
+        assert(stack_at(s, -4, &v) == T_ERR);
 
         stack_pop_fp(s);
 
@@ -276,8 +280,9 @@ static void test_stack(void)
         assert(stack_at(s, -1, &v) == T_OK); assert(value_integer(v) == 20);
         assert(stack_at(s, -2, &v) == T_OK); assert(value_integer(v) == 10);
 
-        assert(stack_at(s, 2, &v) == T_ERR_STACK_ACCESS_OUT_OF_RANGE);
-        assert(stack_at(s, -3, &v) == T_ERR_STACK_ACCESS_OUT_OF_RANGE);
+        assert(stack_at(s, 2, &v) == T_ERR);
+        assert(stack_at(s, -3, &v) == T_ERR);
+        abort_on_errors = true;
 
         stack_destroy(s);
     }

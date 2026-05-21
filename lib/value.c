@@ -9,6 +9,23 @@ TYC_TYPE value_type(VALUE v)
     return v.type;
 }
 
+const char* type_name(TYC_TYPE t)
+{
+    switch (t) {
+        case TT_NIL:        return "nil";
+        case TT_INTEGER:    return "integer";
+        case TT_REAL:       return "real";
+        case TT_STRING:     return "string";
+        case TT_ARRAY:      return "array";
+        case TT_TABLE:      return "table";
+        case TT_FUNCTION:   return "function";
+        case TT_NATIVE_PTR: return "native pointer";
+        case TT_COUNT__:
+        default:
+            return "invalid type";
+    }
+}
+
 bool type_is_collectable(TYC_TYPE t)
 {
     return t == TT_STRING || t == TT_ARRAY || t == TT_TABLE;

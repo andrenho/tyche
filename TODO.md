@@ -40,7 +40,7 @@ Decisions:
     - [x] Garbage collection
     - [x] Iteration
   - [x] Run GC on tyc destruction (also: tyc_gc())
-  - [ ] Improve error reporting
+  - [x] Improve error reporting
     - macro
     - messages
     - abort if debug

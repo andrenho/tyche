@@ -47,12 +47,12 @@ TYC_RESULT code_load_bytecode(Code* code, uint8_t const* bytecode, size_t byteco
     // TODO - linking
 
     if (bytecode_sz < 24)
-        return T_ERR_BYTECODE_TOO_SMALL;
+        ERROR("Bytecode: too small")
 
     uint32_t magic;
     memcpy(&magic, bytecode, sizeof(magic));
     if (magic != MAGIC)
-        return T_ERR_BYTECODE_INVALID_MAGIC;
+        ERROR("Bytecode: invalid magic number")
 
     code->bytecode = bytecode;
     code->bytecode_sz = bytecode_sz;
