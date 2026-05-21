@@ -44,7 +44,7 @@ Decisions:
     - macro
     - messages
     - abort if debug
-  - [ ] Globals (?)
+  - [x] Globals (?)
   - [ ] Expression improvements
     - [ ] Supertables
     - [ ] Floats (real)

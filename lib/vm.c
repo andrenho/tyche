@@ -19,7 +19,7 @@ struct TycheVM {
     Heap*         heap;
     Code*         code;
     LocationStack location_stack;
-    HEAP_KEY      global_table;
+    VALUE         global_table;
     bool          debug;
 };
 
@@ -53,7 +53,7 @@ TycheVM* tyc_new(void)
         .cap = 4,
         .sz = 0,
     };
-    T->global_table = heap_add_table(T->heap);
+    T->global_table = create_value_heap_key(TT_TABLE, heap_add_table(T->heap));
     T->debug = false;
 
     expr_init();
@@ -502,7 +502,7 @@ TYC_RESULT tyc_next(TycheVM* T, int index)
 TYC_RESULT tyc_gc(TycheVM* T)
 {
     VALUE* v_idx;
-    stack_push(T->stack, create_value_heap_key(TT_TABLE, T->global_table));  // add global table to stack temporarily for GC
+    stack_push(T->stack, T->global_table);  // add global table to stack temporarily for GC
     size_t v_sz = stack_collectable_array(T->stack, &v_idx);
     heap_gc(T->heap, v_idx, v_sz);
     stack_pop(T->stack, NULL);
@@ -645,7 +645,7 @@ static TYC_RESULT step(TycheVM* T)
             break;
 
         case TO_GLBL:
-            TRY(stack_push(T->stack, create_value_idx(TT_TABLE, T->global_table)))
+            TRY(stack_push(T->stack, T->global_table))
             break;
 
         //

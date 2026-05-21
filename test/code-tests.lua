@@ -360,4 +360,22 @@ return {
         ]],
         expected_stack_top = 30,
     },
+    {
+        name = "Globals",
+        code = [[
+            .const
+                0: "Hello"
+            .func 0
+                glbl
+                pushc   0
+                pushi   20
+                setkv
+                pop
+                glbl
+                pushc   0
+                getkv
+                ret
+        ]],
+        expected_stack_top = 20,
+    }
 }
