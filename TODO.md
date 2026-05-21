@@ -1,65 +1,77 @@
-## Bytecode
+## C
 
-- [x] Byte array
-  - Auto-expand
-  - Add/retrive byte/int/float/string
-  - Should not be larger than the byte array itself
-- [x] Bytecode
-  - Add/retrive all types of data
-  - Keeps no memory except for caching
-  - [x] Refactor bytecode code
+Decisions:
+ - How to handle errors
+ - How values and heap values will be represented
+ - Transparency and log levels
 
-Improvements:
-- [x] Fixed int type (based on opcode)
-- [x] Constant type (only floats and strings for now)
+# Version 0
 
-After some additional development:
-- [ ] Bytecode debugging info
-
-
-## VM
-
+- [x] Makefile
+- [x] VALUE
+- [x] Stack
+  - [x] Test application
+- [x] Heap
+  - [x] Heap value
+  - [x] Strings
+  - [x] Arrays
+  - [x] Tables
 - [x] VM
+  - [x] (Lua interface) call assembler
+  - [x] (Lua) generate bytecode
+    - [x] Labels
   - [x] Code
-    - [x] Simple bytecode loader
-      - [x] Output bytecode format
-  - [x] Value object
-  - [x] Stack object
-  - [x] External interface
-  - [x] Code execution (except functions)
-  - [x] Functions
-  - [x] Print stack
-- [x] Assembler
-- [ ] VM execution
-  - [x] Stack operations (nil, integer, float, string, function)
-    - [x] Integer
-    - [x] Float
-    - [x] String
+    - [x] Interpret bytecode (fast)
+  - [x] Execution loop (fast)
+- [x] VM operations
   - [x] Expressions
-    - [x] Integer
-    - [x] Float
-    - [x] String
-  - [ ] Local/global variables
-  - [ ] Functions
-  - [ ] Constants
-  - [ ] Other operations
-  - [ ] Arrays
-    - [ ] Iteration
-    - [ ] Expressions
-  - [ ] Tables
-    - [ ] Iteration
-    - [ ] Metatables
-    - [ ] Expressions
-  - [ ] Control flow
-  - [ ] Compilation
+  - [x] Local variables
+  - [x] Functions
+    - [x] With parameters
+  - [x] Debug VM execution
+  - [x] Control flow
+    - [x] Recursion
+  - [x] Strings
+    - [x] From constants
+    - [x] Garbage collection
+  - [x] Arrays
+    - [x] Garbage collection
+  - [x] Tables
+    - [x] Garbage collection
+    - [x] Iteration
+  - [x] Run GC on tyc destruction (also: tyc_gc())
+  - [ ] Improve error reporting
+    - macro
+    - messages
+    - abort if debug
+  - [ ] Globals (?)
+  - [ ] Expression improvements
+    - [ ] Supertables
+    - [ ] Floats (real)
   - [ ] Error handling
-- [ ] C++ API
-  - [ ] Run native code on VM
-  - [ ] Run tyche code from C++
-  - [ ] C API
+    - [ ] Stack trace in case of errors
+  - [ ] Native pointers
+  - [ ] Rest of opcodes
+  - [ ] Assembler in C
+  - [ ] Main application
+- [ ] Prepare for release
+  - [ ] Documentation and webpage
 
-After some additional development:
-- [ ] Bytecode loader
-  - Combine multiple chunks
-  - Resolve function ids, constant ids, etc
-- [ ] Upvalues
+# Version 1
+
+- [ ] Compiler
+
+# Version 2
+
+- [ ] Closure/upvalues
+- [ ] stdlib
+
+## Future versions
+
+- [ ] Debugging information
+- [ ] Debugger
+- [ ] Dynamic language
+- [ ] Support tools
+  - [ ] Editor syntax file, etc
+- [ ] Static language
+

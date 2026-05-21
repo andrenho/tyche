@@ -34,3 +34,9 @@
 
 cmake-build-*/
 build/
+
+tyche
+tyche-test
+libtyche.a
+libtyche.so*
+lib/compiler/compiler.lua.h
