@@ -11,5 +11,23 @@ Internal handling of values
   Function        6
   NativePointer   7
 
-## Internal format
-  ???
+## Supertables
+  Non-function values: copied
+  Function values: reference
+
+## Operator overloading
+  sum   +
+  sub   -
+  mul   *
+  div   /
+  idiv  |/
+  mod   %
+  eq    ==  (automatic: neq)
+  lt    <   (automatic: lte)
+  gt    >   (automatic: gte)
+  and   &
+  or    |
+  xor   ~
+  pow   ^
+  shl   <<
+  shr   >>

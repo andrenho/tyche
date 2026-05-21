@@ -242,8 +242,8 @@ void code_parse_instruction(Instruction inst, char* outbuf, size_t sz)
         case TO_SETI:  n = snprintf(outbuf, sz, "seti   "); break;
         case TO_APPND: n = snprintf(outbuf, sz, "appnd  "); break;
         case TO_NEXT:  n = snprintf(outbuf, sz, "next   "); break;
-        case TO_SMT:   n = snprintf(outbuf, sz, "smt    "); break;
-        case TO_MT:    n = snprintf(outbuf, sz, "mt     "); break;
+        case TO_SPTB:  n = snprintf(outbuf, sz, "sptb   "); break;
+        case TO_SUPR:  n = snprintf(outbuf, sz, "supr   "); break;
         case TO_SUM:   n = snprintf(outbuf, sz, "sum    "); break;
         case TO_SUB:   n = snprintf(outbuf, sz, "sub    "); break;
         case TO_MUL:   n = snprintf(outbuf, sz, "mul    "); break;

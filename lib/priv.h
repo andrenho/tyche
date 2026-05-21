@@ -44,8 +44,8 @@ typedef enum {
     TO_SETI  = 0XA9,
     TO_APPND = 0X18,
     TO_NEXT  = 0X19,
-    TO_SMT   = 0X1A,
-    TO_MT    = 0X1B,
+    TO_SPTB  = 0X1A,
+    TO_SUPR  = 0X1B,
 
     // LOGICAL/ARITHMETIC
     TO_SUM     = 0X20,

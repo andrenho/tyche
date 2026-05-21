@@ -46,8 +46,8 @@ Decisions:
     - abort if debug
   - [x] Globals (?)
   - [ ] Expression improvements
-    - [ ] Operators
     - [ ] Supertables
+    - [ ] Operators
     - [ ] Floats (real)
   - [ ] Error handling
     - [ ] Stack trace in case of errors

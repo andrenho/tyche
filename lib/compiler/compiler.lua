@@ -112,8 +112,8 @@ local instructions = {
     seti  = 0xa9,
     appnd = 0x18,
     next  = 0x19,
-    smt   = 0x1a,
-    mt    = 0x1b,
+    sptb  = 0x1a,
+    supr  = 0x1b,
 
     -- logical/arithmetic
     sum     = 0x20,

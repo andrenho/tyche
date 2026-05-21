@@ -48,8 +48,8 @@ Table and array operations:
   a9  c9 e9     seti                 Set array's position value
 18              appnd                Add value to the end of array
 19              next                 Push the next pair into the stack (for loops), pushes nil as key when over
-1a              smt                  Set value metatable
-1b              mt                   Get value metatable
+1a              sptb                 Set table supertable
+1b              supr                 Fetch supertable
 
 Logical/arithmetic:
 20              sum                  Sum top 2 values in stack
