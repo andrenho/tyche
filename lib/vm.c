@@ -502,7 +502,7 @@ TYC_RESULT tyc_next(TycheVM* T, int index)
 TYC_RESULT tyc_gc(TycheVM* T)
 {
     VALUE* v_idx;
-    stack_push(T->stack, create_value_heap_key(TT_TABLE, T->global_table));  // add global table to stack temporarely for GC
+    stack_push(T->stack, create_value_heap_key(TT_TABLE, T->global_table));  // add global table to stack temporarily for GC
     size_t v_sz = stack_collectable_array(T->stack, &v_idx);
     heap_gc(T->heap, v_idx, v_sz);
     stack_pop(T->stack, NULL);
