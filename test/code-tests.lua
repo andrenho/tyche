@@ -133,7 +133,7 @@ return {
                 ret
         ]],
         expected_stack_top = 20,
-        expected_heap_size = 1,
+        expected_heap_size = 2,
     },
     {
         name = "VM: arrays GC",
@@ -147,7 +147,7 @@ return {
                 gc
                 ret
         ]],
-        expected_heap_size = 0,
+        expected_heap_size = 1,
     },
     {
         name = "VM: string from const",
@@ -174,7 +174,7 @@ return {
                 ret
         ]],
         expected_stack_top = "Hello world",
-        expected_heap_size = 3,
+        expected_heap_size = 4,
     },
     {
         name = "VM: GC strings (GC will delete)",
@@ -192,7 +192,7 @@ return {
                 ret
         ]],
         expected_stack_top = 50,
-        expected_heap_size = 2,
+        expected_heap_size = 3,
     },
     {
         name = "VM: array GC items (1st level) - no items removed",
@@ -211,7 +211,7 @@ return {
                 pop
                 ret
         ]],
-        expected_heap_size = 4,
+        expected_heap_size = 5,
     },
     {
         name = "VM: array GC items (1st level) - all items removed",
@@ -230,7 +230,7 @@ return {
                 gc
                 ret
         ]],
-        expected_heap_size = 2,
+        expected_heap_size = 3,
     },
     {
         name = "VM: array GC items (2nd level) - no items removed",
@@ -251,7 +251,7 @@ return {
                 pop
                 ret
         ]],
-        expected_heap_size = 5,
+        expected_heap_size = 6,
     },
     {
         name = "VM: array GC items (2nd level) - all items removed",
@@ -272,7 +272,7 @@ return {
                 gc
                 ret
         ]],
-        expected_heap_size = 2,
+        expected_heap_size = 3,
     },
     {
         name = "VM: iterate over arrays",

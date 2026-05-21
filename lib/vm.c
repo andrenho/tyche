@@ -19,6 +19,7 @@ struct TycheVM {
     Heap*         heap;
     Code*         code;
     LocationStack location_stack;
+    HEAP_KEY      global_table;
     bool          debug;
 };
 
@@ -43,20 +44,21 @@ const char* tyc_last_error()
 
 TycheVM* tyc_new(void)
 {
-    TycheVM* t = xcalloc(1, sizeof(TycheVM));
-    t->stack = stack_new();
-    t->heap = heap_new();
-    t->code = code_new();
-    t->location_stack = (LocationStack) {
+    TycheVM* T = xcalloc(1, sizeof(TycheVM));
+    T->stack = stack_new();
+    T->heap = heap_new();
+    T->code = code_new();
+    T->location_stack = (LocationStack) {
         .locations = xmalloc(4 * sizeof(Location)),
         .cap = 4,
         .sz = 0,
     };
-    t->debug = false;
+    T->global_table = heap_add_table(T->heap);
+    T->debug = false;
 
     expr_init();
 
-    return t;
+    return T;
 }
 
 void tyc_destroy(TycheVM* T)
@@ -500,8 +502,10 @@ TYC_RESULT tyc_next(TycheVM* T, int index)
 TYC_RESULT tyc_gc(TycheVM* T)
 {
     VALUE* v_idx;
+    stack_push(T->stack, create_value_heap_key(TT_TABLE, T->global_table));  // add global table to stack temporarely for GC
     size_t v_sz = stack_collectable_array(T->stack, &v_idx);
     heap_gc(T->heap, v_idx, v_sz);
+    stack_pop(T->stack, NULL);
     free(v_idx);
     return T_OK;
 }
