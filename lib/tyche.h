@@ -62,6 +62,7 @@ TYC_RESULT tyc_append(TycheVM* T, int index);
 TYC_RESULT tyc_next(TycheVM* T, int index);
 TYC_RESULT tyc_setkv(TycheVM* T, int index);
 TYC_RESULT tyc_getkv(TycheVM* T, int index);
+TYC_RESULT tyc_setsupertable(TycheVM* T, int index);
 
 // memory operations
 TYC_RESULT tyc_gc(TycheVM* T);

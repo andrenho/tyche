@@ -34,8 +34,10 @@ bool type_is_collectable(TYC_TYPE t)
 int32_t value_integer(VALUE v)
 {
 #ifdef CHECK_TYCHE_BUGS
-    if (v.type != TT_INTEGER)
+    if (v.type != TT_INTEGER) {
+        fprintf(stderr, "Expected integer, found %s.\n", type_name(v.type));
         abort();
+    }
 #endif
     return v.v.i;
 }
@@ -43,8 +45,10 @@ int32_t value_integer(VALUE v)
 float value_real(VALUE v)
 {
 #ifdef CHECK_TYCHE_BUGS
-    if (v.type != TT_REAL)
+    if (v.type != TT_REAL){
+        fprintf(stderr, "Expected real, found %s.\n", type_name(v.type));
         abort();
+    }
 #endif
     return v.v.f;
 }
@@ -52,8 +56,10 @@ float value_real(VALUE v)
 uint32_t value_idx(VALUE v)
 {
 #ifdef CHECK_TYCHE_BUGS
-    if (v.type != TT_FUNCTION && v.type != TT_NATIVE_PTR)
+    if (v.type != TT_FUNCTION && v.type != TT_NATIVE_PTR){
+        fprintf(stderr, "Expected function or native, found %s.\n", type_name(v.type));
         abort();
+    }
 #endif
     return v.v.idx;
 }
@@ -61,8 +67,10 @@ uint32_t value_idx(VALUE v)
 HEAP_KEY value_heap_key(VALUE v)
 {
 #ifdef CHECK_TYCHE_BUGS
-    if (v.type != TT_ARRAY && v.type != TT_TABLE && v.type != TT_STRING)
+    if (v.type != TT_ARRAY && v.type != TT_TABLE && v.type != TT_STRING){
+        fprintf(stderr, "Expected table, array or string, found %s.\n", type_name(v.type));
         abort();
+    }
 #endif
     return v.v.idx;
 }

@@ -33,7 +33,7 @@ __thread char last_err_msg[256] = {0};
 
 bool abort_on_errors = true;  // only in debug mode
 
-const char* tyc_last_error()
+const char* tyc_last_error(void)
 {
     return last_err_msg;
 }
@@ -495,6 +495,28 @@ TYC_RESULT tyc_next(TycheVM* T, int index)
     return T_OK;
 }
 
+TYC_RESULT tyc_setsupertable(TycheVM* T, int index)
+{
+    TYC_RESULT r;
+
+    VALUE childtable_v;
+    TRY(stack_at(T->stack, index, &childtable_v))
+    if (value_type(childtable_v) != TT_TABLE)
+        ERROR("Can only set supertable of a table.")
+
+    VALUE supertable_v;
+    TRY(stack_pop(T->stack, &supertable_v))
+    if (value_type(supertable_v) == TT_NIL) {
+        TRY(heap_remove_supertable(T->heap, value_heap_key(childtable_v)))
+    } else if (value_type(supertable_v) != TT_TABLE) {
+        ERROR("Supertable must be a table")
+    } else {
+        TRY(heap_set_supertable(T->heap, value_heap_key(childtable_v), value_heap_key(supertable_v)))
+    }
+
+    return T_OK;
+}
+
 //
 // MEMORY OPERATION
 //
@@ -570,7 +592,7 @@ static TYC_RESULT step(TycheVM* T)
             TRY(tyc_newtable(T))
             break;
 
-            //
+        //
         // function calls
         //
 
@@ -617,6 +639,10 @@ static TYC_RESULT step(TycheVM* T)
 
         case TO_NEXT:
             TRY(tyc_next(T, -2))
+            break;
+
+        case TO_SPTB:
+            TRY(tyc_setsupertable(T, -2))
             break;
 
         //

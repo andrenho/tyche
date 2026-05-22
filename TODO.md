@@ -46,9 +46,14 @@ Decisions:
     - abort if debug
   - [x] Globals (?)
   - [ ] Expression improvements
-    - [ ] Supertables
-    - [ ] Operators
+    - [x] Supertables
     - [ ] Floats (real)
+      - [ ] NaN types? use doubles? (nanbox)
+      - [ ] rename floats?
+      - [ ] Support for floats in bytecode
+      - [ ] pushr
+      - [ ] real expressions
+    - [ ] Operators
   - [ ] Error handling
     - [ ] Stack trace in case of errors
   - [ ] Native pointers
@@ -56,6 +61,7 @@ Decisions:
   - [ ] Assembler in C
   - [ ] Main application
 - [ ] Prepare for release
+  - [ ] Review public function names
   - [ ] Documentation and webpage
 
 # Version 1

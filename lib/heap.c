@@ -17,11 +17,18 @@ typedef struct {
 } StringValue;
 
 typedef struct {
+    Table*   table;
+    HEAP_KEY supertable;
+} HeapTable;
+
+#define HEAP_VALUE_NIL 0
+
+typedef struct {
     TYC_HEAP_TYPE type;
     union {
-        char*  string;
-        Array* array;
-        Table* table;
+        char*     string;
+        Array*    array;
+        HeapTable t;
     } value;
 } HeapValue;
 
@@ -55,7 +62,7 @@ static void heap_free_item(HeapValue value)
             array_destroy(value.value.array);
             break;
         case TH_TABLE:
-            table_destroy(value.value.table);
+            table_destroy(value.value.t.table);
             break;
         default:
             __builtin_unreachable();
@@ -91,7 +98,7 @@ static HeapValue* heap_add_item(Heap* h, HEAP_KEY* key)
     do {
         *key = (HEAP_KEY) rand();
         k = kh_get(HEAP, h->items, *key);
-    } while (k != kh_end(h->items));
+    } while (*key != HEAP_VALUE_NIL && k != kh_end(h->items));
 
     k = kh_put(HEAP, h->items, *key, &ret);
     if (ret < 0)
@@ -177,7 +184,7 @@ HEAP_KEY heap_add_table(Heap* h)
     HEAP_KEY key;
     *heap_add_item(h, &key) = (HeapValue) {
         .type = TH_TABLE,
-        .value = { .table = table_new(h) },
+        .value = { .t = { .table = table_new(h), .supertable = HEAP_VALUE_NIL }, },
     };
     return key;
 }
@@ -190,8 +197,28 @@ TYC_RESULT heap_get_table(Heap const* h, HEAP_KEY key, Table** table)
     TRY(heap_get_item(h, key, &hv))
     if (hv->type != TH_TABLE)
         abort();
-    *table = hv->value.table;
+    *table = hv->value.t.table;
 
+    return T_OK;
+}
+
+TYC_RESULT heap_set_supertable(Heap const* h, HEAP_KEY table, HEAP_KEY super)
+{
+    TYC_RESULT r;
+    HeapValue *htable, *hsuper;
+    TRY(heap_get_item(h, table, &htable))
+    htable->value.t.supertable = super;
+    TRY(heap_get_item(h, super, &hsuper))
+    table_setsuper(htable->value.t.table, hsuper->value.t.table);
+    return T_OK;
+}
+
+TYC_RESULT heap_remove_supertable(Heap const* h, HEAP_KEY table)
+{
+    TYC_RESULT r;
+    Table* t;
+    TRY(heap_get_table(h, table, &t))
+    table_setsuper(t, NULL);
     return T_OK;
 }
 
@@ -203,20 +230,6 @@ size_t heap_size(Heap const* h)
 //
 // GC
 //
-
-struct TableIter {
-    Heap* h;
-    khash_t(MARK)* marked;
-};
-
-static void mark(Heap* h, VALUE a, khash_t(MARK)* marked);
-
-static void mark_table_item(VALUE key, VALUE value, void* data)
-{
-    struct TableIter* it = (struct TableIter *) data;
-    mark(it->h, key, it->marked);
-    mark(it->h, value, it->marked);
-}
 
 static void mark(Heap* h, VALUE a, khash_t(MARK)* marked)
 {
@@ -239,10 +252,23 @@ static void mark(Heap* h, VALUE a, khash_t(MARK)* marked)
             mark(h, item, marked);
         }
     } else if (value_type(a) == TT_TABLE) {
+        // mark supertable
+        HeapValue* htable;
+        if (heap_get_item(h, value_heap_key(a), &htable) != T_OK)
+            abort();
+        HEAP_KEY supertable = htable->value.t.supertable;
+        if (supertable != HEAP_VALUE_NIL)
+            mark(h, create_value_heap_key(TT_TABLE, supertable), marked);
+
+        // mark items
         Table* table;
         if (heap_get_table(h, value_heap_key(a), &table) != T_OK)
             abort();
-        table_foreach(table, mark_table_item, &(struct TableIter) { h, marked });
+        VALUE key = create_value_nil(), value;
+        while (table_next(table, key, &key, &value)) {
+            mark(h, key, marked);
+            mark(h, value, marked);
+        }
     }
 }
 

@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define TRY(x) if (((rr) = (x)) != T_OK) { return (rr); }
+#define TRYX(x) if (((rr) = (x)) != T_OK) { return (rr); }
 
 static bool was_init = false;
 
@@ -39,8 +39,8 @@ BIN_OP(mod_int_int)  { (void) T; *r = create_value_integer(value_integer(a) % va
 BIN_OP(sum_str_str) {
     TYC_RESULT rr;
     const char *s1, *s2;
-    TRY(heap_get_string(tyc_heap(T), value_heap_key(a), &s1))
-    TRY(heap_get_string(tyc_heap(T), value_heap_key(b), &s2))
+    TRYX(heap_get_string(tyc_heap(T), value_heap_key(a), &s1))
+    TRYX(heap_get_string(tyc_heap(T), value_heap_key(b), &s2))
     char* str = xcalloc(1, strlen(s1) + strlen(s2) + 1);
     strcat(str, s1);
     strcpy(&str[strlen(s1)], s2);

@@ -377,5 +377,28 @@ return {
                 ret
         ]],
         expected_stack_top = 20,
+    },
+    {
+        name = "Supertables",
+        code = [[
+            .const
+                0: "f"
+            .func 0
+                newt        ; child table
+                newt        ; super table
+                pushc   0   ;   "f"
+                pushf   1   ;   function 1
+                setkv       ; super = { "f": func1 }
+                sptb        ; child <== super
+                pushc   0   ;   "f"
+                getkv       ; child.f
+                call    0   ; child.f()
+                ret
+            .func 1
+                pushi   30
+                ret
+        ]],
+        debug = true,
+        expected_stack_top = 30,
     }
 }

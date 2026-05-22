@@ -602,6 +602,94 @@ static void test_heap(void)
     }
 }
 
+static void test_supertables(void)
+{
+    {
+        printf("## Supertable\n");
+
+        Heap* h = heap_new();
+
+        // create table and supertable
+        Table* super;
+        HEAP_KEY super_heap_key = heap_add_table(h);
+        heap_get_table(h, super_heap_key, &super);
+
+        Table* table;
+        HEAP_KEY table_heap_key = heap_add_table(h);
+        heap_get_table(h, table_heap_key, &table);
+        VALUE table_value = create_value_heap_key(TT_TABLE, table_heap_key);
+
+        // field names
+        VALUE va = create_value_heap_key(TT_STRING, heap_add_string(h, "va", false));
+        VALUE vb = create_value_heap_key(TT_STRING, heap_add_string(h, "vb", false));
+        VALUE f1 = create_value_heap_key(TT_STRING, heap_add_string(h, "f1", false));
+        VALUE f99 = create_value_heap_key(TT_STRING, heap_add_string(h, "f99", false));
+
+        // add fields to supertable
+        table_set(super, va, create_value_integer(20));
+        table_set(super, vb, create_value_integer(30));
+        table_set(super, f1, create_value_idx(TT_FUNCTION, 1));
+        table_set(super, f99, create_value_idx(TT_FUNCTION, 99));
+
+        // set table supertable
+        heap_set_supertable(h, table_heap_key, super_heap_key);
+        table_set(table, va, create_value_integer(40));
+
+        // check table fields
+        VALUE a;
+        assert(table_get(table, va, &a) == T_OK); assert(value_integer(a) == 40);
+        assert(table_get(table, vb, &a) == T_OK); assert(value_integer(a) == 30);
+        assert(table_get(table, f1, &a) == T_OK); assert(value_idx(a) == 1);
+
+        // overload function in table
+        table_set(table, f1, create_value_idx(TT_FUNCTION, 2));
+        assert(table_get(table, f1, &a) == T_OK); assert(value_idx(a) == 2);
+        assert(table_get(super, f1, &a) == T_OK); assert(value_idx(a) == 1);
+
+        // test iteration
+        bool found_va = false, found_vb = false, found_f1 = false, found_f99 = false;
+        VALUE key = create_value_nil(), value;
+        while (table_next(table, key, &key, &value)) {
+            // const char* str; heap_get_string(h, value_heap_key(key), &str); printf("- %s\n", str);
+            if (value_heap_key(key) == value_heap_key(va)) {
+                found_va = true;
+                assert(value_integer(value) == 40);
+            }
+            if (value_heap_key(key) == value_heap_key(vb)) {
+                found_vb = true;
+                assert(value_integer(value) == 30);
+            }
+            if (value_heap_key(key) == value_heap_key(f1)) {
+                found_f1 = true;
+                assert(value_idx(value) == 2);
+            }
+            if (value_heap_key(key) == value_heap_key(f99)) {
+                found_f99 = true;
+                assert(value_idx(value) == 99);
+            }
+        }
+        assert(found_va);
+        assert(found_vb);
+        assert(found_f1);
+        assert(found_f99);
+
+        // restore overloaded function
+        table_set(table, f1, create_value_nil());
+        assert(table_get(table, f1, &a) == T_OK); assert(value_idx(a) == 1);
+
+        // test gc
+        assert(heap_size(h) == 6);
+        heap_gc(h, &table_value, 1);
+        assert(heap_size(h) == 6);
+        heap_gc(h, NULL, 0);
+        assert(heap_size(h) == 0);
+
+        heap_destroy(h);
+    }
+
+    // TODO - test supertable iteration
+}
+
 static void test_bytecode(void)
 {
     {
@@ -730,6 +818,7 @@ int main(void)
     test_arrays();
     test_tables();
     test_heap();
+    test_supertables();
     test_bytecode();
     test_vm();
 }
