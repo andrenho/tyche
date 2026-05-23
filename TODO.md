@@ -57,7 +57,7 @@ Decisions:
       - [x] Unary operators (NOT, NEG, INC, DEC, LEN)
       - [x] Boolean expressions (and, or, xor, eq, neq, not)
       - [x] Len (table, array, string)
-      - [ ] Type, ver
+      - [x] Type, ver
   - [ ] Error handling
   - [ ] Native pointers
   - [ ] Rest of opcodes
