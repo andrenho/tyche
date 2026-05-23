@@ -98,12 +98,12 @@ local instructions = {
     set   = 0xae,
     dupv  = 0xa4,
     setg  = 0xa5,
-    glbl  = 0xa6,
+    glbl  = 0x07,
 
     -- function operations
     call = 0xa7,
     ret  = 0x10,
-    reti = 0x11,
+    retn = 0x11,
 
     -- table and array operations
     getkv = 0x16,

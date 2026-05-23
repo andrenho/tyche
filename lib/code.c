@@ -231,11 +231,10 @@ void code_parse_instruction(Instruction inst, char* outbuf, size_t sz)
         case TO_PUSHV: n = snprintf(outbuf, sz, "pushv  "); break;
         case TO_SET:   n = snprintf(outbuf, sz, "set    "); break;
         case TO_DUPV:  n = snprintf(outbuf, sz, "dupv   "); break;
-        case TO_SETG:  n = snprintf(outbuf, sz, "setg   "); break;
         case TO_GLBL:  n = snprintf(outbuf, sz, "glbl   "); break;
         case TO_CALL:  n = snprintf(outbuf, sz, "call   "); break;
         case TO_RET:   n = snprintf(outbuf, sz, "ret    "); break;
-        case TO_RETI:  n = snprintf(outbuf, sz, "reti   "); break;
+        case TO_RETN:  n = snprintf(outbuf, sz, "reti   "); break;
         case TO_GETKV: n = snprintf(outbuf, sz, "getkv  "); break;
         case TO_SETKV: n = snprintf(outbuf, sz, "setkv  "); break;
         case TO_GETI:  n = snprintf(outbuf, sz, "geti   "); break;
@@ -243,7 +242,6 @@ void code_parse_instruction(Instruction inst, char* outbuf, size_t sz)
         case TO_APPND: n = snprintf(outbuf, sz, "appnd  "); break;
         case TO_NEXT:  n = snprintf(outbuf, sz, "next   "); break;
         case TO_SPTB:  n = snprintf(outbuf, sz, "sptb   "); break;
-        case TO_SUPR:  n = snprintf(outbuf, sz, "supr   "); break;
         case TO_SUM:   n = snprintf(outbuf, sz, "sum    "); break;
         case TO_SUB:   n = snprintf(outbuf, sz, "sub    "); break;
         case TO_MUL:   n = snprintf(outbuf, sz, "mul    "); break;
@@ -266,11 +264,7 @@ void code_parse_instruction(Instruction inst, char* outbuf, size_t sz)
         case TO_NEG:   n = snprintf(outbuf, sz, "neg    "); break;
         case TO_LEN:   n = snprintf(outbuf, sz, "len    "); break;
         case TO_TYPE:  n = snprintf(outbuf, sz, "type   "); break;
-        case TO_CAST:  n = snprintf(outbuf, sz, "cast   "); break;
         case TO_VER:   n = snprintf(outbuf, sz, "ver    "); break;
-        case TO_CMPL:  n = snprintf(outbuf, sz, "cmpl   "); break;
-        case TO_ASMBL: n = snprintf(outbuf, sz, "asmbl  "); break;
-        case TO_LOAD:  n = snprintf(outbuf, sz, "load   "); break;
         case TO_BZ:    n = snprintf(outbuf, sz, "bz     "); break;
         case TO_BNZ:   n = snprintf(outbuf, sz, "bnz    "); break;
         case TO_BNIL:  n = snprintf(outbuf, sz, "bnil   "); break;

@@ -569,4 +569,14 @@ return {
         ]],
         expected_stack_top = 2,
     },
+    {
+        name = "VM: type",
+        code = [[
+            .func 0
+                newt
+                type
+                ret
+        ]],
+        expected_stack_top = 6,
+    },
 }

@@ -57,6 +57,7 @@ TYC_RESULT tyc_pushinteger(TycheVM* T, int32_t value);
 TYC_RESULT tyc_pushstring(TycheVM* T, const char* value);
 TYC_RESULT tyc_newarray(TycheVM* T);
 TYC_RESULT tyc_newtable(TycheVM* T);
+TYC_RESULT tyc_dup(TycheVM* T, int idx);
 
 // stack query
 size_t     tyc_stack_size(TycheVM* T);

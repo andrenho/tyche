@@ -48,7 +48,7 @@ endif
 RELEASE_CFLAGS=-O3 -flto=auto -march=native -mtune=native -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -fstack-protector-strong
 RELEASE_LDFLAGS=-flto=auto
 
-CFLAGS+=-std=c99 -D_GNU_SOURCE -fPIC -fvisibility=hidden -isystem lib/contrib -MMD -MP
+CFLAGS+=-std=c99 -D_GNU_SOURCE -fPIC -fvisibility=hidden -isystem lib/contrib -MMD -MP -DVERSION="\"${VERSION}\""
 LDFLAGS+=
 
 ifeq ($(DEBUG_ASSEMBLY),1)

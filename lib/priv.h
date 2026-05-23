@@ -27,17 +27,16 @@ typedef enum {
     TO_POP   = 0x05,
     TO_DUP   = 0x06,
 
-    // LOCAL VARIABLES
+    // VARIABLES
     TO_PUSHV = 0xA3,
     TO_SET   = 0xAE,
     TO_DUPV  = 0xA4,
-    TO_SETG  = 0xA5,
-    TO_GLBL  = 0xA6,
+    TO_GLBL  = 0x07,
 
     // FUNCTION OPERATIONS
     TO_CALL = 0xA7,
     TO_RET  = 0x10,
-    TO_RETI = 0x11,
+    TO_RETN = 0x11,
 
     // TABLE AND ARRAY OPERATIONS
     TO_GETKV = 0x16,
@@ -47,7 +46,6 @@ typedef enum {
     TO_APPND = 0x18,
     TO_NEXT  = 0x19,
     TO_SPTB  = 0x1A,
-    TO_SUPR  = 0x1B,
 
     // LOGICAL/ARITHMETIC
     TO_SUM     = 0x20,
@@ -74,13 +72,7 @@ typedef enum {
     // OTHER VALUE OPERATIONS
     TO_LEN  = 0x40,
     TO_TYPE = 0x41,
-    TO_CAST = 0xAD,
     TO_VER  = 0x42,
-
-    // EXTERNAL CODE
-    TO_CMPL  = 0x48,
-    TO_ASMBL = 0x49,
-    TO_LOAD  = 0x4A,
 
     // CONTROL FLOW
     TO_BZ   = 0xAA,

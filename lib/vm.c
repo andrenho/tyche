@@ -329,6 +329,15 @@ TYC_RESULT tyc_newtable(TycheVM* T)
     return stack_push(T->stack, create_value_heap_key(TT_TABLE, heap_add_table(T->heap)));
 }
 
+TYC_RESULT tyc_dup(TycheVM* T, int idx)
+{
+    TYC_RESULT r;
+    VALUE a;
+    TRY(stack_at(T->stack, idx, &a))
+    TRY(stack_push(T->stack, a))
+    return T_OK;
+}
+
 TYC_RESULT tyc_type(TycheVM* T, int idx, TYC_TYPE* type)
 {
     VALUE v;
@@ -404,6 +413,8 @@ TYC_RESULT tyc_len(TycheVM* T, int idx)
     VALUE a;
     TRY(stack_at(T->stack, idx, &a))
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch-enum"
     switch (value_type(a)) {
         case TT_STRING: {
             const char* str;
@@ -422,6 +433,7 @@ TYC_RESULT tyc_len(TycheVM* T, int idx)
         }
         default:;
     }
+#pragma GCC diagnostic pop
     ERROR("Len not supported for type '%s'", type_name(value_type(a)))
 }
 
@@ -652,6 +664,10 @@ static TYC_RESULT step(TycheVM* T)
             TRY(stack_pop(T->stack, NULL))
             break;
 
+        case TO_DUP:
+            TRY(tyc_dup(T, -1))
+            break;
+
         case TO_NEWA:
             TRY(tyc_newarray(T))
             break;
@@ -670,6 +686,8 @@ static TYC_RESULT step(TycheVM* T)
             enter_function(T, (uint16_t) inst.operand);
             break;
 
+        case TO_RETN:
+            TRY(stack_push(T->stack, create_value_nil())) // fallthrough
         case TO_RET:
             TRY(stack_pop(T->stack, &a))
             TRY(stack_pop_fp(T->stack))
@@ -777,6 +795,10 @@ static TYC_RESULT step(TycheVM* T)
             TRY(tyc_pushinteger(T, (int32_t) type))
             break;
         }
+
+        case TO_VER:
+            TRY(tyc_pushstring(T, VERSION))
+            break;
 
         //
         // jumps/branching

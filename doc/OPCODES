@@ -34,7 +34,7 @@ Local variables:
    a3  c3 e3    pushv [int]          Push n nil values into the stack (used to init local vars)
    ae  ce ee    set [index]          Set value in stack position (set local variable)
    a4  c4 e4    dupv [index]         Duplicate stack value (load local variable)
-07              getg [int]           Get global table
+07              glbl [int]           Get global table
 
 Function operations:
    a7  c7 e7    call [n_pars]        Enter function on stack toplevel (passing n next stack values as parameters)
