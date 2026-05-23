@@ -22,12 +22,12 @@ BIN_OP(sum_int_int)  { (void) T; *r = create_value_integer(value_integer(a) + va
 BIN_OP(sub_int_int)  { (void) T; *r = create_value_integer(value_integer(a) - value_integer(b)); return T_OK; }
 BIN_OP(mul_int_int)  { (void) T; *r = create_value_integer(value_integer(a) * value_integer(b)); return T_OK; }
 BIN_OP(idiv_int_int) { (void) T; *r = create_value_integer(value_integer(a) / value_integer(b)); return T_OK; }
-BIN_OP(eq_int_int)   { (void) T; *r = create_value_from_bool(value_integer(a) == value_integer(b)); return T_OK; }
-BIN_OP(neq_int_int)  { (void) T; *r = create_value_from_bool(value_integer(a) != value_integer(b)); return T_OK; }
-BIN_OP(lt_int_int)   { (void) T; *r = create_value_from_bool(value_integer(a) < value_integer(b)); return T_OK; }
-BIN_OP(lte_int_int)  { (void) T; *r = create_value_from_bool(value_integer(a) <= value_integer(b)); return T_OK; }
-BIN_OP(gt_int_int)   { (void) T; *r = create_value_from_bool(value_integer(a) > value_integer(b)); return T_OK; }
-BIN_OP(gte_int_int)  { (void) T; *r = create_value_from_bool(value_integer(a) >= value_integer(b)); return T_OK; }
+BIN_OP(eq_int_int)   { (void) T; *r = create_value_bool(value_integer(a)==value_integer(b)); return T_OK; }
+BIN_OP(neq_int_int)  { (void) T; *r = create_value_bool(value_integer(a)!=value_integer(b)); return T_OK; }
+BIN_OP(lt_int_int)   { (void) T; *r = create_value_bool(value_integer(a)<value_integer(b)); return T_OK; }
+BIN_OP(lte_int_int)  { (void) T; *r = create_value_bool(value_integer(a)<=value_integer(b)); return T_OK; }
+BIN_OP(gt_int_int)   { (void) T; *r = create_value_bool(value_integer(a)>value_integer(b)); return T_OK; }
+BIN_OP(gte_int_int)  { (void) T; *r = create_value_bool(value_integer(a)>=value_integer(b)); return T_OK; }
 BIN_OP(and_int_int)  { (void) T; *r = create_value_integer(value_integer(a) & value_integer(b)); return T_OK; }
 BIN_OP(or_int_int)   { (void) T; *r = create_value_integer(value_integer(a) | value_integer(b)); return T_OK; }
 BIN_OP(xor_int_int)  { (void) T; *r = create_value_integer(value_integer(a) ^ value_integer(b)); return T_OK; }

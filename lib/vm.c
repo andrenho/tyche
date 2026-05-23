@@ -330,6 +330,17 @@ TYC_RESULT tyc_type(TycheVM* T, int idx, TYC_TYPE* type)
     return r;
 }
 
+TYC_RESULT tyc_toboolean(TycheVM* T, int idx, bool* value)
+{
+    VALUE v;
+    TYC_RESULT r;
+    TRY(stack_at(T->stack, idx, &v))
+    if (value_type(v) != TT_BOOLEAN)
+    ERROR("Expected boolean")
+    *value = value_boolean(v);
+    return T_OK;
+}
+
 TYC_RESULT tyc_tointeger(TycheVM* T, int idx, int32_t* value)
 {
     VALUE v;

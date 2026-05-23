@@ -15,6 +15,8 @@ TYC_TYPE value_type(VALUE v)
 {
     if (nanbox_is_null(v))
         return TT_NIL;
+    if (nanbox_is_boolean(v))
+        return TT_BOOLEAN;
     if (nanbox_is_int(v))
         return TT_INTEGER;
     if (nanbox_is_double(v))
@@ -37,6 +39,7 @@ const char* type_name(TYC_TYPE t)
 {
     switch (t) {
         case TT_NIL:        return "nil";
+        case TT_BOOLEAN:    return "boolean";
         case TT_INTEGER:    return "integer";
         case TT_REAL:       return "real";
         case TT_STRING:     return "string";
@@ -53,6 +56,17 @@ const char* type_name(TYC_TYPE t)
 bool type_is_collectable(TYC_TYPE t)
 {
     return t == TT_STRING || t == TT_ARRAY || t == TT_TABLE;
+}
+
+bool value_boolean(VALUE v)
+{
+#ifdef CHECK_TYCHE_BUGS
+    if (value_type(v) != TT_BOOLEAN) {
+        fprintf(stderr, "Expected boolean, found %s.\n", type_name(value_type(v)));
+        abort();
+    }
+#endif
+    return nanbox_to_boolean(v);
 }
 
 int32_t value_integer(VALUE v)
@@ -115,9 +129,9 @@ VALUE create_value_nil(void)
     return nanbox_null();
 }
 
-VALUE create_value_from_bool(bool b)
+VALUE create_value_bool(bool b)
 {
-    return b ? create_value_integer(1) : create_value_integer(0);
+    return nanbox_from_boolean(b);
 }
 
 VALUE create_value_integer(int32_t v)

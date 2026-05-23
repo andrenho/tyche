@@ -163,6 +163,7 @@ TYC_TYPE    value_type(VALUE v);
 const char* type_name(TYC_TYPE t);
 bool        type_is_collectable(TYC_TYPE t);
 
+bool     value_boolean(VALUE v);
 int32_t  value_integer(VALUE v);
 T_REAL   value_real(VALUE v);
 uint32_t value_function_idx(VALUE v);
@@ -171,7 +172,7 @@ bool     value_is_zero(VALUE v);
 void*    value_native_pointer(VALUE v);
 
 VALUE create_value_nil(void);
-VALUE create_value_from_bool(bool b);
+VALUE create_value_bool(bool b);
 VALUE create_value_integer(int32_t v);
 VALUE create_value_real(T_REAL f);
 VALUE create_value_function_idx(uint32_t idx);

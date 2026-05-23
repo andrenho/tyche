@@ -47,14 +47,13 @@ Decisions:
   - [x] Globals (?)
   - [ ] Expression improvements
     - [x] Supertables
-    - [ ] Floats (real)
-      - [ ] NaN types? use doubles? (nanbox)
-      - [ ] rename floats?
-      - [ ] Support for floats in bytecode
-      - [ ] pushr
-      - [ ] real expressions
-    - [ ] Boolean?
+    - [ ] Boolean and floats
+      - [ ] Support for booleans
+      - [ ] Boolean opcodes
+      - [ ] Support for doubles in const
     - [ ] Operators
+      - [ ] Unary operators
+      - [ ] Boolean and real
   - [ ] Error handling
     - [ ] Stack trace in case of errors
   - [ ] Native pointers
