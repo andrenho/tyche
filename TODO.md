@@ -47,9 +47,9 @@ Decisions:
   - [x] Globals (?)
   - [ ] Expression improvements
     - [x] Supertables
-    - [ ] Boolean and floats
-      - [ ] Support for booleans
-      - [ ] Boolean opcodes
+    - [x] Boolean and floats
+      - [x] Support for booleans
+      - [x] Boolean opcodes
       - [ ] Support for doubles in const
     - [ ] Operators
       - [ ] Unary operators
