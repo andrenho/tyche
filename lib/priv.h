@@ -8,6 +8,9 @@
 #include <stddef.h>
 #include <stdio.h>
 
+#include "nanbox.h"
+
+
 //
 // INSTRUCTIONS
 //
@@ -121,15 +124,7 @@ extern bool abort_on_errors;   // only on debug mode
 
 typedef uint32_t HEAP_KEY;
 
-typedef struct {
-    TYC_TYPE type;
-    union {
-        int32_t  i;
-        float    f;
-        uint32_t idx;
-        HEAP_KEY heap_key;
-    } v;
-} VALUE;
+typedef nanbox_t VALUE;
 
 typedef struct Stack   Stack;
 typedef struct Array   Array;
@@ -169,17 +164,19 @@ const char* type_name(TYC_TYPE t);
 bool        type_is_collectable(TYC_TYPE t);
 
 int32_t  value_integer(VALUE v);
-float    value_real(VALUE v);
-uint32_t value_idx(VALUE v);
+T_REAL   value_real(VALUE v);
+uint32_t value_function_idx(VALUE v);
 HEAP_KEY value_heap_key(VALUE v);
 bool     value_is_zero(VALUE v);
+void*    value_native_pointer(VALUE v);
 
 VALUE create_value_nil(void);
 VALUE create_value_from_bool(bool b);
 VALUE create_value_integer(int32_t v);
-VALUE create_value_real(float f);
-VALUE create_value_idx(TYC_TYPE type, uint32_t idx);
+VALUE create_value_real(T_REAL f);
+VALUE create_value_function_idx(uint32_t idx);
 VALUE create_value_heap_key(TYC_TYPE type, HEAP_KEY key);
+VALUE create_value_native_pointer(void* ptr);
 
 //
 // STACK

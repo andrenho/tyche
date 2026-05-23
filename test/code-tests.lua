@@ -398,7 +398,6 @@ return {
                 pushi   30
                 ret
         ]],
-        debug = true,
         expected_stack_top = 30,
     }
 }

@@ -53,6 +53,7 @@ Decisions:
       - [ ] Support for floats in bytecode
       - [ ] pushr
       - [ ] real expressions
+    - [ ] Boolean?
     - [ ] Operators
   - [ ] Error handling
     - [ ] Stack trace in case of errors

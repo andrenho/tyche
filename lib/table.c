@@ -40,31 +40,7 @@ size_t table_len(Table* t)
 
 static TABLE_HASH value_hash(VALUE v)
 {
-    switch (value_type(v)) {
-        case TT_NIL:
-            return 0;
-        case TT_INTEGER:
-            return (uint64_t) value_integer(v);
-        case TT_REAL: {
-            uint32_t vv;
-            float f = value_real(v);
-            memcpy(&vv, &f, sizeof(uint32_t));
-            break;
-        }
-        case TT_ARRAY:
-        case TT_TABLE:
-        case TT_STRING:
-            return value_heap_key(v);
-        case TT_FUNCTION:
-            return (TABLE_HASH) value_idx(v) | ((TABLE_HASH) 1 << 36);
-        case TT_NATIVE_PTR:
-            return (TABLE_HASH) value_idx(v) | ((TABLE_HASH) 1 << 37);
-        case TT_COUNT__:
-        default:
-            __builtin_unreachable();
-    }
-
-    return 0;
+    return v.as_int64;
 }
 
 void table_set(Table* t, VALUE key, VALUE value)

@@ -6,7 +6,7 @@
 #include <stddef.h>
 
 typedef enum {
-    TT_NIL, TT_INTEGER, TT_REAL, TT_STRING, TT_ARRAY, TT_TABLE, TT_FUNCTION, TT_NATIVE_PTR,
+    TT_NIL, TT_INTEGER, TT_REAL, TT_NATIVE_PTR, TT_STRING, TT_ARRAY, TT_TABLE, TT_FUNCTION,
 
     // internal types
     TT_COUNT__
@@ -22,12 +22,12 @@ typedef enum {
     TX_COUNT__
 } TYC_EXPR;
 
-#define T_REAL float
+#define T_REAL double
 
 typedef struct TycheVM TycheVM;
 
 // error management
-const char* tyc_last_error();
+const char* tyc_last_error(void);
 
 // create/destroy VM
 TycheVM*   tyc_new(void);

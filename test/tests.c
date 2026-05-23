@@ -202,8 +202,8 @@ static void test_values(void)
     printf("## Values\n");
     assert(value_type(create_value_integer(42)) == TT_INTEGER);
     assert(value_integer(create_value_integer(-42)) == -42);
-    assert(fabsf(value_real(create_value_real(42.4f)) - 42.4f) < 0.00001f);
-    assert(value_idx(create_value_idx(TT_FUNCTION, 42)) == 42);
+    assert(fabs(value_real(create_value_real(42.4)) - 42.4) < 0.00001);
+    assert(value_function_idx(create_value_function_idx(42)) == 42);
     assert(value_heap_key(create_value_heap_key(TT_STRING, 42)) == 42);
 }
 
@@ -426,9 +426,12 @@ static void test_heap(void)
         Stack* s = stack_new();
         Heap* h = heap_new();
 
-        stack_push(s, create_value_heap_key(TT_STRING, heap_add_string(h, "item1", false)));
-        stack_push(s, create_value_heap_key(TT_STRING, heap_add_string(h, "item2", false)));
-        stack_push(s, create_value_heap_key(TT_STRING, heap_add_string(h, "item2", false)));
+        VALUE h1 = create_value_heap_key(TT_STRING, heap_add_string(h, "item1", false));
+        stack_push(s, h1);
+        VALUE h2 = create_value_heap_key(TT_STRING, heap_add_string(h, "item2", false));
+        stack_push(s, h2);
+        VALUE h3 = create_value_heap_key(TT_STRING, heap_add_string(h, "item2", false));
+        stack_push(s, h3);
 
         size_t v_sz;
         VALUE* v_idx;
@@ -588,7 +591,7 @@ static void test_heap(void)
 
         // remove table key, HEAP=1 now because only the empty table is left
         VALUE sv3 = create_value_heap_key(TT_STRING, heap_add_string(h, "Hello", false));
-        assert(sv1.v.heap_key == sv3.v.heap_key);
+        assert(value_heap_key(sv1) == value_heap_key(sv3));
         table_set(table, sv3, create_value_nil());
         assert(table_size(table) == 0);
         heap_gc(h, &table_value, 1);
@@ -628,8 +631,8 @@ static void test_supertables(void)
         // add fields to supertable
         table_set(super, va, create_value_integer(20));
         table_set(super, vb, create_value_integer(30));
-        table_set(super, f1, create_value_idx(TT_FUNCTION, 1));
-        table_set(super, f99, create_value_idx(TT_FUNCTION, 99));
+        table_set(super, f1, create_value_function_idx(1));
+        table_set(super, f99, create_value_function_idx(99));
 
         // set table supertable
         heap_set_supertable(h, table_heap_key, super_heap_key);
@@ -639,12 +642,12 @@ static void test_supertables(void)
         VALUE a;
         assert(table_get(table, va, &a) == T_OK); assert(value_integer(a) == 40);
         assert(table_get(table, vb, &a) == T_OK); assert(value_integer(a) == 30);
-        assert(table_get(table, f1, &a) == T_OK); assert(value_idx(a) == 1);
+        assert(table_get(table, f1, &a) == T_OK); assert(value_function_idx(a) == 1);
 
         // overload function in table
-        table_set(table, f1, create_value_idx(TT_FUNCTION, 2));
-        assert(table_get(table, f1, &a) == T_OK); assert(value_idx(a) == 2);
-        assert(table_get(super, f1, &a) == T_OK); assert(value_idx(a) == 1);
+        table_set(table, f1, create_value_function_idx(2));
+        assert(table_get(table, f1, &a) == T_OK); assert(value_function_idx(a) == 2);
+        assert(table_get(super, f1, &a) == T_OK); assert(value_function_idx(a) == 1);
 
         // test iteration
         bool found_va = false, found_vb = false, found_f1 = false, found_f99 = false;
@@ -661,11 +664,11 @@ static void test_supertables(void)
             }
             if (value_heap_key(key) == value_heap_key(f1)) {
                 found_f1 = true;
-                assert(value_idx(value) == 2);
+                assert(value_function_idx(value) == 2);
             }
             if (value_heap_key(key) == value_heap_key(f99)) {
                 found_f99 = true;
-                assert(value_idx(value) == 99);
+                assert(value_function_idx(value) == 99);
             }
         }
         assert(found_va);
@@ -675,7 +678,7 @@ static void test_supertables(void)
 
         // restore overloaded function
         table_set(table, f1, create_value_nil());
-        assert(table_get(table, f1, &a) == T_OK); assert(value_idx(a) == 1);
+        assert(table_get(table, f1, &a) == T_OK); assert(value_function_idx(a) == 1);
 
         // test gc
         assert(heap_size(h) == 6);
@@ -718,7 +721,7 @@ static void test_bytecode(void)
         assert(code_n_consts(code) == 2);
         assert(code_const_type(code, 0) == TC_REAL);
         assert(code_const_type(code, 1) == TC_STRING);
-        assert(code_const_real(code, 0) > 3.13f && code_const_real(code, 0) < 3.15f);
+        assert(code_const_real(code, 0) > 3.13 && code_const_real(code, 0) < 3.15);
         assert(strcmp(code_const_string(code, 1), "Hello world") == 0);
         assert(code_n_functions(code) == 2);
         assert(code_function_sz(code, 0) == 6);

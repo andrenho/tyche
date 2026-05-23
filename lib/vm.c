@@ -155,10 +155,10 @@ static void debug_value(TycheVM* T, VALUE a)
             break;
         }
         case TT_FUNCTION:
-            printf("<func %d>", value_idx(a));
+            printf("<func %d>", value_function_idx(a));
             break;
         case TT_NATIVE_PTR:
-            printf("<ptr %p>", (void *) (intptr_t) value_idx(a));
+            printf("<ptr %p>", (void *) (intptr_t) value_function_idx(a));
             break;
         case TT_COUNT__:
         default:
@@ -237,7 +237,7 @@ TYC_RESULT tyc_load_bytecode(TycheVM* T, uint8_t const* bytecode, size_t bytecod
 {
     TYC_RESULT r;
     TRY(code_load_bytecode(T->code, bytecode, bytecode_sz))
-    TRY(stack_push(T->stack, create_value_idx(TT_FUNCTION, 0 /* main */)))
+    TRY(stack_push(T->stack, create_value_function_idx(0 /* main */)))
     return T_OK;
 }
 
@@ -257,7 +257,7 @@ static TYC_RESULT enter_function(TycheVM* T, uint16_t n_pars)
         ERROR("Expected function")
 
     // enter function
-    push_location(T, value_idx(function), 0);
+    push_location(T, value_function_idx(function), 0);
     stack_push_fp(T->stack);
 
     // pass parameters
@@ -326,7 +326,7 @@ TYC_RESULT tyc_type(TycheVM* T, int idx, TYC_TYPE* type)
     VALUE v;
     TYC_RESULT r = stack_at(T->stack, idx, &v);
     if (r == T_OK)
-        *type = v.type;
+        *type = value_type(v);
     return r;
 }
 
@@ -335,7 +335,7 @@ TYC_RESULT tyc_tointeger(TycheVM* T, int idx, int32_t* value)
     VALUE v;
     TYC_RESULT r;
     TRY(stack_at(T->stack, idx, &v))
-    if (v.type != TT_INTEGER)
+    if (value_type(v) != TT_INTEGER)
         ERROR("Expected integer")
     *value = value_integer(v);
     return T_OK;
@@ -346,7 +346,7 @@ TYC_RESULT tyc_tostring(TycheVM* T, int idx, const char** str)
     VALUE v;
     TYC_RESULT r;
     TRY(stack_at(T->stack, idx, &v))
-    if (v.type == TT_STRING)
+    if (value_type(v) == TT_STRING)
         return heap_get_string(T->heap, value_heap_key(v), str);
     else
         ERROR("Expected string")
@@ -565,7 +565,7 @@ static TYC_RESULT step(TycheVM* T)
         case TO_PUSHF:
             if (inst.operand < 0 || inst.operand >= (int) code_n_functions(T->code))
                 ERROR("Value out of range")
-            TRY(stack_push(T->stack, create_value_idx(TT_FUNCTION, (uint32_t) inst.operand)))
+            TRY(stack_push(T->stack, create_value_function_idx((uint32_t) inst.operand)))
             break;
 
         case TO_PUSHC:

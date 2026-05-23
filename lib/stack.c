@@ -142,7 +142,7 @@ size_t stack_collectable_array(Stack const* s, VALUE** values)
     *values = xmalloc(stack_size(s) * sizeof(VALUE));
 
     for (size_t i = 0; i < s->stack_n; ++i)
-        if (type_is_collectable(s->stack[i].type))
+        if (type_is_collectable(value_type(s->stack[i])))
             (*values)[j++] = s->stack[i];
     return j;
 }
