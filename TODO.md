@@ -52,7 +52,7 @@ Decisions:
       - [x] Boolean opcodes
       - [x] Support for doubles in const
     - [ ] Operators
-      - [ ] Unary operators
+      - [ ] Unary operators (NOT, NEG, INC, DEC)
       - [ ] Boolean and real
   - [ ] Error handling
     - [ ] Stack trace in case of errors
