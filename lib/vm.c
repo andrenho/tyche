@@ -360,6 +360,17 @@ TYC_RESULT tyc_tointeger(TycheVM* T, int idx, int32_t* value)
     return T_OK;
 }
 
+TYC_RESULT tyc_toreal(TycheVM* T, int idx, T_REAL* value)
+{
+    VALUE v;
+    TYC_RESULT r;
+    TRY(stack_at(T->stack, idx, &v))
+    if (value_type(v) != TT_REAL)
+    ERROR("Expected real")
+    *value = value_real(v);
+    return T_OK;
+}
+
 TYC_RESULT tyc_tostring(TycheVM* T, int idx, const char** str)
 {
     VALUE v;
@@ -595,7 +606,8 @@ static TYC_RESULT step(TycheVM* T)
                 HEAP_KEY key = heap_add_string(T->heap, string, true);
                 TRY(stack_push(T->stack, create_value_heap_key(TT_STRING, key)))
             } else {
-                abort();  // REAL consts not supported for now
+                T_REAL real = code_const_real(T->code, (uint32_t) inst.operand);
+                TRY(stack_push(T->stack, create_value_real(real)))
             }
             break;
 

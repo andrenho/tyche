@@ -50,7 +50,7 @@ Decisions:
     - [x] Boolean and floats
       - [x] Support for booleans
       - [x] Boolean opcodes
-      - [ ] Support for doubles in const
+      - [x] Support for doubles in const
     - [ ] Operators
       - [ ] Unary operators
       - [ ] Boolean and real

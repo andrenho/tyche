@@ -20,7 +20,7 @@ return {
                 pushc   0
                 ret
         ]],
-        expected_heap_size = 0,
+        expected_heap_size = 1, -- only the global table
         expected_stack_top = 3.14,
     },
     {

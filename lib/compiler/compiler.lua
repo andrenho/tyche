@@ -180,6 +180,18 @@ local function assemble(proto)
         return #bin - 3
     end
 
+    local push64 = function(data)
+        table.insert(bin, data & 0xff)
+        table.insert(bin, (data >> 8) & 0xff)
+        table.insert(bin, (data >> 16) & 0xff)
+        table.insert(bin, (data >> 24) & 0xff)
+        table.insert(bin, (data >> 32) & 0xff)
+        table.insert(bin, (data >> 40) & 0xff)
+        table.insert(bin, (data >> 48) & 0xff)
+        table.insert(bin, (data >> 56) & 0xff)
+        return #bin - 7
+    end
+
     local replace16 = function(pos, data)
         bin[pos] = data & 0xff
         bin[pos + 1] = (data >> 8) & 0xff
@@ -192,9 +204,9 @@ local function assemble(proto)
         bin[pos + 3] = (data >> 24) & 0xff
     end
 
-    local function float_to_bits(f)
-        local bytes = string.pack("<f", f)
-        return string.unpack("<I4", bytes)
+    local function double_to_bits(f)
+        local bytes = string.pack("<d", f)
+        return string.unpack("<I8", bytes)
     end
 
     -- header
@@ -222,7 +234,7 @@ local function assemble(proto)
             push8(0) -- string terminator
         elseif type(const) == 'number' then
             push8(1) -- float type
-            push32(float_to_bits(const))
+            push64(double_to_bits(const))
         end
     end
 

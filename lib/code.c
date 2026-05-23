@@ -80,7 +80,7 @@ TYC_RESULT code_load_bytecode(Code* code, uint8_t const* bytecode, size_t byteco
                 break;
             }
             case TC_REAL:
-                addr += 5;  // 5 = constant type + float
+                addr += 9;  // 9 = constant type + double
                 break;
             case TC_INVALID_TYPE:
             default:
@@ -123,8 +123,8 @@ TYC_CONST_TYPE code_const_type(Code const* code, size_t n)
 
 T_REAL code_const_real(Code const* code, size_t n)
 {
-    float f;
-    memcpy(&f, &code->bytecode[code->const_addr[n] + 1], sizeof(float));
+    T_REAL f;
+    memcpy(&f, &code->bytecode[code->const_addr[n] + 1], sizeof(T_REAL));
     return f;
 }
 
@@ -198,7 +198,7 @@ void code_decompile(Code const* code)
         if (type == TC_STRING)
             printf("  %03zu: \"%s\"\n", const_id, code_const_string(code, const_id));
         else if (type == TC_REAL)
-            printf("  %03zu: %f\n", const_id, (double) code_const_real(code, const_id));
+            printf("  %03zu: %f\n", const_id, code_const_real(code, const_id));
     }
 
     for (uint32_t f_id = 0; f_id < code_n_functions(code); ++f_id) {

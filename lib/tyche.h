@@ -55,6 +55,7 @@ size_t     tyc_stack_size(TycheVM* T);
 TYC_RESULT tyc_type(TycheVM* T, int idx, TYC_TYPE* type);
 TYC_RESULT tyc_toboolean(TycheVM* T, int idx, bool* value);
 TYC_RESULT tyc_tointeger(TycheVM* T, int idx, int32_t* value);
+TYC_RESULT tyc_toreal(TycheVM* T, int idx, T_REAL* value);
 TYC_RESULT tyc_tostring(TycheVM* T, int idx, const char** str);
 
 // table/array operations

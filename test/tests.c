@@ -29,6 +29,9 @@ static void check_expected_top(lua_State* L, TycheVM* T)
     if (lua_isinteger(L, -1)) {
         TYC_TYPE type; assert(tyc_type(T, -1, &type) == T_OK); assert(type == TT_INTEGER);
         int32_t v; assert(tyc_tointeger(T, -1, &v) == T_OK); assert(v == lua_tointeger(L, -1));
+    } else if (lua_isnumber(L, -1)) {
+        TYC_TYPE type; assert(tyc_type(T, -1, &type) == T_OK); assert(type == TT_REAL);
+        double v; assert(tyc_toreal(T, -1, &v) == T_OK); assert(fabs(v - lua_tonumber(L, -1)) < 0.0001);
     } else if (lua_isstring(L, -1)) {
         TYC_TYPE type; assert(tyc_type(T, -1, &type) == T_OK); assert(type == TT_STRING);
         const char* str; assert(tyc_tostring(T, -1, &str) == T_OK); assert(strcmp(str, lua_tostring(L, -1)) == 0);
