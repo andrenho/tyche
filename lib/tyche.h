@@ -6,7 +6,15 @@
 #include <stddef.h>
 
 typedef enum {
-    TT_NIL, TT_BOOLEAN, TT_INTEGER, TT_REAL, TT_NATIVE_PTR, TT_STRING, TT_ARRAY, TT_TABLE, TT_FUNCTION,
+    TT_NIL          = 0,
+    TT_BOOLEAN      = 1,
+    TT_INTEGER      = 2,
+    TT_REAL         = 3,
+    TT_STRING       = 4,
+    TT_ARRAY        = 5,
+    TT_TABLE        = 6,
+    TT_FUNCTION     = 7,
+    TT_NATIVE_PTR   = 8,
 
     // internal types
     TT_COUNT__
@@ -72,6 +80,6 @@ TYC_RESULT tyc_gc(TycheVM* T);
 
 // expressions
 TYC_RESULT tyc_expr(TycheVM* T, TYC_EXPR expr);
-TYC_RESULT tyc_len(TycheVM* T);
+TYC_RESULT tyc_len(TycheVM* T, int idx);
 
 #endif //TYCHE_TYCHE_H

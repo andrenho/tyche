@@ -398,11 +398,11 @@ TYC_RESULT tyc_expr(TycheVM* T, TYC_EXPR op)
     return T_OK;
 }
 
-TYC_RESULT tyc_len(TycheVM* T)
+TYC_RESULT tyc_len(TycheVM* T, int idx)
 {
     TYC_RESULT r;
     VALUE a;
-    TRY(stack_peek(T->stack, &a))
+    TRY(stack_at(T->stack, idx, &a))
 
     switch (value_type(a)) {
         case TT_STRING: {
@@ -766,7 +766,17 @@ static TYC_RESULT step(TycheVM* T)
         case TO_MOD:  TRY(tyc_expr(T, TX_MOD));  break;
         case TO_NOT:  TRY(tyc_expr(T, TX_NOT));  break;
         case TO_NEG:  TRY(tyc_expr(T, TX_NEG));  break;
-        case TO_LEN:  TRY(tyc_len(T)); break;
+
+        case TO_LEN:
+            TRY(tyc_len(T, -1));
+            break;
+
+        case TO_TYPE: {
+            TYC_TYPE type;
+            TRY(tyc_type(T, -1, &type))
+            TRY(tyc_pushinteger(T, (int32_t) type))
+            break;
+        }
 
         //
         // jumps/branching
