@@ -107,6 +107,9 @@ static void debug_value(TycheVM* T, VALUE a)
         case TT_NIL:
             printf("<nil>");
             break;
+        case TT_BOOLEAN:
+            if (value_boolean(a)) printf("<true>"); else printf("<false>");
+            break;
         case TT_INTEGER:
             printf("<%d>", value_integer(a));
             break;
@@ -299,6 +302,11 @@ size_t tyc_stack_size(TycheVM* T)
 TYC_RESULT tyc_pushnil(TycheVM* T)
 {
     return stack_push(T->stack, create_value_nil());
+}
+
+TYC_RESULT tyc_pushboolean(TycheVM* T, bool value)
+{
+    return stack_push(T->stack, create_value_bool(value));
 }
 
 TYC_RESULT tyc_pushinteger(TycheVM* T, int32_t value)
@@ -589,6 +597,14 @@ static TYC_RESULT step(TycheVM* T)
             } else {
                 abort();  // REAL consts not supported for now
             }
+            break;
+
+        case TO_PUSHT:
+            tyc_pushboolean(T, true);
+            break;
+
+        case TO_PUSHZ:
+            tyc_pushboolean(T, false);
             break;
 
         case TO_POP:

@@ -44,6 +44,7 @@ TYC_RESULT tyc_call(TycheVM* t, uint16_t n_pars);
 
 // stack insertions
 TYC_RESULT tyc_pushnil(TycheVM* T);
+TYC_RESULT tyc_pushboolean(TycheVM* T, bool value);
 TYC_RESULT tyc_pushinteger(TycheVM* T, int32_t value);
 TYC_RESULT tyc_pushstring(TycheVM* T, const char* value);
 TYC_RESULT tyc_newarray(TycheVM* T);
