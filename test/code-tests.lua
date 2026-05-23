@@ -12,6 +12,18 @@ return {
         expected_stack_top = 5,
     },
     {
+        name = "VM: real values",
+        code = [[
+            .const
+                0: 3.14
+            .func 0
+                pushc   0
+                ret
+        ]],
+        expected_heap_size = 0,
+        expected_stack_top = 3.14,
+    },
+    {
         name = "VM: integer expressions",
         template = [[
             .func 0
