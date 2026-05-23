@@ -56,6 +56,35 @@ return {
         },
     },
     {
+        name = "VM: integer unary expressions",
+        template = [[
+            .func 0
+                pushi   %d
+                %s
+                ret
+        ]],
+        scenarios = {
+            { parameters = { 23, 'not' },  name = "Not", expected_stack_top = -24 },
+            { parameters = { 23, 'neg' },  name = "Neg (1)", expected_stack_top = -23 },
+            { parameters = { -23, 'neg' }, name = "Neg (2)", expected_stack_top = 23 },
+        },
+    },
+    {
+        name = "VM: real unary expressions",
+        template = [[
+            .const
+                0: %f
+            .func 0
+                pushc   0
+                %s
+                ret
+        ]],
+        scenarios = {
+            { parameters = { 23.3, 'neg' },  name = "Neg (1)", expected_stack_top = -23.3 },
+            { parameters = { -23.3, 'neg' }, name = "Neg (2)", expected_stack_top = 23.3 },
+        },
+    },
+    {
         name = "VM: real expressions",
         template = [[
             .const

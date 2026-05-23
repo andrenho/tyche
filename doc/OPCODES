@@ -70,10 +70,8 @@ Logical/arithmetic:
 2f              pow                  Power
 30              shl                  Shift left
 31              shr                  Shift right
-32              inc                  Increment by 1
-33              dec                  Decrement by 1
-34              not                  Invert value bits (or negate boolean)
-35              neg                  Invert number sign (negative)
+32              not                  Invert value bits (or negate boolean)
+33              neg                  Invert number sign (negative)
 
 Other value operations:
 40              len                  Get table, array or string size

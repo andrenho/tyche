@@ -134,6 +134,8 @@ local instructions = {
     pow     = 0x2f,
     shl     = 0x30,
     shr     = 0x31,
+    ['not'] = 0x32,
+    neg     = 0x33,
 
     -- other value operations
     len  = 0x40,

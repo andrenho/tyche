@@ -54,7 +54,7 @@ Decisions:
     - [ ] Operators
       - [x] Real
       - [x] Mix real and integer
-      - [ ] Unary operators (NOT, NEG, INC, DEC, LEN)
+      - [x] Unary operators (NOT, NEG, INC, DEC, LEN)
       - [ ] Boolean expressions
       - [ ] Type, cast, ver
   - [ ] Error handling

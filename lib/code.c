@@ -262,6 +262,8 @@ void code_parse_instruction(Instruction inst, char* outbuf, size_t sz)
         case TO_POW:   n = snprintf(outbuf, sz, "pow    "); break;
         case TO_SHL:   n = snprintf(outbuf, sz, "shl    "); break;
         case TO_SHR:   n = snprintf(outbuf, sz, "shr    "); break;
+        case TO_NOT:   n = snprintf(outbuf, sz, "not    "); break;
+        case TO_NEG:   n = snprintf(outbuf, sz, "neg    "); break;
         case TO_LEN:   n = snprintf(outbuf, sz, "len    "); break;
         case TO_TYPE:  n = snprintf(outbuf, sz, "type   "); break;
         case TO_CAST:  n = snprintf(outbuf, sz, "cast   "); break;

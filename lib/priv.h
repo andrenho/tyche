@@ -10,85 +10,86 @@
 
 #include "nanbox.h"
 
-
 //
 // INSTRUCTIONS
 //
 
 typedef enum {
     // STACK OPERATIONS
-    TO_PUSHI = 0XA0,
-    TO_PUSHC = 0XA1,
-    TO_PUSHF = 0XA2,
-    TO_PUSHN = 0X00,
-    TO_PUSHZ = 0X01,
-    TO_PUSHT = 0X02,
-    TO_NEWA  = 0X03,
-    TO_NEWT  = 0X04,
-    TO_POP   = 0X05,
-    TO_DUP   = 0X06,
+    TO_PUSHI = 0xA0,
+    TO_PUSHC = 0xA1,
+    TO_PUSHF = 0xA2,
+    TO_PUSHN = 0x00,
+    TO_PUSHZ = 0x01,
+    TO_PUSHT = 0x02,
+    TO_NEWA  = 0x03,
+    TO_NEWT  = 0x04,
+    TO_POP   = 0x05,
+    TO_DUP   = 0x06,
 
     // LOCAL VARIABLES
-    TO_PUSHV = 0XA3,
-    TO_SET   = 0XAE,
-    TO_DUPV  = 0XA4,
-    TO_SETG  = 0XA5,
-    TO_GLBL  = 0XA6,
+    TO_PUSHV = 0xA3,
+    TO_SET   = 0xAE,
+    TO_DUPV  = 0xA4,
+    TO_SETG  = 0xA5,
+    TO_GLBL  = 0xA6,
 
     // FUNCTION OPERATIONS
-    TO_CALL = 0XA7,
-    TO_RET  = 0X10,
-    TO_RETI = 0X11,
+    TO_CALL = 0xA7,
+    TO_RET  = 0x10,
+    TO_RETI = 0x11,
 
     // TABLE AND ARRAY OPERATIONS
-    TO_GETKV = 0X16,
-    TO_SETKV = 0X17,
-    TO_GETI  = 0XA8,
-    TO_SETI  = 0XA9,
-    TO_APPND = 0X18,
-    TO_NEXT  = 0X19,
-    TO_SPTB  = 0X1A,
-    TO_SUPR  = 0X1B,
+    TO_GETKV = 0x16,
+    TO_SETKV = 0x17,
+    TO_GETI  = 0xA8,
+    TO_SETI  = 0xA9,
+    TO_APPND = 0x18,
+    TO_NEXT  = 0x19,
+    TO_SPTB  = 0x1A,
+    TO_SUPR  = 0x1B,
 
     // LOGICAL/ARITHMETIC
-    TO_SUM     = 0X20,
-    TO_SUB     = 0X21,
-    TO_MUL     = 0X22,
-    TO_DIV     = 0X23,
-    TO_IDIV    = 0X24,
-    TO_MOD     = 0X25,
-    TO_EQ      = 0X26,
-    TO_NEQ     = 0X27,
-    TO_LT      = 0X28,
-    TO_LTE     = 0X29,
-    TO_GT      = 0X2A,
-    TO_GTE     = 0X2B,
-    TO_AND     = 0X2C,
-    TO_OR      = 0X2D,
-    TO_XOR     = 0X2E,
-    TO_POW     = 0X2F,
-    TO_SHL     = 0X30,
-    TO_SHR     = 0X31,
+    TO_SUM     = 0x20,
+    TO_SUB     = 0x21,
+    TO_MUL     = 0x22,
+    TO_DIV     = 0x23,
+    TO_IDIV    = 0x24,
+    TO_MOD     = 0x25,
+    TO_EQ      = 0x26,
+    TO_NEQ     = 0x27,
+    TO_LT      = 0x28,
+    TO_LTE     = 0x29,
+    TO_GT      = 0x2A,
+    TO_GTE     = 0x2B,
+    TO_AND     = 0x2C,
+    TO_OR      = 0x2D,
+    TO_XOR     = 0x2E,
+    TO_POW     = 0x2F,
+    TO_SHL     = 0x30,
+    TO_SHR     = 0x31,
+    TO_NOT     = 0x32,
+    TO_NEG     = 0x33,
 
     // OTHER VALUE OPERATIONS
-    TO_LEN  = 0X40,
-    TO_TYPE = 0X41,
-    TO_CAST = 0XAD,
-    TO_VER  = 0X42,
+    TO_LEN  = 0x40,
+    TO_TYPE = 0x41,
+    TO_CAST = 0xAD,
+    TO_VER  = 0x42,
 
     // EXTERNAL CODE
-    TO_CMPL  = 0X48,
-    TO_ASMBL = 0X49,
-    TO_LOAD  = 0X4A,
+    TO_CMPL  = 0x48,
+    TO_ASMBL = 0x49,
+    TO_LOAD  = 0x4A,
 
     // CONTROL FLOW
-    TO_BZ   = 0XAA,
-    TO_BNZ  = 0XAB,
+    TO_BZ   = 0xAA,
+    TO_BNZ  = 0xAB,
     TO_BNIL = 0xAF,
-    TO_JMP  = 0XAC,
+    TO_JMP  = 0xAC,
 
     // MEMORY MANAGEMENT
-    TO_GC = 0X4B,
+    TO_GC = 0x4B,
 } TYC_INST;
 
 //
@@ -292,6 +293,8 @@ Code*  tyc_code(TycheVM* T);
 //
 
 void       expr_init(void);
+bool       expr_is_binary(TYC_EXPR op);
+TYC_RESULT unary_expr(TycheVM* T, TYC_EXPR op, VALUE a, VALUE* result);
 TYC_RESULT binary_expr(TycheVM* T, TYC_EXPR op, VALUE a, VALUE b, VALUE* result);
 
 #endif //TYCHE_PRIV_H

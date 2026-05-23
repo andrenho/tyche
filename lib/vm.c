@@ -388,7 +388,10 @@ TYC_RESULT tyc_expr(TycheVM* T, TYC_EXPR op)
     TYC_RESULT r;
     VALUE v1, v2, result;
 
-    stack_pop(T->stack, &v2);
+    if (expr_is_binary(op))
+        stack_pop(T->stack, &v2);
+    else
+        v2 = create_value_nil();
     stack_pop(T->stack, &v1);
     TRY(binary_expr(T, op, v1, v2, &result))
     stack_push(T->stack, result);
@@ -735,6 +738,9 @@ static TYC_RESULT step(TycheVM* T)
         case TO_SHL:  TRY(tyc_expr(T, TX_SHL));  break;
         case TO_SHR:  TRY(tyc_expr(T, TX_SHR));  break;
         case TO_MOD:  TRY(tyc_expr(T, TX_MOD));  break;
+        case TO_NOT:  TRY(tyc_expr(T, TX_NOT));  break;
+        case TO_NEG:  TRY(tyc_expr(T, TX_NEG));  break;
+        case TO_LEN:  TRY(tyc_expr(T, TX_LEN));  break;
 
         //
         // jumps/branching
