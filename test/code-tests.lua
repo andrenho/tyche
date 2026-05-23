@@ -35,8 +35,9 @@ return {
         scenarios = {
             { parameters = {  2, 5, 'sum' },  name = "Sum", expected_stack_top = 7 },
             { parameters = {  2, 5, 'sub' },  name = "Subtraction", expected_stack_top = -3 },
-            { parameters = {  2, 5, 'mul' },  name = "Multiplication", expected_stack_top = 10 },
+            { parameters = {  2, -5, 'mul' }, name = "Multiplication", expected_stack_top = -10 },
             { parameters = { 20, 3, 'idiv' }, name = "Integer division", expected_stack_top = 6 },
+            { parameters = { 21, 4, 'div' },  name = "Division", expected_stack_top = 5.25 },
             { parameters = {  5, 5, 'eq' },   name = "Equality", expected_stack_top = true },
             { parameters = {  5, 5, 'neq' },  name = "Inequality", expected_stack_top = false },
             { parameters = {  4, 5, 'lt' },   name = "Less than", expected_stack_top = true },
@@ -52,6 +53,32 @@ return {
             { parameters = {  2, 5, 'shl' },  name = "Shift left", expected_stack_top = 64 },
             { parameters = { 20, 3, 'shr' },  name = "Shift right", expected_stack_top = 2},
             { parameters = { 20, 3, 'mod' },  name = "Modulo", expected_stack_top = 2 },
+        },
+    },
+    {
+        name = "VM: float expressions",
+        template = [[
+            .func 0
+                pushi   %d
+                pushi   %d
+                %s
+                ret
+        ]],
+        scenarios = {
+            { parameters = {  2.3, 5.3, 'sum' },  name = "Sum", expected_stack_top = 7.6 },
+            { parameters = {  2.3, 5.6, 'sub' },  name = "Subtraction", expected_stack_top = -3.3 },
+            { parameters = {  2.3, 5.3, 'mul' },  name = "Multiplication", expected_stack_top = 12.19 },
+            { parameters = { 20.3, 3.3, 'idiv' }, name = "Integer division", expected_stack_top = 6 },
+            { parameters = { 20.4, 2.5, 'div' },  name = "Integer division", expected_stack_top = 8.16 },
+            { parameters = {  5.3, 5.3, 'eq' },   name = "Equality", expected_stack_top = true },
+            { parameters = {  5.3, 5.3, 'neq' },  name = "Inequality", expected_stack_top = false },
+            { parameters = {  4.3, 5.3, 'lt' },   name = "Less than", expected_stack_top = true },
+            { parameters = {  5.3, 5.3, 'lt' },   name = "Less than", expected_stack_top = false },
+            { parameters = {  4.3, 5.3, 'lte' },  name = "Less than or equal", expected_stack_top = true },
+            { parameters = {  5.3, 5.3, 'lte' },  name = "Less than or equal", expected_stack_top = true },
+            { parameters = {  5.3, 5.3, 'gt' },   name = "Greater than", expected_stack_top = false },
+            { parameters = {  5.3, 5.3, 'gte' },  name = "Greater than or equal", expected_stack_top = true },
+            { parameters = {  2.3, 5.3, 'pow' },  name = "Power", expected_stack_top = 64.36343 },
         },
     },
     {

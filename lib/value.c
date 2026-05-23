@@ -72,22 +72,27 @@ bool value_boolean(VALUE v)
 int32_t value_integer(VALUE v)
 {
 #ifdef CHECK_TYCHE_BUGS
-    if (value_type(v) != TT_INTEGER) {
-        fprintf(stderr, "Expected integer, found %s.\n", type_name(value_type(v)));
+    if (value_type(v) != TT_INTEGER && value_type(v) != TT_REAL) {
+        fprintf(stderr, "Expected number, found %s.\n", type_name(value_type(v)));
         abort();
     }
 #endif
+    if (nanbox_is_double(v))
+        return (int) nanbox_to_double(v);
+
     return nanbox_to_int(v);
 }
 
 T_REAL value_real(VALUE v)
 {
 #ifdef CHECK_TYCHE_BUGS
-    if (value_type(v) != TT_REAL){
-        fprintf(stderr, "Expected real, found %s.\n", type_name(value_type(v)));
+    if (value_type(v) != TT_INTEGER && value_type(v) != TT_REAL){
+        fprintf(stderr, "Expected number, found %s.\n", type_name(value_type(v)));
         abort();
     }
 #endif
+    if (nanbox_is_int(v))
+        return (T_REAL) nanbox_to_int(v);
     return nanbox_to_double(v);
 }
 

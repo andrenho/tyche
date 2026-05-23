@@ -720,6 +720,7 @@ static TYC_RESULT step(TycheVM* T)
         case TO_SUM:  TRY(tyc_expr(T, TX_SUM));  break;
         case TO_SUB:  TRY(tyc_expr(T, TX_SUB));  break;
         case TO_MUL:  TRY(tyc_expr(T, TX_MUL));  break;
+        case TO_DIV:  TRY(tyc_expr(T, TX_DIV)); break;
         case TO_IDIV: TRY(tyc_expr(T, TX_IDIV)); break;
         case TO_EQ:   TRY(tyc_expr(T, TX_EQ));   break;
         case TO_NEQ:  TRY(tyc_expr(T, TX_NEQ));  break;
