@@ -18,7 +18,7 @@ typedef enum {
 
 typedef enum {
     TX_SUM, TX_SUB, TX_MUL, TX_DIV, TX_IDIV, TX_EQ, TX_NEQ, TX_LT, TX_LTE, TX_GT, TX_GTE, TX_AND, TX_OR, TX_XOR, TX_POW,
-    TX_SHL, TX_SHR, TX_MOD, TX_NOT, TX_NEG, TX_LEN,
+    TX_SHL, TX_SHR, TX_MOD, TX_NOT, TX_NEG,
     TX_COUNT__
 } TYC_EXPR;
 
@@ -70,6 +70,8 @@ TYC_RESULT tyc_setsupertable(TycheVM* T, int index);
 // memory operations
 TYC_RESULT tyc_gc(TycheVM* T);
 
+// expressions
 TYC_RESULT tyc_expr(TycheVM* T, TYC_EXPR expr);
+TYC_RESULT tyc_len(TycheVM* T);
 
 #endif //TYCHE_TYCHE_H

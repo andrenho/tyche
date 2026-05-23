@@ -76,7 +76,6 @@ Logical/arithmetic:
 Other value operations:
 40              len                  Get table, array or string size
 41              type                 Get type from value at the top of the stack
-   ad           cast [type]          Cast type to another type
 42              ver                  Return VM version
 
 External code:

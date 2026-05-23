@@ -35,7 +35,15 @@ void table_destroy(Table* t)
 
 size_t table_len(Table* t)
 {
-    return kh_size(t->tbl_int);
+    if (t->super == NULL)
+        return kh_size(t->tbl_int);
+
+    // if has supertable, also count the supertable fields which don't conflict with this table
+    size_t i = 0;
+    VALUE key = create_value_nil();
+    while (table_next(t, key, &key, NULL))
+        ++i;
+    return i;
 }
 
 static TABLE_HASH value_hash(VALUE v)

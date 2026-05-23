@@ -56,10 +56,8 @@ Decisions:
       - [x] Mix real and integer
       - [x] Unary operators (NOT, NEG, INC, DEC, LEN)
       - [x] Boolean expressions (and, or, xor, eq, neq, not)
-      - [ ] << instead of appnd
-      - [ ] Len (table, array, string)
-      - [ ] % for printf (?)
-      - [ ] Type, cast, ver
+      - [x] Len (table, array, string)
+      - [ ] Type, ver
   - [ ] Error handling
   - [ ] Native pointers
   - [ ] Rest of opcodes
@@ -80,6 +78,9 @@ Decisions:
 - [ ] Closure/upvalues
 - [ ] Table, array equality
 - [ ] "+" for tables, array
+- [ ] % for printf (?)
+- [ ] << instead of appnd
+- [ ] Operator overloading
 - [ ] stdlib
 - [ ] regex
 

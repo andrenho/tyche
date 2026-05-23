@@ -380,7 +380,6 @@ TYC_RESULT tyc_tostring(TycheVM* T, int idx, const char** str)
         return heap_get_string(T->heap, value_heap_key(v), str);
     else
         ERROR("Expected string")
-    return T_OK;
 }
 
 TYC_RESULT tyc_expr(TycheVM* T, TYC_EXPR op)
@@ -397,6 +396,33 @@ TYC_RESULT tyc_expr(TycheVM* T, TYC_EXPR op)
     stack_push(T->stack, result);
 
     return T_OK;
+}
+
+TYC_RESULT tyc_len(TycheVM* T)
+{
+    TYC_RESULT r;
+    VALUE a;
+    TRY(stack_peek(T->stack, &a))
+
+    switch (value_type(a)) {
+        case TT_STRING: {
+            const char* str;
+            heap_get_string(T->heap, value_heap_key(a), &str);
+            return stack_push(T->stack, create_value_integer((int32_t) strlen(str)));
+        }
+        case TT_ARRAY: {
+            Array* array;
+            heap_get_array(T->heap, value_heap_key(a), &array);
+            return stack_push(T->stack, create_value_integer((int32_t) array_len(array)));
+        }
+        case TT_TABLE: {
+            Table* table;
+            heap_get_table(T->heap, value_heap_key(a), &table);
+            return stack_push(T->stack, create_value_integer((int32_t) table_len(table)));
+        }
+        default:;
+    }
+    ERROR("Len not supported for type '%s'", type_name(value_type(a)))
 }
 
 //
@@ -740,7 +766,7 @@ static TYC_RESULT step(TycheVM* T)
         case TO_MOD:  TRY(tyc_expr(T, TX_MOD));  break;
         case TO_NOT:  TRY(tyc_expr(T, TX_NOT));  break;
         case TO_NEG:  TRY(tyc_expr(T, TX_NEG));  break;
-        case TO_LEN:  TRY(tyc_expr(T, TX_LEN));  break;
+        case TO_LEN:  TRY(tyc_len(T)); break;
 
         //
         // jumps/branching

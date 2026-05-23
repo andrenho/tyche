@@ -14,9 +14,14 @@ static bool was_init = false;
 typedef TYC_RESULT(*EXPR_FN)(TycheVM* T, VALUE a, VALUE b, VALUE* r);
 static EXPR_FN expr_fn[TX_COUNT__][TT_COUNT__][TT_COUNT__];
 
-static TYC_RESULT default_op(TycheVM* T, VALUE a, VALUE b, VALUE* r) {
+static TYC_RESULT default_binary_op(TycheVM* T, VALUE a, VALUE b, VALUE* r) {
     (void) T; (void) a; (void) b, (void) r;
     ERROR("Incorrect types in expression: %s and %s", type_name(value_type(a)), type_name(value_type(b)))
+}
+
+static TYC_RESULT default_unary_op(TycheVM* T, VALUE a, VALUE b, VALUE* r) {
+    (void) T; (void) a; (void) b, (void) r;
+    ERROR("Incorrect type in expression: %s", type_name(value_type(a)))
 }
 
 #define OP(name) static TYC_RESULT name(TycheVM* T, VALUE a, VALUE b, VALUE* r)
@@ -100,7 +105,7 @@ void expr_init(void)
     for (size_t i = 0; i < TX_COUNT__; ++i)
         for (size_t j = 0; j < TT_COUNT__; ++j)
             for (size_t k = 0; k < TT_COUNT__; ++k)
-                expr_fn[i][j][k] = default_op;
+                expr_fn[i][j][k] = expr_is_binary(i) ? default_binary_op : default_unary_op;
 
     // boolean
     expr_fn[TX_AND][TT_BOOLEAN][TT_BOOLEAN] = and_bool;
@@ -156,5 +161,5 @@ TYC_RESULT binary_expr(TycheVM* T, TYC_EXPR op, VALUE a, VALUE b, VALUE* result)
 
 bool expr_is_binary(TYC_EXPR op)
 {
-    return op != TX_NOT && op != TX_NEG && op != TX_LEN;
+    return op != TX_NOT && op != TX_NEG;
 }

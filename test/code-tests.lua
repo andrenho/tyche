@@ -526,5 +526,47 @@ return {
                 ret
         ]],
         expected_stack_top = 30,
-    }
+    },
+    {
+        name = "VM: len (string)",
+        code = [[
+            .const
+                0: "Hello"
+            .func 0
+                pushc   0
+                len
+                ret
+        ]],
+        expected_stack_top = 5,
+    },
+    {
+        name = "VM: len (array)",
+        code = [[
+            .func 0
+                newa
+                pushi   10
+                seti    0
+                pushi   20
+                seti    1
+                len
+                ret
+        ]],
+        expected_stack_top = 2,
+    },
+    {
+        name = "VM: len (table)",
+        code = [[
+            .func 0
+                newt
+                pushi   10
+                pushi   20
+                setkv
+                pushi   20
+                pushi   30
+                setkv
+                len
+                ret
+        ]],
+        expected_stack_top = 2,
+    },
 }
