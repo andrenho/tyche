@@ -52,8 +52,11 @@ Decisions:
       - [x] Boolean opcodes
       - [x] Support for doubles in const
     - [ ] Operators
-      - [ ] Unary operators (NOT, NEG, INC, DEC)
-      - [ ] Boolean and real
+      - [x] Real
+      - [x] Mix real and integer
+      - [ ] Unary operators (NOT, NEG, INC, DEC, LEN)
+      - [ ] Boolean expressions
+      - [ ] Type, cast, ver
   - [ ] Error handling
     - [ ] Stack trace in case of errors
   - [ ] Native pointers
