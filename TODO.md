@@ -55,10 +55,12 @@ Decisions:
       - [x] Real
       - [x] Mix real and integer
       - [x] Unary operators (NOT, NEG, INC, DEC, LEN)
-      - [ ] Boolean expressions
+      - [x] Boolean expressions (and, or, xor, eq, neq, not)
+      - [ ] << instead of appnd
+      - [ ] Len (table, array, string)
+      - [ ] % for printf (?)
       - [ ] Type, cast, ver
   - [ ] Error handling
-    - [ ] Stack trace in case of errors
   - [ ] Native pointers
   - [ ] Rest of opcodes
   - [ ] Assembler in C
@@ -70,11 +72,16 @@ Decisions:
 # Version 1
 
 - [ ] Compiler
+- [ ] Debugging information
+- [ ] Stack trace in case of errors
 
 # Version 2
 
 - [ ] Closure/upvalues
+- [ ] Table, array equality
+- [ ] "+" for tables, array
 - [ ] stdlib
+- [ ] regex
 
 ## Future versions
 

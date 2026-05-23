@@ -20,6 +20,13 @@ static TYC_RESULT default_op(TycheVM* T, VALUE a, VALUE b, VALUE* r) {
 }
 
 #define OP(name) static TYC_RESULT name(TycheVM* T, VALUE a, VALUE b, VALUE* r)
+OP(and_bool)     { (void) T; *r = create_value_bool(value_boolean(a) & value_boolean(b)); return T_OK; }
+OP(or_bool)      { (void) T; *r = create_value_bool(value_boolean(a) | value_boolean(b)); return T_OK; }
+OP(xor_bool)     { (void) T; *r = create_value_bool(value_boolean(a) ^ value_boolean(b)); return T_OK; }
+OP(eq_bool)      { (void) T; *r = create_value_bool(value_boolean(a) == value_boolean(b)); return T_OK; }
+OP(neq_bool)     { (void) T; *r = create_value_bool(value_boolean(a) != value_boolean(b)); return T_OK; }
+OP(not_bool)     { (void) T, (void) b; *r = create_value_bool(!value_boolean(a)); return T_OK; }
+
 OP(sum_int_int)  { (void) T; *r = create_value_integer(value_integer(a) + value_integer(b)); return T_OK; }
 OP(sub_int_int)  { (void) T; *r = create_value_integer(value_integer(a) - value_integer(b)); return T_OK; }
 OP(mul_int_int)  { (void) T; *r = create_value_integer(value_integer(a) * value_integer(b)); return T_OK; }
@@ -94,6 +101,14 @@ void expr_init(void)
         for (size_t j = 0; j < TT_COUNT__; ++j)
             for (size_t k = 0; k < TT_COUNT__; ++k)
                 expr_fn[i][j][k] = default_op;
+
+    // boolean
+    expr_fn[TX_AND][TT_BOOLEAN][TT_BOOLEAN] = and_bool;
+    expr_fn[TX_OR][TT_BOOLEAN][TT_BOOLEAN] = or_bool;
+    expr_fn[TX_XOR][TT_BOOLEAN][TT_BOOLEAN] = xor_bool;
+    expr_fn[TX_EQ][TT_BOOLEAN][TT_BOOLEAN] = eq_bool;
+    expr_fn[TX_NEQ][TT_BOOLEAN][TT_BOOLEAN] = neq_bool;
+    expr_fn[TX_NOT][TT_BOOLEAN][TT_NIL] = not_bool;
 
     // integer
     expr_fn[TX_SUM][TT_INTEGER][TT_INTEGER] = sum_int_int;

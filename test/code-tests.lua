@@ -140,6 +140,36 @@ return {
         expected_stack_top = 6.14,
     },
     {
+        name = "VM: boolean expressions",
+        template = [[
+            .func 0
+                push%s
+                push%s
+                %s
+                ret
+        ]],
+        scenarios = {
+            { parameters = { 't', 'z', 'and' }, name = "And", expected_stack_top = false },
+            { parameters = { 't', 'z', 'or' },  name = "Or", expected_stack_top = true },
+            { parameters = { 't', 'z', 'xor' }, name = "Xor", expected_stack_top = true },
+            { parameters = { 't', 'z', 'eq' },  name = "Equality", expected_stack_top = false },
+            { parameters = { 't', 'z', 'neq' }, name = "Inequality", expected_stack_top = true },
+        },
+    },
+    {
+        name = "VM: unary boolean expressions",
+        template = [[
+            .func 0
+                push%s
+                %s
+                ret
+        ]],
+        scenarios = {
+            { parameters = { 't', 'not' },  name = "Not (1)", expected_stack_top = false },
+            { parameters = { 'z', 'not' },  name = "Not (2)", expected_stack_top = true },
+        },
+    },
+    {
         name = "VM: local variables",
         code = [[
             .func 0
