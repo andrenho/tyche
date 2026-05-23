@@ -56,11 +56,14 @@ return {
         },
     },
     {
-        name = "VM: float expressions",
+        name = "VM: real expressions",
         template = [[
+            .const
+                0: %f
+                1: %f
             .func 0
-                pushi   %d
-                pushi   %d
+                pushc   0
+                pushc   1
                 %s
                 ret
         ]],
@@ -78,8 +81,34 @@ return {
             { parameters = {  5.3, 5.3, 'lte' },  name = "Less than or equal", expected_stack_top = true },
             { parameters = {  5.3, 5.3, 'gt' },   name = "Greater than", expected_stack_top = false },
             { parameters = {  5.3, 5.3, 'gte' },  name = "Greater than or equal", expected_stack_top = true },
-            { parameters = {  2.3, 5.3, 'pow' },  name = "Power", expected_stack_top = 64.36343 },
+            { parameters = {  2.3, 5.3, 'pow' },  name = "Power", expected_stack_top = 82.6337631255 },
         },
+    },
+    {
+        name = "VM: mix integer and real (1)",
+        code = [[
+            .const
+                0: 3.14
+            .func 0
+                pushc   0
+                pushi   3
+                sum
+                ret
+        ]],
+        expected_stack_top = 6.14,
+    },
+    {
+        name = "VM: mix integer and real (2)",
+        code = [[
+            .const
+                0: 3.14
+            .func 0
+                pushi   3
+                pushc   0
+                sum
+                ret
+        ]],
+        expected_stack_top = 6.14,
     },
     {
         name = "VM: local variables",
