@@ -82,6 +82,12 @@ typedef enum {
 
     // MEMORY MANAGEMENT
     TO_GC = 0x4B,
+
+    // ERROR MANAGEMENT
+    TO_PUSHE = 0xAD,
+    TO_POPE  = 0x5A,
+    TO_THRW  = 0x5B,
+
 } TYC_INST;
 
 //

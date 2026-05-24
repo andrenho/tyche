@@ -15,13 +15,19 @@ typedef TYC_RESULT(*EXPR_FN)(TycheVM* T, VALUE a, VALUE b, VALUE* r);
 static EXPR_FN expr_fn[TX_COUNT__][TT_COUNT__][TT_COUNT__];
 
 static TYC_RESULT default_binary_op(TycheVM* T, VALUE a, VALUE b, VALUE* r) {
-    (void) T; (void) a; (void) b, (void) r;
-    ERROR("Incorrect types in expression: %s and %s", type_name(value_type(a)), type_name(value_type(b)))
+    (void) r;
+    char buf[500];
+    snprintf(buf, sizeof buf, "Incorrect types in expression: %s and %s", type_name(value_type(a)), type_name(value_type(b)));
+    tyc_throw(T, buf);
+    return T_ERR;
 }
 
 static TYC_RESULT default_unary_op(TycheVM* T, VALUE a, VALUE b, VALUE* r) {
-    (void) T; (void) a; (void) b, (void) r;
-    ERROR("Incorrect type in expression: %s", type_name(value_type(a)))
+    (void) r; (void) b;
+    char buf[500];
+    snprintf(buf, sizeof buf, "Incorrect type in expression: %s", type_name(value_type(a)));
+    tyc_throw(T, buf);
+    return T_ERR;
 }
 
 #define OP(name) static TYC_RESULT name(TycheVM* T, VALUE a, VALUE b, VALUE* r)

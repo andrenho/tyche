@@ -93,5 +93,7 @@ Control flow (the destination is always a 16-bit field):
 Memory management:
 4b              gc                   Call garbage collector
 
-Error handling: (0xa0~0xaf)
-   ???
+Error handling:
+      cd        pushe                Push error handler
+5a              pope                 Pop error handler
+5b              thrw                 Throw

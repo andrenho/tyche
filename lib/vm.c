@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 typedef struct Location {
     uint32_t function_id;
@@ -14,13 +15,25 @@ typedef struct LocationStack {
     size_t    cap;
 } LocationStack;
 
+typedef struct ErrorHandlerLocation {
+    size_t   location_level;
+    uint32_t pc;
+} ErrorHandlerLocation;
+
+typedef struct ErrorHandlerStack {
+    ErrorHandlerLocation* locations;
+    size_t                sz;
+    size_t                cap;
+} ErrorHandlerStack;
+
 struct TycheVM {
-    Stack*        stack;
-    Heap*         heap;
-    Code*         code;
-    LocationStack location_stack;
-    VALUE         global_table;
-    bool          debug;
+    Stack*            stack;
+    Heap*             heap;
+    Code*             code;
+    LocationStack     location_stack;
+    ErrorHandlerStack error_stack;
+    VALUE             global_table;
+    bool              debug;
 };
 
 static TYC_RESULT step(TycheVM* T);
@@ -53,6 +66,11 @@ TycheVM* tyc_new(void)
         .cap = 4,
         .sz = 0,
     };
+    T->error_stack = (ErrorHandlerStack) {
+            .locations = xmalloc(4 * sizeof(ErrorHandlerLocation)),
+            .cap = 4,
+            .sz = 0,
+    };
     T->global_table = create_value_heap_key(TT_TABLE, heap_add_table(T->heap));
     T->debug = false;
 
@@ -65,6 +83,7 @@ void tyc_destroy(TycheVM* T)
 {
     heap_gc(T->heap, NULL, 0);
 
+    free(T->error_stack.locations);
     free(T->location_stack.locations);
     code_destroy(T->code);
     heap_destroy(T->heap);
@@ -87,18 +106,6 @@ Code*  tyc_code(TycheVM* T) { return T->code; }
 void tyc_debug_to_console(TycheVM* T, bool activate)
 {
     T->debug = activate;
-}
-
-#ifdef DEBUG_ASSEMBLY
-
-static void debug_instruction(TycheVM* T, Location* loc, Instruction inst)
-{
-    if (!T->debug)
-        return;
-
-    char buf[50];
-    code_parse_instruction(inst, buf, sizeof(buf));
-    printf(": %02d-%04d   %s    ", loc->function_id, loc->pc, buf);
 }
 
 static void debug_value(TycheVM* T, VALUE a)
@@ -167,6 +174,18 @@ static void debug_value(TycheVM* T, VALUE a)
         default:
             __builtin_unreachable();
     }
+}
+
+#ifdef DEBUG_ASSEMBLY
+
+static void debug_instruction(TycheVM* T, Location* loc, Instruction inst)
+{
+    if (!T->debug)
+        return;
+
+    char buf[50];
+    code_parse_instruction(inst, buf, sizeof(buf));
+    printf(": %02d-%04d   %s    ", loc->function_id, loc->pc, buf);
 }
 
 static void debug_stack(TycheVM* T)
@@ -271,13 +290,23 @@ static TYC_RESULT enter_function(TycheVM* T, uint16_t n_pars)
     return T_OK;
 }
 
+static TYC_RESULT exit_function(TycheVM* T)
+{
+    TYC_RESULT r;
+    VALUE a;
+    TRY(stack_pop(T->stack, &a))
+    TRY(stack_pop_fp(T->stack))
+    TRY(stack_push(T->stack, a))
+    location_pop(T);
+    return T_OK;
+}
+
 static TYC_RESULT run_until_return(TycheVM* T)
 {
     TYC_RESULT r;
 
-    size_t level = stack_fp_level(T->stack);
-    while (stack_fp_level(T->stack) >= level)
-        TRY(step(T))
+    while (T->location_stack.sz > 0)
+        TRY(step(T));
 
     return T_OK;
 }
@@ -604,11 +633,84 @@ TYC_RESULT tyc_gc(TycheVM* T)
 }
 
 //
+// ERROR HANDLING
+//
+
+static TYC_RESULT tyc_push_errhandler(TycheVM* T, uint32_t pc)
+{
+    if (T->error_stack.sz == T->error_stack.cap) {
+        T->error_stack.cap *= 2;
+        T->error_stack.locations = xrealloc(T->error_stack.locations, T->error_stack.cap * sizeof(ErrorHandlerLocation));
+    }
+
+    T->error_stack.locations[T->error_stack.sz] = (ErrorHandlerLocation) {
+            .location_level = T->location_stack.sz,
+            .pc = pc,
+    };
+    ++T->error_stack.sz;
+
+    return T_OK;
+}
+
+static TYC_RESULT tyc_pop_errhandler(TycheVM* T)
+{
+    if (T->error_stack.sz == 0)
+        ERROR("Error stack: underflow");
+    --T->error_stack.sz;
+    return T_OK;
+}
+
+static TYC_RESULT tyc_throw_raw(TycheVM* T)
+{
+    TYC_RESULT r;
+
+    if (T->error_stack.sz == 0) {  // error at toplevel
+        VALUE a = create_value_nil();
+        stack_peek(T->stack, &a);
+        printf("\ntyche error: "); debug_value(T, a); printf("\n");
+        exit(EXIT_FAILURE);
+    }
+
+    ErrorHandlerLocation* err_loc = &T->error_stack.locations[T->error_stack.sz - 1];
+    while (T->location_stack.sz > err_loc->location_level)
+        location_pop(T);
+
+    T->location_stack.locations[T->location_stack.sz - 1].pc = err_loc->pc;
+    TRY(tyc_pop_errhandler(T))
+
+    return T_OK;
+}
+
+TYC_RESULT tyc_throw(TycheVM* T, const char* message)
+{
+    TYC_RESULT r;
+    Table *t;
+
+    HEAP_KEY k_table = heap_add_table(T->heap);
+    VALUE v_table = create_value_heap_key(TT_TABLE, k_table);
+    VALUE v_error = create_value_heap_key(TT_STRING, heap_add_string(T->heap, "error", false));
+    VALUE v_message = create_value_heap_key(TT_STRING, heap_add_string(T->heap, message, false));
+    VALUE v_function_id = create_value_heap_key(TT_STRING, heap_add_string(T->heap, "function_id", false));
+    VALUE v_pc = create_value_heap_key(TT_STRING, heap_add_string(T->heap, "pc", false));
+
+    TRY(heap_get_table(T->heap, k_table, &t))
+    table_set(t, v_error, v_message);
+    table_set(t, v_function_id, create_value_integer((int32_t) location_top(T)->function_id));
+    table_set(t, v_pc, create_value_integer((int32_t) location_top(T)->pc));
+    TRY(stack_push(T->stack, v_table))
+    TRY(tyc_throw_raw(T))
+
+    return T_OK;
+}
+
+//
 // STEP
 //
 
 static TYC_RESULT step(TycheVM* T)
 {
+#define TRY_RUNTIME(x) if ((r = (x)) != T_OK) { goto dont_update_pc; }
+
     VALUE a;
     TYC_RESULT r;
 
@@ -635,13 +737,13 @@ static TYC_RESULT step(TycheVM* T)
 
         case TO_PUSHF:
             if (inst.operand < 0 || inst.operand >= (int) code_n_functions(T->code))
-                ERROR("Value out of range")
+                ERROR("Function id out of range - this is a compiler bug")
             TRY(stack_push(T->stack, create_value_function_idx((uint32_t) inst.operand)))
             break;
 
         case TO_PUSHC:
             if (inst.operand < 0 || inst.operand >= (int) code_n_consts(T->code))
-                ERROR("Value out of range")
+                ERROR("Const id out of range - this is a compiler bug")
             if (code_const_type(T->code, (size_t) inst.operand) == TC_STRING) {
                 const char* string = code_const_string(T->code, (uint32_t) inst.operand);
                 HEAP_KEY key = heap_add_string(T->heap, string, true);
@@ -682,17 +784,14 @@ static TYC_RESULT step(TycheVM* T)
 
         case TO_CALL:
             if (inst.operand < 0)
-                ERROR("Value out of range")
+                ERROR("Function id out of range - this is a compiler bug")
             enter_function(T, (uint16_t) inst.operand);
             break;
 
         case TO_RETN:
             TRY(stack_push(T->stack, create_value_nil())) // fallthrough
         case TO_RET:
-            TRY(stack_pop(T->stack, &a))
-            TRY(stack_pop_fp(T->stack))
-            TRY(stack_push(T->stack, a))
-            location_pop(T);
+            exit_function(T);
             goto dont_update_pc;
 
         //
@@ -700,14 +799,18 @@ static TYC_RESULT step(TycheVM* T)
         //
 
         case TO_GETI:
-            if (inst.operand < 0)
-                ERROR("Value out of range")
+            if (inst.operand < 0) {
+                tyc_throw(T, "Value out of range");
+                goto dont_update_pc;
+            }
             TRY(tyc_geti(T, -1, (size_t) inst.operand))
             break;
 
         case TO_SETI:
-            if (inst.operand < 0)
-                ERROR("Value out of range")
+            if (inst.operand < 0) {
+                tyc_throw(T, "Value out of range");
+                goto dont_update_pc;
+            }
             TRY(tyc_seti(T, -2, (size_t) inst.operand))
             break;
 
@@ -764,26 +867,26 @@ static TYC_RESULT step(TycheVM* T)
         // expressions
         //
 
-        case TO_SUM:  TRY(tyc_expr(T, TX_SUM));  break;
-        case TO_SUB:  TRY(tyc_expr(T, TX_SUB));  break;
-        case TO_MUL:  TRY(tyc_expr(T, TX_MUL));  break;
-        case TO_DIV:  TRY(tyc_expr(T, TX_DIV)); break;
-        case TO_IDIV: TRY(tyc_expr(T, TX_IDIV)); break;
-        case TO_EQ:   TRY(tyc_expr(T, TX_EQ));   break;
-        case TO_NEQ:  TRY(tyc_expr(T, TX_NEQ));  break;
-        case TO_LT:   TRY(tyc_expr(T, TX_LT));   break;
-        case TO_LTE:  TRY(tyc_expr(T, TX_LTE));  break;
-        case TO_GT:   TRY(tyc_expr(T, TX_GT));   break;
-        case TO_GTE:  TRY(tyc_expr(T, TX_GTE));  break;
-        case TO_AND:  TRY(tyc_expr(T, TX_AND));  break;
-        case TO_OR:   TRY(tyc_expr(T, TX_OR));   break;
-        case TO_XOR:  TRY(tyc_expr(T, TX_XOR));  break;
-        case TO_POW:  TRY(tyc_expr(T, TX_POW));  break;
-        case TO_SHL:  TRY(tyc_expr(T, TX_SHL));  break;
-        case TO_SHR:  TRY(tyc_expr(T, TX_SHR));  break;
-        case TO_MOD:  TRY(tyc_expr(T, TX_MOD));  break;
-        case TO_NOT:  TRY(tyc_expr(T, TX_NOT));  break;
-        case TO_NEG:  TRY(tyc_expr(T, TX_NEG));  break;
+        case TO_SUM:  TRY_RUNTIME(tyc_expr(T, TX_SUM));  break;
+        case TO_SUB:  TRY_RUNTIME(tyc_expr(T, TX_SUB));  break;
+        case TO_MUL:  TRY_RUNTIME(tyc_expr(T, TX_MUL));  break;
+        case TO_DIV:  TRY_RUNTIME(tyc_expr(T, TX_DIV)); break;
+        case TO_IDIV: TRY_RUNTIME(tyc_expr(T, TX_IDIV)); break;
+        case TO_EQ:   TRY_RUNTIME(tyc_expr(T, TX_EQ));   break;
+        case TO_NEQ:  TRY_RUNTIME(tyc_expr(T, TX_NEQ));  break;
+        case TO_LT:   TRY_RUNTIME(tyc_expr(T, TX_LT));   break;
+        case TO_LTE:  TRY_RUNTIME(tyc_expr(T, TX_LTE));  break;
+        case TO_GT:   TRY_RUNTIME(tyc_expr(T, TX_GT));   break;
+        case TO_GTE:  TRY_RUNTIME(tyc_expr(T, TX_GTE));  break;
+        case TO_AND:  TRY_RUNTIME(tyc_expr(T, TX_AND));  break;
+        case TO_OR:   TRY_RUNTIME(tyc_expr(T, TX_OR));   break;
+        case TO_XOR:  TRY_RUNTIME(tyc_expr(T, TX_XOR));  break;
+        case TO_POW:  TRY_RUNTIME(tyc_expr(T, TX_POW));  break;
+        case TO_SHL:  TRY_RUNTIME(tyc_expr(T, TX_SHL));  break;
+        case TO_SHR:  TRY_RUNTIME(tyc_expr(T, TX_SHR));  break;
+        case TO_MOD:  TRY_RUNTIME(tyc_expr(T, TX_MOD));  break;
+        case TO_NOT:  TRY_RUNTIME(tyc_expr(T, TX_NOT));  break;
+        case TO_NEG:  TRY_RUNTIME(tyc_expr(T, TX_NEG));  break;
 
         case TO_LEN:
             TRY(tyc_len(T, -1));
@@ -847,6 +950,24 @@ static TYC_RESULT step(TycheVM* T)
         case TO_GC:
             tyc_gc(T);
             break;
+
+        //
+        // error handling
+        //
+
+        case TO_PUSHE:
+            if (inst.operand < 0 || inst.operand >= (int) code_function_sz(T->code, loc->function_id))
+                ERROR("Value out of range")
+            tyc_push_errhandler(T, (uint32_t) inst.operand);
+            break;
+
+        case TO_POPE:
+            tyc_pop_errhandler(T);
+            break;
+
+        case TO_THRW:
+            tyc_throw_raw(T);
+            goto dont_update_pc;
 
         default:
             ERROR("Invalid opcode 0x%x", inst.operator)

@@ -25,6 +25,7 @@ local function parse_assembly(source)
         elseif line:match("%.func%s+%d+") then
             section = 'function'
             local f_id = tonumber(line:match("%.func%s+(%d+)"))
+            if proto.functions[f_id] then error("Function redeclaration") end
             proto.functions[f_id] = {}
             current_f_id = f_id
         elseif section == 'const' then
@@ -155,7 +156,12 @@ local instructions = {
     jmp  = 0xcc,
 
     -- memory management
-    gc = 0x4b,
+    gc   = 0x4b,
+
+    -- error management
+    pushe   = 0xcd,
+    pope    = 0x5a,
+    thrw    = 0x5b,
 }
 
 local MAGIC = 0xa7d6e9b1

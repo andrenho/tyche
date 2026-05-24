@@ -579,4 +579,138 @@ return {
         ]],
         expected_stack_top = 6,
     },
+    {
+        name = "VM: error handling with the same function",
+        code = [[
+            .func 0
+                pushe   @catch
+                pushi   10
+                thrw
+                pushi   20
+                ret
+            @catch:
+                pushi   30
+                ret
+        ]],
+        expected_stack_top = 30,
+    },
+    {
+        name = "VM: error handling with the same function, exception value",
+        code = [[
+            .func 0
+                pushe   @catch
+                pushi   10
+                thrw
+                pushi   20
+                ret
+            @catch:
+                ret
+        ]],
+        expected_stack_top = 10,
+    },
+    {
+        name = "VM: error handling across functions",
+        code = [[
+            .func 0
+                pushe   @catch
+                pushf   1
+                call    0
+                pushi   20
+                ret
+            @catch:
+                ret
+
+            .func 1:
+                pushi   10
+                thrw
+                pushi   40
+                ret
+        ]],
+        expected_stack_top = 10,
+    },
+    {
+        name = "VM: multilevel error handling (1)",
+        code = [[
+            .func 0
+                pushe   @catch1
+                pushf   1
+                call    0
+                pushi   20
+                ret
+            @catch1:
+                ret
+
+            .func 1
+                pushe   @catch2
+                pushi   30
+                thrw
+                ret
+            @catch2:
+                ret
+        ]],
+        expected_stack_top = 20,
+    },
+    {
+        name = "VM: multilevel error handling (2)",
+        code = [[
+            .func 0
+                pushe   @catch1
+                pushf   1
+                call    0
+                pushi   20
+                thrw
+                pushi   40
+                ret
+            @catch1:
+                ret
+
+            .func 1
+                pushe   @catch2
+                pushi   30
+                jmp     @skip_catch2
+            @catch2:
+                ret
+            @skip_catch2:
+                pope
+                ret
+        ]],
+        expected_stack_top = 20,
+    },
+    -- uncomment to test toplevel error - this will exit the program
+    --{
+    --    name = "VM: toplevel error",
+    --    code = [[
+    --        .const
+    --            0: "error"
+    --            1: "Error message"
+    --        .func 0
+    --            newt
+    --            pushc   0
+    --            pushc   1
+    --            setkv
+    --            thrw
+    --            ret
+    --    ]],
+    --    debug = true,
+    --    expected_stack_top = 20,
+    --},
+    {
+        name = "VM: error handling on expression",
+        code = [[
+            .func 0
+                pushe   @catch
+                newt
+                newt
+                idiv
+                pushi   20
+                ret
+            @catch:
+                pushi   30
+                ret
+        ]],
+        -- debug = true,
+        expected_stack_top = 30,
+    },
+
+    -- TODO - error handling for exceptions (divide by zero, stack underflow, etc)
 }

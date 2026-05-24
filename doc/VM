@@ -31,3 +31,14 @@ Internal handling of values
   pow   ^
   shl   <<
   shr   >>
+
+## Error format
+
+{ error: "Error message" }
+
+Additional fields:
+  if debugging info: file + line
+  if no debugging info: function_id + pc
+
+Errors:
+  - OutOfRange

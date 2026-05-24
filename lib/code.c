@@ -270,6 +270,9 @@ void code_parse_instruction(Instruction inst, char* outbuf, size_t sz)
         case TO_BNIL:  n = snprintf(outbuf, sz, "bnil   "); break;
         case TO_JMP:   n = snprintf(outbuf, sz, "jmp    "); break;
         case TO_GC:    n = snprintf(outbuf, sz, "gc     "); break;
+        case TO_PUSHE: n = snprintf(outbuf, sz, "pushe  "); break;
+        case TO_POPE:  n = snprintf(outbuf, sz, "pope   "); break;
+        case TO_THRW:  n = snprintf(outbuf, sz, "thrw   "); break;
         default:       n = snprintf(outbuf, sz, "???    "); break;
     }
 

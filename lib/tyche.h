@@ -83,4 +83,7 @@ TYC_RESULT tyc_gc(TycheVM* T);
 TYC_RESULT tyc_expr(TycheVM* T, TYC_EXPR expr);
 TYC_RESULT tyc_len(TycheVM* T, int idx);
 
+// exceptions
+TYC_RESULT tyc_throw(TycheVM* T, const char* message);
+
 #endif //TYCHE_TYCHE_H

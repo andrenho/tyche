@@ -58,9 +58,9 @@ Decisions:
       - [x] Boolean expressions (and, or, xor, eq, neq, not)
       - [x] Len (table, array, string)
       - [x] Type, ver
-  - [ ] Error handling
+  - [x] Error handling
   - [ ] Native pointers
-  - [ ] Rest of opcodes
+  - [ ] Run GC occasionally
   - [ ] Assembler in C
   - [ ] Main application
 - [ ] Prepare for release
@@ -70,8 +70,10 @@ Decisions:
 # Version 1
 
 - [ ] Compiler
+- [ ] REPL
 - [ ] Debugging information
 - [ ] Stack trace in case of errors
+- [ ] Debugger
 
 # Version 2
 
