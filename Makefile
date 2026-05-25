@@ -61,11 +61,12 @@ endif
 
 all: tyche libtyche.a libtyche.so.${VERSION}
 
-check: tyche-test
-	./tyche-test
+check: tyche-test tyche-test-as
+	./tyche-test-as
+	./tyche-test-vm
 
 clean:
-	rm -f tyche libtyche.a libtyche.so* tyche-test **/*.o **/*.d lib/compiler/compiler.lua.h \
+	rm -f tyche libtyche.a libtyche.so* tyche-test-* **/*.o **/*.d lib/compiler/compiler.lua.h \
 		lib/instructions/instructions.h lib/instructions/instructions.c
 
 install: tyche libtyche.a libtyche.so.${VERSION} lib/tyche.h
@@ -115,9 +116,14 @@ tyche: src/tyche.o libtyche.a
 	$(CC) -o $@ $^ ${LDFLAGS}
 	strip $@
 
-tyche-test: CFLAGS += ${DEBUG_CFLAGS} -DDEBUG_ASSEMBLY
-tyche-test: LDFLAGS += ${DEBUG_LDFLAGS}
-tyche-test: test/tests.o libtyche.a
+tyche-test-vm: CFLAGS += ${DEBUG_CFLAGS} -DDEBUG_ASSEMBLY
+tyche-test-vm: LDFLAGS += ${DEBUG_LDFLAGS}
+tyche-test-vm: test/tests-vm.o libtyche.a
+	$(CC) -o $@ $^ ${LDFLAGS} -I../lib
+
+tyche-test-as: CFLAGS += ${DEBUG_CFLAGS} -DDEBUG_ASSEMBLY
+tyche-test-as: LDFLAGS += ${DEBUG_LDFLAGS}
+tyche-test-as: test/tests-as.o libtyche.a
 	$(CC) -o $@ $^ ${LDFLAGS} -I../lib
 
 libtyche.a: ${LIB_SRC}
