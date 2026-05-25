@@ -168,8 +168,16 @@ static void debug_value(TycheVM* T, VALUE a)
             printf("<func %d>", value_function_idx(a));
             break;
         case TT_NATIVE_PTR:
-            printf("<ptr %p>", (void *) (intptr_t) value_function_idx(a));
+            printf("<ptr %p>", (void *) (uintptr_t) value_function_idx(a));
             break;
+        case TT_NATIVE_FN: {
+            TYCHE_CB fn;
+            if (heap_get_native_function(T->heap, value_heap_key(a), &fn))
+                printf("<ptr-fn %p>", (void *) (uintptr_t) fn);
+            else
+                printf("{(fn - not implemented )}\n");
+            break;
+        }
         case TT_COUNT__:
         default:
             __builtin_unreachable();
@@ -263,7 +271,7 @@ TYC_RESULT tyc_load_bytecode(TycheVM* T, uint8_t const* bytecode, size_t bytecod
     return T_OK;
 }
 
-static TYC_RESULT enter_function(TycheVM* T, uint16_t n_pars)
+static TYC_RESULT enter_function(TycheVM* T, uint16_t n_pars, bool* is_native, VALUE* function)
 {
     TYC_RESULT r;
 
@@ -273,20 +281,27 @@ static TYC_RESULT enter_function(TycheVM* T, uint16_t n_pars)
         TRY(stack_pop(T->stack, &params[i]))
 
     // get function
-    VALUE function;
-    TRY(stack_pop(T->stack, &function))
-    if (value_type(function) != TT_FUNCTION)
+    TRY(stack_pop(T->stack, function))
+    if (value_type(*function) != TT_FUNCTION && value_type(*function) != TT_NATIVE_FN)
         ERROR("Expected function")
 
-    // enter function
-    push_location(T, value_function_idx(function), 0);
+    // push FP
     stack_push_fp(T->stack);
 
     // pass parameters
     for (int i = n_pars-1; i >= 0; --i)
         TRY(stack_push(T->stack, params[i]))
-
     free(params);
+
+    // prepare to run function
+    if (value_type(*function) == TT_FUNCTION) {
+        *is_native = false;
+        push_location(T, value_function_idx(*function), 0);
+    } else if (value_type(*function) == TT_NATIVE_FN) {
+        *is_native = true;
+        push_location(T, NATIVE_FUNCTION_ID, 0);
+    }
+
     return T_OK;
 }
 
@@ -311,11 +326,31 @@ static TYC_RESULT run_until_return(TycheVM* T)
     return T_OK;
 }
 
+static TYC_RESULT run_native_function(TycheVM* T, VALUE function)
+{
+    if (value_type(function) != TT_NATIVE_FN)
+        abort();
+
+    TYC_RESULT r;
+    TYCHE_CB f;
+    TRY(heap_get_native_function(T->heap, value_heap_key(function), &f))
+    f(T);
+    exit_function(T);
+
+    return T_OK;
+}
+
 TYC_RESULT tyc_call(TycheVM* T, uint16_t n_pars)
 {
     TYC_RESULT r;
-    TRY(enter_function(T, n_pars))
-    TRY(run_until_return(T))
+    bool is_native;
+    VALUE f;
+    TRY(enter_function(T, n_pars, &is_native, &f))
+    if (is_native) {
+        TRY(run_native_function(T, f))
+    } else {
+        TRY(run_until_return(T))
+    }
     return T_OK;
 }
 
@@ -346,6 +381,21 @@ TYC_RESULT tyc_pushinteger(TycheVM* T, int32_t value)
 TYC_RESULT tyc_pushstring(TycheVM* T, const char* value)
 {
     return stack_push(T->stack, create_value_heap_key(TT_STRING, heap_add_string(T->heap, value, false)));
+}
+
+TYC_RESULT tyc_pushnativeptr(TycheVM* T, void* ptr)
+{
+    return stack_push(T->stack, create_value_native_pointer(ptr));
+}
+
+TYC_RESULT tyc_pushnativefunction(TycheVM* T, void(*f)(TycheVM*))
+{
+    return stack_push(T->stack, create_value_heap_key(TT_NATIVE_FN, heap_add_native_function(T->heap, f)));
+}
+
+TYC_RESULT tyc_pop(TycheVM* T)
+{
+    return stack_pop(T->stack, NULL);
 }
 
 TYC_RESULT tyc_newarray(TycheVM* T)
@@ -404,7 +454,7 @@ TYC_RESULT tyc_toreal(TycheVM* T, int idx, T_REAL* value)
     TYC_RESULT r;
     TRY(stack_at(T->stack, idx, &v))
     if (value_type(v) != TT_REAL)
-    ERROR("Expected real")
+        ERROR("Expected real")
     *value = value_real(v);
     return T_OK;
 }
@@ -418,6 +468,17 @@ TYC_RESULT tyc_tostring(TycheVM* T, int idx, const char** str)
         return heap_get_string(T->heap, value_heap_key(v), str);
     else
         ERROR("Expected string")
+}
+
+TYC_RESULT tyc_tonativeptr(TycheVM* T, int idx, void** ptr)
+{
+    VALUE v;
+    TYC_RESULT r;
+    TRY(stack_at(T->stack, idx, &v))
+    if (value_type(v) != TT_NATIVE_PTR)
+        ERROR("Expected native pointer")
+    *ptr = value_native_pointer(v);
+    return T_OK;
 }
 
 TYC_RESULT tyc_expr(TycheVM* T, TYC_EXPR op)
@@ -782,11 +843,16 @@ static TYC_RESULT step(TycheVM* T)
         // function calls
         //
 
-        case TO_CALL:
+        case TO_CALL: {
             if (inst.operand < 0)
                 ERROR("Function id out of range - this is a compiler bug")
-            enter_function(T, (uint16_t) inst.operand);
+            bool is_native;
+            VALUE f;
+            enter_function(T, (uint16_t) inst.operand, &is_native, &f);
+            if (is_native)
+                TRY(run_native_function(T, f))
             break;
+        }
 
         case TO_RETN:
             TRY(stack_push(T->stack, create_value_nil())) // fallthrough
@@ -979,5 +1045,9 @@ dont_update_pc:
 #ifdef DEBUG_ASSEMBLY
     debug_stack(T);
 #endif
+
+    if (heap_should_gc(T->heap))
+        tyc_gc(T);
+
     return T_OK;
 }

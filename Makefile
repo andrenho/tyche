@@ -96,7 +96,7 @@ lib/compiler.o: lib/compiler.c lib/compiler/compiler.lua.h
 
 LIB_SRC=lib/value.o lib/stack.o lib/array.o lib/table.o lib/heap.o lib/vm.o lib/expr.o lib/compiler.o lib/code.o lib/utils.o
 
-tyche: CFLAGS += ${RELEASE_CFLAGS}
+tyche: CFLAGS += ${RELEASE_CFLAGS} -Ilib
 tyche: LDFLAGS += ${RELEASE_LDFLAGS}
 tyche: src/tyche.o libtyche.a
 	$(CC) -o $@ $^ ${LDFLAGS}

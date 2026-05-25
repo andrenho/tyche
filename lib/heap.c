@@ -5,10 +5,12 @@
 
 #include "khash.h"
 
+#define GC_EVERY_X_ALLOCATIONS 32
+
 #define TRY(x) if ((r = (x)) != T_OK) { return r; }
 
 typedef enum {
-    TH_STRING, TH_ARRAY, TH_TABLE,
+    TH_STRING, TH_ARRAY, TH_TABLE, TH_NATIVE_FN,
 } TYC_HEAP_TYPE;
 
 typedef struct {
@@ -29,6 +31,7 @@ typedef struct {
         char*     string;
         Array*    array;
         HeapTable t;
+        TYCHE_CB  native_fn;
     } value;
 } HeapValue;
 
@@ -42,6 +45,8 @@ KHASH_MAP_INIT_INT64(MARK, bool)
 struct Heap {
     khash_t(HEAP) *items;
     khash_t(STR)  *strings;
+    size_t        n_allocations;
+    size_t        n_allocations_next_gc;
 };
 
 Heap* heap_new(void)
@@ -49,6 +54,8 @@ Heap* heap_new(void)
     Heap* h = xcalloc(1, sizeof(Heap));
     h->items = kh_init(HEAP);
     h->strings = kh_init(STR);
+    h->n_allocations = 0;
+    h->n_allocations_next_gc = GC_EVERY_X_ALLOCATIONS;
     return h;
 }
 
@@ -63,6 +70,8 @@ static void heap_free_item(HeapValue value)
             break;
         case TH_TABLE:
             table_destroy(value.value.t.table);
+            break;
+        case TH_NATIVE_FN:
             break;
         default:
             __builtin_unreachable();
@@ -104,6 +113,8 @@ static HeapValue* heap_add_item(Heap* h, HEAP_KEY* key)
     if (ret < 0)
         out_of_memory();
 
+    ++h->n_allocations;
+
     return &kh_value(h->items, k);
 }
 
@@ -139,6 +150,8 @@ HEAP_KEY heap_add_string(Heap* h, const char* value, bool constant)
     if (ret < 0)
         out_of_memory();
     kh_value(h->strings, k) = (StringValue) { .key = key, .constant = constant };
+
+    ++h->n_allocations;
 
     return key;
 }
@@ -219,6 +232,29 @@ TYC_RESULT heap_remove_supertable(Heap const* h, HEAP_KEY table)
     Table* t;
     TRY(heap_get_table(h, table, &t))
     table_setsuper(t, NULL);
+    return T_OK;
+}
+
+HEAP_KEY heap_add_native_function(Heap* h, TYCHE_CB cb)
+{
+    HEAP_KEY key;
+    *heap_add_item(h, &key) = (HeapValue) {
+            .type = TH_NATIVE_FN,
+            .value = { .native_fn = cb },
+    };
+    return key;
+}
+
+TYC_RESULT heap_get_native_function(Heap const* h, HEAP_KEY key, TYCHE_CB* cb)
+{
+    TYC_RESULT r;
+    HeapValue* hv;
+
+    TRY(heap_get_item(h, key, &hv))
+    if (hv->type != TH_NATIVE_FN)
+        abort();
+    *cb = hv->value.native_fn;
+
     return T_OK;
 }
 
@@ -317,4 +353,11 @@ void heap_gc(Heap* h, VALUE const* roots, size_t n_roots)
     }
 
     kh_destroy(MARK, marked);
+
+    h->n_allocations_next_gc = h->n_allocations + GC_EVERY_X_ALLOCATIONS;
+}
+
+bool heap_should_gc(Heap* h)
+{
+    return h->n_allocations >= h->n_allocations_next_gc;
 }

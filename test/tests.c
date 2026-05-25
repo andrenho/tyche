@@ -815,6 +815,46 @@ static void test_vm(void)
     }
 }
 
+static void test_function(TycheVM* T)
+{
+    int x;
+    assert(tyc_tointeger(T, 0, &x) == T_OK);
+    tyc_pushinteger(T, x + 5);
+}
+
+static void test_native_pointer(void)
+{
+    {
+        printf("## Native pointer - variable\n");
+        int i = 45;
+
+        TycheVM* T = tyc_new();
+        tyc_pushnativeptr(T, &i);
+
+        void* ptr;
+        assert(tyc_tonativeptr(T, -1, &ptr) == T_OK);
+        assert((*(int *) ptr) == 45);
+        tyc_pop(T);
+
+        tyc_destroy(T);
+    }
+
+    {
+        printf("## Native pointer - function\n");
+
+        TycheVM* T = tyc_new();
+        tyc_pushnativefunction(T, test_function);
+
+        tyc_pushinteger(T, 12);
+        assert(tyc_call(T, 1) == T_OK);
+
+        int x; assert(tyc_tointeger(T, -1, &x) == T_OK);
+        assert(x == 17);
+
+        tyc_destroy(T);
+    }
+}
+
 //
 // MAIN
 //
@@ -830,4 +870,5 @@ int main(void)
     test_supertables();
     test_bytecode();
     test_vm();
+    test_native_pointer();
 }

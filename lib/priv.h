@@ -3,6 +3,7 @@
 
 #include "tyche.h"
 
+#include <limits.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
@@ -124,6 +125,8 @@ extern bool abort_on_errors;   // only on debug mode
 typedef uint32_t HEAP_KEY;
 
 typedef nanbox_t VALUE;
+
+typedef void(*TYCHE_CB)(TycheVM* T);
 
 typedef struct Stack   Stack;
 typedef struct Array   Array;
@@ -249,8 +252,12 @@ TYC_RESULT heap_get_table(Heap const* h, HEAP_KEY key, Table** table);
 TYC_RESULT heap_set_supertable(Heap const* h, HEAP_KEY table, HEAP_KEY super);
 TYC_RESULT heap_remove_supertable(Heap const* h, HEAP_KEY table);
 
+HEAP_KEY   heap_add_native_function(Heap* h, TYCHE_CB cb);
+TYC_RESULT heap_get_native_function(Heap const* h, HEAP_KEY key, TYCHE_CB* cb);
+
 size_t     heap_size(Heap const* h);
 
+bool       heap_should_gc(Heap* h);
 void       heap_gc(Heap* h, VALUE const* roots, size_t n_roots);
 
 //
@@ -281,6 +288,8 @@ void           code_parse_instruction(Instruction inst, char* outbuf, size_t sz)
 //
 // VM PRIVATE METHODS
 //
+
+#define NATIVE_FUNCTION_ID UINT32_MAX
 
 Stack* tyc_stack(TycheVM* T);
 Heap*  tyc_heap(TycheVM* T);
