@@ -103,7 +103,11 @@ lib/compiler.o: lib/compiler.c lib/compiler/compiler.lua.h
 #
 
 LIB_SRC=lib/value.o lib/stack.o lib/array.o lib/table.o lib/heap.o lib/vm.o lib/expr.o lib/compiler.o lib/code.o \
-        lib/utils.o lib/instructions/instructions.o
+        lib/utils.o
+
+lib/value.o: lib/instructions/instructions.o
+
+LIB_SRC += lib/instructions/instructions.o
 
 tyche: CFLAGS += ${RELEASE_CFLAGS}
 tyche: LDFLAGS += ${RELEASE_LDFLAGS}

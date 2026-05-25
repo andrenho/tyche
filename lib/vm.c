@@ -721,7 +721,9 @@ static TYC_RESULT step(TycheVM* T)
     debug_instruction(T, loc, inst);
 #endif
 
-    switch ((uint8_t) inst.operator) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch"
+    switch (inst.operator) {
 
         //
         // stack manipulation
@@ -987,9 +989,11 @@ static TYC_RESULT step(TycheVM* T)
             tyc_throw_raw(T);
             goto dont_update_pc;
 
+        case TO_UNKNOWN:
         default:
             ERROR("Invalid opcode 0x%x", inst.operator)
     }
+#pragma GCC diagnostic pop
 
     loc->pc += inst.sz;
 

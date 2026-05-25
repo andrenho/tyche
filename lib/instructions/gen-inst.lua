@@ -17,7 +17,6 @@ local instructions = {
     pushv   = 0xa3,
     set     = 0xae,
     dupv    = 0xa4,
-    setg    = 0xa5,
     glbl    = 0x07,
 
     -- function operations
@@ -33,7 +32,6 @@ local instructions = {
     appnd   = 0x18,
     next    = 0x19,
     sptb    = 0x1a,
-    supr    = 0x1b,
 
     -- logical/arithmetic
     sum     = 0x20,
@@ -60,13 +58,10 @@ local instructions = {
     -- other value operations
     len     = 0x40,
     type    = 0x41,
-    cast    = 0xad,
     ver     = 0x42,
 
     -- external code
-    cmpl    = 0x48,
-    asmbl   = 0x49,
-    load    = 0x4a,
+    -- TODO
 
     -- control flow
     bz      = 0xca,
@@ -142,10 +137,10 @@ const char* instruction_name(TYC_INST inst)
     switch (inst) { ]]
 
 for _, opcode in ipairs(sorted_opcodes) do
-    S(string.format('    case TO_%-5s: return "%-8s";', instructions_inv[opcode]:upper(), instructions_inv[opcode]))
+    S(string.format('        case TO_%-5s: return "%-8s";', instructions_inv[opcode]:upper(), instructions_inv[opcode]))
 end
 
-S [[    default      : return "????    ";
+S [[        case TO_UNKNOWN: default      : return "????    ";
     };
 }
 
