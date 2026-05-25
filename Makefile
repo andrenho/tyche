@@ -61,7 +61,7 @@ endif
 
 all: tyche libtyche.a libtyche.so.${VERSION}
 
-check: tyche-test tyche-test-as
+check: tyche-test-as tyche-test-vm
 	./tyche-test-as
 	./tyche-test-vm
 
@@ -103,12 +103,14 @@ lib/compiler.o: lib/compiler.c lib/compiler/compiler.lua.h
 # executable files
 #
 
-LIB_SRC=lib/value.o lib/stack.o lib/array.o lib/table.o lib/heap.o lib/vm.o lib/expr.o lib/compiler.o lib/code.o \
-        lib/utils.o
+LIB_SRC=lib/value.o lib/stack.o lib/array.o lib/table.o lib/heap.o lib/vm.o lib/expr.o \
+ 	lib/compiler.o lib/code.o lib/utils.o
 
-lib/value.o: lib/instructions/instructions.o
-
+${LIB_SRC}: lib/instructions/instructions.o
 LIB_SRC += lib/instructions/instructions.o
+
+test/tests-as.o: lib/instructions/instructions.o
+test/tests-vm.o: lib/instructions/instructions.o
 
 tyche: CFLAGS += ${RELEASE_CFLAGS}
 tyche: LDFLAGS += ${RELEASE_LDFLAGS}
@@ -116,14 +118,16 @@ tyche: src/tyche.o libtyche.a
 	$(CC) -o $@ $^ ${LDFLAGS}
 	strip $@
 
-tyche-test-vm: CFLAGS += ${DEBUG_CFLAGS} -DDEBUG_ASSEMBLY
-tyche-test-vm: LDFLAGS += ${DEBUG_LDFLAGS}
-tyche-test-vm: test/tests-vm.o libtyche.a
-	$(CC) -o $@ $^ ${LDFLAGS} -I../lib
-
 tyche-test-as: CFLAGS += ${DEBUG_CFLAGS} -DDEBUG_ASSEMBLY
 tyche-test-as: LDFLAGS += ${DEBUG_LDFLAGS}
+tyche-test-vm: lib/instructions/instructions.h
 tyche-test-as: test/tests-as.o libtyche.a
+	$(CC) -o $@ $^ ${LDFLAGS} -I../lib
+
+tyche-test-vm: CFLAGS += ${DEBUG_CFLAGS} -DDEBUG_ASSEMBLY
+tyche-test-vm: LDFLAGS += ${DEBUG_LDFLAGS}
+tyche-test-vm: lib/instructions/instructions.h
+tyche-test-vm: test/tests-vm.o libtyche.a
 	$(CC) -o $@ $^ ${LDFLAGS} -I../lib
 
 libtyche.a: ${LIB_SRC}
