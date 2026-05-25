@@ -46,12 +46,13 @@ typedef uint32_t HEAP_KEY;
 
 typedef nanbox_t VALUE;
 
-typedef struct Stack   Stack;
-typedef struct Array   Array;
-typedef struct Table   Table;
-typedef struct Heap    Heap;
-typedef struct Code    Code;
-typedef struct Strings Strings;
+typedef struct Stack    Stack;
+typedef struct Array    Array;
+typedef struct Table    Table;
+typedef struct Heap     Heap;
+typedef struct Code     Code;
+typedef struct Strings  Strings;
+typedef struct Assembly Assembly;
 
 typedef uint64_t TABLE_HASH;
 
@@ -215,5 +216,11 @@ void       expr_init(void);
 bool       expr_is_binary(TYC_EXPR op);
 TYC_RESULT unary_expr(TycheVM* T, TYC_EXPR op, VALUE a, VALUE* result);
 TYC_RESULT binary_expr(TycheVM* T, TYC_EXPR op, VALUE a, VALUE b, VALUE* result);
+
+//
+// ASSEMBLER
+//
+
+TYC_RESULT assemble(const char* code, Assembly* assembly);
 
 #endif //TYCHE_PRIV_H

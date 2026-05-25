@@ -89,22 +89,11 @@ lib/instructions/instructions.h lib/instructions/instructions.c: lib/instruction
 	cd lib/instructions && ./gen-inst.lua
 
 #
-# TODO - temporary, using Lua for compilation for now
-#
-CFLAGS+=`pkg-config --cflags lua`
-LDFLAGS+=`pkg-config --libs lua`
-lib/compiler/compiler.lua.h: lib/compiler/compiler.lua
-	luac -o lib/compiler/compiler.out lib/compiler/compiler.lua
-	xxd -i lib/compiler/compiler.out > lib/compiler/compiler.lua.h
-	rm lib/compiler/compiler.out
-lib/compiler.o: lib/compiler.c lib/compiler/compiler.lua.h
-
-#
 # executable files
 #
 
 LIB_SRC=lib/value.o lib/stack.o lib/array.o lib/table.o lib/heap.o lib/vm.o lib/expr.o \
- 	lib/compiler.o lib/code.o lib/utils.o
+ 	lib/code.o lib/utils.o lib/compiler/assembly.o lib/compiler/assembler.o
 
 ${LIB_SRC}: lib/instructions/instructions.o
 LIB_SRC += lib/instructions/instructions.o
@@ -120,12 +109,12 @@ tyche: src/tyche.o libtyche.a
 
 tyche-test-as: CFLAGS += ${DEBUG_CFLAGS} -DDEBUG_ASSEMBLY
 tyche-test-as: LDFLAGS += ${DEBUG_LDFLAGS}
-tyche-test-vm: lib/instructions/instructions.h
+tyche-test-am: lib/instructions/instructions.h
 tyche-test-as: test/tests-as.o libtyche.a
 	$(CC) -o $@ $^ ${LDFLAGS} -I../lib
 
-tyche-test-vm: CFLAGS += ${DEBUG_CFLAGS} -DDEBUG_ASSEMBLY
-tyche-test-vm: LDFLAGS += ${DEBUG_LDFLAGS}
+tyche-test-vm: CFLAGS += ${DEBUG_CFLAGS} -DDEBUG_ASSEMBLY `pkg-config --cflags lua`
+tyche-test-vm: LDFLAGS += ${DEBUG_LDFLAGS} `pkg-config --libs lua`
 tyche-test-vm: lib/instructions/instructions.h
 tyche-test-vm: test/tests-vm.o libtyche.a
 	$(CC) -o $@ $^ ${LDFLAGS} -I../lib
