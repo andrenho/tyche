@@ -721,7 +721,7 @@ static TYC_RESULT step(TycheVM* T)
     debug_instruction(T, loc, inst);
 #endif
 
-    switch (inst.operator) {
+    switch ((uint8_t) inst.operator) {
 
         //
         // stack manipulation
@@ -732,16 +732,22 @@ static TYC_RESULT step(TycheVM* T)
             break;
 
         case TO_PUSHI:
+        case TO_PUSHI + TO_16BIT:
+        case TO_PUSHI + TO_32BIT:
             tyc_pushinteger(T, inst.operand);
             break;
 
         case TO_PUSHF:
+        case TO_PUSHF + TO_16BIT:
+        case TO_PUSHF + TO_32BIT:
             if (inst.operand < 0 || inst.operand >= (int) code_n_functions(T->code))
                 ERROR("Function id out of range - this is a compiler bug")
             TRY(stack_push(T->stack, create_value_function_idx((uint32_t) inst.operand)))
             break;
 
         case TO_PUSHC:
+        case TO_PUSHC + TO_16BIT:
+        case TO_PUSHC + TO_32BIT:
             if (inst.operand < 0 || inst.operand >= (int) code_n_consts(T->code))
                 ERROR("Const id out of range - this is a compiler bug")
             if (code_const_type(T->code, (size_t) inst.operand) == TC_STRING) {
@@ -783,6 +789,8 @@ static TYC_RESULT step(TycheVM* T)
         //
 
         case TO_CALL:
+        case TO_CALL + TO_16BIT:
+        case TO_CALL + TO_32BIT:
             if (inst.operand < 0)
                 ERROR("Function id out of range - this is a compiler bug")
             enter_function(T, (uint16_t) inst.operand);
@@ -799,6 +807,8 @@ static TYC_RESULT step(TycheVM* T)
         //
 
         case TO_GETI:
+        case TO_GETI + TO_16BIT:
+        case TO_GETI + TO_32BIT:
             if (inst.operand < 0) {
                 tyc_throw(T, "Value out of range");
                 goto dont_update_pc;
@@ -807,6 +817,8 @@ static TYC_RESULT step(TycheVM* T)
             break;
 
         case TO_SETI:
+        case TO_SETI + TO_16BIT:
+        case TO_SETI + TO_32BIT:
             if (inst.operand < 0) {
                 tyc_throw(T, "Value out of range");
                 goto dont_update_pc;
@@ -839,6 +851,8 @@ static TYC_RESULT step(TycheVM* T)
         //
 
         case TO_PUSHV:
+        case TO_PUSHV + TO_16BIT:
+        case TO_PUSHV + TO_32BIT:
             if (inst.operand <= 0)
                 ERROR("Value out of range")
             for (int i = 0; i < inst.operand; ++i)
@@ -846,6 +860,8 @@ static TYC_RESULT step(TycheVM* T)
             break;
 
         case TO_SET:
+        case TO_SET + TO_16BIT:
+        case TO_SET + TO_32BIT:
             if (inst.operand < 0)
                 ERROR("Value out of range")
             TRY(stack_pop(T->stack, &a))
@@ -853,6 +869,8 @@ static TYC_RESULT step(TycheVM* T)
             break;
 
         case TO_DUPV:
+        case TO_DUPV + TO_16BIT:
+        case TO_DUPV + TO_32BIT:
             if (inst.operand < 0)
                 ERROR("Value out of range")
             TRY(stack_at(T->stack, inst.operand, &a))

@@ -751,7 +751,7 @@ static void test_bytecode(void)
         addr += inst.sz;
 
         inst = code_next_instruction(code, 1, 0);
-        assert(inst.operator == TO_PUSHI);
+        assert(inst.operator == TO_PUSHI + TO_16BIT);
         assert(inst.operand == 5000);
         assert(inst.sz == 3);
 

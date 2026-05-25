@@ -220,8 +220,8 @@ return {
                 pushi   7           ; 18
                 ret                 ; 20
         ]],
-        --debug_bytecode = true,
-        --decompile = true,
+        -- debug_bytecode = true,
+        -- decompile = true,
         --debug = true,
         expected_stack_top = 6,
     },

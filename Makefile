@@ -65,7 +65,8 @@ check: tyche-test
 	./tyche-test
 
 clean:
-	rm -f tyche libtyche.a libtyche.so* tyche-test **/*.o **/*.d lib/compiler/compiler.lua.h
+	rm -f tyche libtyche.a libtyche.so* tyche-test **/*.o **/*.d lib/compiler/compiler.lua.h \
+		lib/instructions/instructions.h lib/instructions/instructions.c
 
 install: tyche libtyche.a libtyche.so.${VERSION} lib/tyche.h
 	install -m 644 libtyche.a libtyche.so.${VERSION} ${PREFIX}/lib
@@ -78,6 +79,13 @@ uninstall:
 	rm -f ${PREFIX}/lib/libtyche.* ${PREFIX}/bin/tyche ${PREFIX}/include/tyche.h
 
 .PHONY: all check clean install uninstall
+
+#
+# custom instructions for code generation
+#
+
+lib/instructions/instructions.h lib/instructions/instructions.c: lib/instructions/gen-inst.lua
+	cd lib/instructions && ./gen-inst.lua
 
 #
 # TODO - temporary, using Lua for compilation for now
@@ -94,7 +102,8 @@ lib/compiler.o: lib/compiler.c lib/compiler/compiler.lua.h
 # executable files
 #
 
-LIB_SRC=lib/value.o lib/stack.o lib/array.o lib/table.o lib/heap.o lib/vm.o lib/expr.o lib/compiler.o lib/code.o lib/utils.o
+LIB_SRC=lib/value.o lib/stack.o lib/array.o lib/table.o lib/heap.o lib/vm.o lib/expr.o lib/compiler.o lib/code.o \
+        lib/utils.o lib/instructions/instructions.o
 
 tyche: CFLAGS += ${RELEASE_CFLAGS}
 tyche: LDFLAGS += ${RELEASE_LDFLAGS}
