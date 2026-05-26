@@ -11,5 +11,34 @@ Internal handling of values
   Function        6
   NativePointer   7
 
-## Internal format
-  ???
+## Supertables
+  Non-function values: copied
+  Function values: reference
+
+## Operator overloading
+  sum   +
+  sub   -
+  mul   *
+  div   /
+  idiv  |/
+  mod   %
+  eq    ==  (automatic: neq)
+  lt    <   (automatic: lte)
+  gt    >   (automatic: gte)
+  and   &
+  or    |
+  xor   ~
+  pow   ^
+  shl   <<
+  shr   >>
+
+## Error format
+
+{ error: "Error message" }
+
+Additional fields:
+  if debugging info: file + line
+  if no debugging info: function_id + pc
+
+Errors:
+  - OutOfRange
