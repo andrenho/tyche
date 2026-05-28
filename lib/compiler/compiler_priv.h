@@ -11,11 +11,21 @@ typedef struct {
     } value;
 } AssemblyConst;
 
+typedef enum { OP_NONE, OP_INT, OP_LABEL } OperatorType;
+
 typedef struct {
-    TYC_INST instruction;
-    int32_t  operator;
-    char**   labels;
-    size_t   n_labels;
+    OperatorType type;
+    union {
+        int32_t i;
+        char*   label;
+    } v;
+} AssemblyOperator;
+
+typedef struct {
+    TYC_INST         instruction;
+    AssemblyOperator operator;
+    char**           labels;
+    size_t           n_labels;
 } AssemblyInstruction;
 
 typedef struct {

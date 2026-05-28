@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-int main(void)
+static void test_assembly(void)
 {
     printf("## Test assembly\n");
 
@@ -35,18 +35,53 @@ int main(void)
     assert(assembly->functions_n == 2);
     assert(assembly->functions[0].n_instructions == 4);
     assert(assembly->functions[0].instructions[0].instruction == TO_PUSHI);
-    assert(assembly->functions[0].instructions[0].operator == 2);
+    assert(assembly->functions[0].instructions[0].operator.type == OP_INT);
+    assert(assembly->functions[0].instructions[0].operator.v.i == 2);
     assert(assembly->functions[0].instructions[1].instruction == TO_PUSHI);
-    assert(assembly->functions[0].instructions[1].operator == -3);
+    assert(assembly->functions[0].instructions[1].operator.type == OP_INT);
+    assert(assembly->functions[0].instructions[1].operator.v.i == -3);
     assert(assembly->functions[0].instructions[2].instruction == TO_SUM);
     assert(assembly->functions[0].instructions[3].instruction == TO_RET);
 
     assert(assembly->functions[1].n_instructions == 2);
     assert(assembly->functions[1].instructions[0].instruction == TO_PUSHI);
-    assert(assembly->functions[1].instructions[0].operator == 5000);
+    assert(assembly->functions[1].instructions[0].operator.v.i == 5000);
     assert(assembly->functions[1].instructions[1].instruction == TO_RET);
 
     assembly_destroy(assembly);
+}
+
+static void test_labels(void)
+{
+    printf("## Test labels\n");
+
+    const char* assembly_code =
+            ".func 0\n"
+            "    jmp    @my_label\n"
+            "    pop   \n"
+            "@my_label:\n"
+            "    ret";
+
+    Assembly* assembly = assembly_new();
+    assert(assemble(assembly_code, assembly) == T_OK);
+
+    assert(assembly->functions_n == 1);
+    assert(assembly->functions[0].n_instructions == 3);
+    assert(assembly->functions[0].instructions[0].instruction == TO_JMP);
+    assert(assembly->functions[0].instructions[0].operator.type == OP_LABEL);
+    assert(strcmp(assembly->functions[0].instructions[0].operator.v.label, "@my_label") == 0);
+    assert(assembly->functions[0].instructions[1].instruction == TO_POP);
+    assert(assembly->functions[0].instructions[2].n_labels == 1);
+    assert(strcmp(assembly->functions[0].instructions[2].labels[0], "@my_label") == 0);
+    assert(assembly->functions[0].instructions[2].instruction == TO_RET);
+
+    assembly_destroy(assembly);
+}
+
+int main(void)
+{
+    test_assembly();
+    test_labels();
 }
 
 // TODO - adjust labels

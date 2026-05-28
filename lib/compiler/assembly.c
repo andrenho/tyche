@@ -60,6 +60,7 @@ void assembly_add_inst(Assembly* as, uint32_t f_id, TYC_INST inst)
     as->functions[f_id].instructions = xrealloc(as->functions[f_id].instructions, as->functions[f_id].n_instructions * sizeof(AssemblyInstruction));
     as->functions[f_id].instructions[as->functions[f_id].n_instructions - 1] = (AssemblyInstruction) {
         .instruction = inst,
+        .operator = { .type = OP_NONE },
         .labels = NULL,
         .n_labels = 0,
     };
@@ -71,7 +72,7 @@ void assembly_add_inst_p(Assembly* as, uint32_t f_id, TYC_INST inst, int32_t par
     as->functions[f_id].instructions = xrealloc(as->functions[f_id].instructions, as->functions[f_id].n_instructions * sizeof(AssemblyInstruction));
     as->functions[f_id].instructions[as->functions[f_id].n_instructions - 1] = (AssemblyInstruction) {
         .instruction = inst,
-        .operator = par,
+        .operator = { .type = OP_INT, .v.i = par },
         .labels = NULL,
         .n_labels = 0,
     };
