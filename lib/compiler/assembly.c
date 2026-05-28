@@ -29,25 +29,50 @@ void assembly_destroy(Assembly* as)
 
 void assembly_add_const_str(Assembly* as, uint32_t c_id, const char* value)
 {
-    // TODO
+    if (c_id + 1 > as->consts_n) {
+        as->consts_n = c_id;
+        as->consts = xrealloc(as->consts, (c_id + 1) * sizeof(AssemblyConst));
+    }
+    as->consts[c_id] = (AssemblyConst) { .type = TC_STRING, .value.string = strdup(value) };
 }
 
 void assembly_add_const_real(Assembly* as, uint32_t c_id, double value)
 {
-    // TODO
+    if (c_id + 1 > as->consts_n) {
+        as->consts_n = c_id + 1;
+        as->consts = xrealloc(as->consts, (c_id + 1) * sizeof(AssemblyConst));
+    }
+    as->consts[c_id] = (AssemblyConst) { .type = TC_REAL, .value.real = value };
 }
 
 void assembly_add_function(Assembly* as, uint32_t f_id)
 {
-    // TODO
+    if (f_id + 1 > as->functions_n) {
+        as->functions_n = f_id + 1;
+        as->functions = xrealloc(as->consts, (f_id + 1) * sizeof(AssemblyFunction));
+    }
+    as->functions[f_id] = (AssemblyFunction) { .instructions = NULL, .n_instructions = 0 };
 }
 
 void assembly_add_inst(Assembly* as, uint32_t f_id, TYC_INST inst)
 {
-    // TODO
+    ++as->functions[f_id].n_instructions;
+    as->functions[f_id].instructions = xrealloc(as->functions[f_id].instructions, as->functions[f_id].n_instructions * sizeof(AssemblyInstruction));
+    as->functions[f_id].instructions[as->functions[f_id].n_instructions - 1] = (AssemblyInstruction) {
+        .instruction = inst,
+        .labels = NULL,
+        .n_labels = 0,
+    };
 }
 
 void assembly_add_inst_p(Assembly* as, uint32_t f_id, TYC_INST inst, int32_t par)
 {
-    // TODO
+    ++as->functions[f_id].n_instructions;
+    as->functions[f_id].instructions = xrealloc(as->functions[f_id].instructions, as->functions[f_id].n_instructions * sizeof(AssemblyInstruction));
+    as->functions[f_id].instructions[as->functions[f_id].n_instructions - 1] = (AssemblyInstruction) {
+        .instruction = inst,
+        .operator = par,
+        .labels = NULL,
+        .n_labels = 0,
+    };
 }

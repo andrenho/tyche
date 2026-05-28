@@ -12,10 +12,10 @@ typedef struct {
 } AssemblyConst;
 
 typedef struct {
-    Instruction instruction;
-    int32_t     operator;
-    char**      labels;
-    size_t      n_labels;
+    TYC_INST instruction;
+    int32_t  operator;
+    char**   labels;
+    size_t   n_labels;
 } AssemblyInstruction;
 
 typedef struct {
