@@ -126,9 +126,9 @@ TYC_RESULT assemble(const char* code, Assembly* as)
                 if (tokens[0].v.i < 0)
                     ERROR("Const must be a positive number")
                 if (tokens[2].type == TA_NUMBER)
-                    assembly_add_const_real(as, (uint32_t) tokens[0].v.i, tokens[0].v.d);
+                    assembly_add_const_real(as, (uint32_t) tokens[0].v.i, tokens[2].v.d);
                 else
-                    assembly_add_const_str(as, (uint32_t) tokens[0].v.i, tokens[0].v.s);
+                    assembly_add_const_str(as, (uint32_t) tokens[0].v.i, tokens[2].v.s);
             }
 
             // functions
