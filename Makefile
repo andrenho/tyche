@@ -66,7 +66,8 @@ check: tyche-test-as tyche-test-vm
 	./tyche-test-vm
 
 clean:
-	rm -f tyche libtyche.a libtyche.so* tyche-test-* **/*.o **/*.d lib/compiler/compiler.lua.h \
+	find . -name '*.[od]' -delete
+	rm -f tyche libtyche.a libtyche.so* tyche-test-* lib/compiler/compiler.lua.h \
 		lib/instructions/instructions.h lib/instructions/instructions.c
 
 install: tyche libtyche.a libtyche.so.${VERSION} lib/tyche.h
@@ -85,7 +86,7 @@ uninstall:
 # custom instructions for code generation
 #
 
-lib/instructions/instructions.h lib/instructions/instructions.c: lib/instructions/gen-inst.lua
+lib/instructions/instructions.h: lib/instructions/gen-inst.lua
 	cd lib/instructions && ./gen-inst.lua
 
 #
@@ -93,13 +94,9 @@ lib/instructions/instructions.h lib/instructions/instructions.c: lib/instruction
 #
 
 LIB_SRC=lib/value.o lib/stack.o lib/array.o lib/table.o lib/heap.o lib/vm.o lib/expr.o \
- 	lib/code.o lib/utils.o lib/compiler/assembly.o lib/compiler/assembler.o
+ 	lib/code.o lib/utils.o lib/compiler/assembly.o lib/compiler/assembler.o lib/instructions/instructions.o
 
-${LIB_SRC}: lib/instructions/instructions.o
-LIB_SRC += lib/instructions/instructions.o
-
-test/tests-as.o: lib/instructions/instructions.o
-test/tests-vm.o: lib/instructions/instructions.o
+$(LIB_SRC:.o=.c) test/tests-as.c test/tests-vm.c: lib/instructions/instructions.h
 
 tyche: CFLAGS += ${RELEASE_CFLAGS}
 tyche: LDFLAGS += ${RELEASE_LDFLAGS}
