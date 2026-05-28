@@ -28,3 +28,7 @@ int main(void)
 
     assembly_destroy(assembly);
 }
+
+// TODO - adjust labels
+
+// TODO - bytecode generation

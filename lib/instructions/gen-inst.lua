@@ -101,6 +101,8 @@ local function H(txt) table.insert(header, txt) end
 H [[#ifndef TYCHEVM_INSTRUCTIONS_H_
 #define TYCHEVM_INSTRUCTIONS_H_
 
+#define PARAMETER_INST 0xa0
+
 #define TO_16BIT 0x20
 #define TO_32BIT 0x40
 

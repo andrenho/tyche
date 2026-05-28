@@ -2,7 +2,7 @@
 
 #include <stdlib.h>
 
-Assembly* assembly_new()
+Assembly* assembly_new(void)
 {
     return xcalloc(1, sizeof(Assembly));
 }
@@ -38,6 +38,16 @@ void assembly_add_const_real(Assembly* as, uint32_t c_id, double value)
 }
 
 void assembly_add_function(Assembly* as, uint32_t f_id)
+{
+    // TODO
+}
+
+void assembly_add_inst(Assembly* as, uint32_t f_id, TYC_INST inst)
+{
+    // TODO
+}
+
+void assembly_add_inst_p(Assembly* as, uint32_t f_id, TYC_INST inst, int32_t par)
 {
     // TODO
 }

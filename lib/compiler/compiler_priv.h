@@ -31,11 +31,13 @@ struct Assembly {
     char*             error;
 };
 
-Assembly* assembly_new();
+Assembly* assembly_new(void);
 void      assembly_destroy(Assembly* as);
 
 void      assembly_add_const_str(Assembly* as, uint32_t c_id, const char* value);
 void      assembly_add_const_real(Assembly* as, uint32_t c_id, double value);
 void      assembly_add_function(Assembly* as, uint32_t f_id);
+void      assembly_add_inst(Assembly* as, uint32_t f_id, TYC_INST inst);
+void      assembly_add_inst_p(Assembly* as, uint32_t f_id, TYC_INST inst, int32_t par);
 
 #endif //TYCHE_COMPILER_PRIV_H
