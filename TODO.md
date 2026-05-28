@@ -66,6 +66,8 @@ Decisions:
 - [ ] Prepare for release
   - [ ] Review public function names
   - [ ] Documentation and webpage
+  - [ ] Migrate to Codeberg?
+    - [ ] Actions
 
 # Version 1
 

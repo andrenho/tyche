@@ -49,7 +49,7 @@ RELEASE_CFLAGS=-O3 -flto=auto -march=native -mtune=native -U_FORTIFY_SOURCE -D_F
 RELEASE_LDFLAGS=-flto=auto
 
 CFLAGS+=-std=c99 -D_GNU_SOURCE -fPIC -fvisibility=hidden -isystem lib/contrib -MMD -MP -DVERSION="\"${VERSION}\""
-LDFLAGS+=
+LDFLAGS+=-lm
 
 ifeq ($(DEBUG_ASSEMBLY),1)
     CFLAGS += -DDEBUG_ASSEMBLY
