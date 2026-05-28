@@ -26,3 +26,18 @@ void assembly_destroy(Assembly* as)
     free(as->error);
     free(as);
 }
+
+void assembly_add_const_str(Assembly* as, uint32_t c_id, const char* value)
+{
+    // TODO
+}
+
+void assembly_add_const_real(Assembly* as, uint32_t c_id, double value)
+{
+    // TODO
+}
+
+void assembly_add_function(Assembly* as, uint32_t f_id)
+{
+    // TODO
+}
