@@ -3,6 +3,8 @@
 
 #include "../priv.h"
 
+typedef struct AssemblyPriv AssemblyPriv;
+
 typedef struct {
     TYC_CONST_TYPE type;
     union {
@@ -39,6 +41,7 @@ struct Assembly {
     AssemblyFunction* functions;
     size_t            functions_n;
     char*             error;
+    AssemblyPriv*     priv_;
 };
 
 Assembly* assembly_new(void);
@@ -49,5 +52,7 @@ void      assembly_add_const_real(Assembly* as, uint32_t c_id, double value);
 void      assembly_add_function(Assembly* as, uint32_t f_id);
 void      assembly_add_inst(Assembly* as, uint32_t f_id, TYC_INST inst);
 void      assembly_add_inst_p(Assembly* as, uint32_t f_id, TYC_INST inst, int32_t par);
+void      assembly_add_inst_label(Assembly* as, uint32_t f_id, TYC_INST inst, const char* label);
+void      assembly_label_next_inst(Assembly* as, const char* label);
 
 #endif //TYCHE_COMPILER_PRIV_H

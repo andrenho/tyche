@@ -30,19 +30,21 @@ static TYC_RESULT assembler_tokenize_line(const char* line, size_t line_no, Toke
         while (*c && isspace(*c)) ++c;    // skip spaces
 
         // if comment, return
-        if (*c == ';')
+        if (!*c || *c == ';')
             break;
 
         if (*c == '.') {
-            const char* start = c; while (*c && (*c == '.' || isalpha(*c))) ++c;
+            const char* start = c; while (*c && (*c == '.' || *c == '_' || isalpha(*c))) ++c;
             char* token = xcalloc(1, c - start + 1); memcpy(token, start, c - start);
             tokens[i++] = (Token) { .type = TA_DIRECTIVE, .v.s = token };
         }
 
         else if (*c == '@') {
-            const char* start = c; while (*c && (*c == '@' || *c == ':' || isalpha(*c))) ++c;
+            const char* start = c; while (*c && (*c == '@' || *c == '_' || isalpha(*c))) ++c;
             char* token = xcalloc(1, c - start + 1); memcpy(token, start, c - start);
-            tokens[i++] = (Token) { .type = TA_DIRECTIVE, .v.s = token };
+            tokens[i++] = (Token) { .type = TA_LABEL, .v.s = token };
+            if (*c == ':')
+                ++c;
         }
 
         else if (*c == ':') {
@@ -65,11 +67,12 @@ static TYC_RESULT assembler_tokenize_line(const char* line, size_t line_no, Toke
                     type = TA_REAL;
                 ++c;
             }
-            char token[c - start + 1]; memcpy(token, start, c - start); token[c - start] = '\0';
+            char* token = xcalloc(1, c - start + 1); memcpy(token, start, c - start);
             if (type == TA_NUMBER)
                 tokens[i++] = (Token) { .type = TA_NUMBER, .v.i = (int32_t) strtol(token, NULL, 10) };
             else
                 tokens[i++] = (Token) { .type = TA_REAL, .v.d = strtod(token, NULL) };
+            free(token);
         }
 
         else if (isalpha(*c)) {
@@ -98,7 +101,7 @@ TYC_RESULT assemble(const char* code, Assembly* as)
         if (*p == '\n' || *p == '\0') {
             ++line_no;
             size_t n_tokens = 5;
-            Token tokens[n_tokens];
+            Token* tokens = xcalloc(n_tokens, sizeof(Token));
 
             char* line = xcalloc(1, p - start + 1); memcpy(line, start, (p - start));
             assembler_tokenize_line(line, line_no, tokens, &n_tokens);
@@ -139,23 +142,34 @@ TYC_RESULT assemble(const char* code, Assembly* as)
                 if (inst < PARAMETER_INST) {
                     assembly_add_inst(as, (uint32_t) f_id, inst);
                 } else {
-                    if (n_tokens != 2 || tokens[1].type != TA_NUMBER)
-                        ERROR("Parameter invalid or missing on line %zu", line_no)
-                    assembly_add_inst_p(as, (uint32_t) f_id, inst, tokens[1].v.i);
+                    if (n_tokens == 2) {
+                        if (tokens[1].type == TA_NUMBER)
+                            assembly_add_inst_p(as, (uint32_t) f_id, inst, tokens[1].v.i);
+                        else if (tokens[1].type == TA_LABEL)
+                            assembly_add_inst_label(as, (uint32_t) f_id, inst, tokens[1].v.s);
+                        else
+                            ERROR("Invalid parameter on line %zu", line_no)
+                    } else {
+                        ERROR("Parameter missing on line %zu", line_no)
+                    }
                 }
 
                 // TODO - labels
             }
 
-            else {
+            else if (section == TS_FUNC && n_tokens == 1 && tokens[0].type == TA_LABEL) {
+                assembly_label_next_inst(as, tokens[0].v.s);
+
+            } else {
                 ERROR("Syntax error in line %zu", line_no)
             }
 
             // end of loop
 skip:
             for (size_t i = 0; i < n_tokens; ++i)
-                if (tokens[i].type == TA_DIRECTIVE || tokens[i].type == TA_INSTRUCTION || tokens[i].type == TA_LABEL)
+                if (tokens[i].type == TA_DIRECTIVE || tokens[i].type == TA_INSTRUCTION || tokens[i].type == TA_LABEL || tokens[i].type == TA_STRING)
                     free(tokens[i].v.s);
+            free(tokens);
             free(line);
             if (!*p) break;
             start = p + 1;
