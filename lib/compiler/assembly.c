@@ -30,7 +30,7 @@ void assembly_destroy(Assembly* as)
 void assembly_add_const_str(Assembly* as, uint32_t c_id, const char* value)
 {
     if (c_id + 1 > as->consts_n) {
-        as->consts_n = c_id;
+        as->consts_n = c_id + 1;
         as->consts = xrealloc(as->consts, (c_id + 1) * sizeof(AssemblyConst));
     }
     as->consts[c_id] = (AssemblyConst) { .type = TC_STRING, .value.string = strdup(value) };
@@ -49,7 +49,7 @@ void assembly_add_function(Assembly* as, uint32_t f_id)
 {
     if (f_id + 1 > as->functions_n) {
         as->functions_n = f_id + 1;
-        as->functions = xrealloc(as->consts, (f_id + 1) * sizeof(AssemblyFunction));
+        as->functions = xrealloc(as->functions, (f_id + 1) * sizeof(AssemblyFunction));
     }
     as->functions[f_id] = (AssemblyFunction) { .instructions = NULL, .n_instructions = 0 };
 }
