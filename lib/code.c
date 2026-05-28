@@ -44,6 +44,11 @@ void code_destroy(Code* code)
     free(code);
 }
 
+TYC_RESULT code_assemble(const char* code, uint8_t** bytecode, size_t* bytecode_sz)
+{
+    return T_ERR;
+}
+
 TYC_RESULT code_load_bytecode(Code* code, uint8_t const* bytecode, size_t bytecode_sz)
 {
     // TODO - linking
