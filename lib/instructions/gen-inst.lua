@@ -78,6 +78,8 @@ local instructions = {
     thrw    = 0x5b,
 }
 
+local jump_instructions = { 'bz', 'bnz', 'bnil', 'jmp' }
+
 -----------------------------------------------------------------------------------
 
 --
@@ -101,6 +103,7 @@ local function H(txt) table.insert(header, txt) end
 H [[#ifndef TYCHEVM_INSTRUCTIONS_H_
 #define TYCHEVM_INSTRUCTIONS_H_
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -121,6 +124,7 @@ H [[    TO_UNKNOWN = -1,
 const char* instruction_name(TYC_INST inst);
 TYC_INST    instruction_from_name(const char* name);
 size_t      instruction_size(TYC_INST inst, int32_t operand);
+bool        is_jump_instruction(TYC_INST inst);
 
 #endif  // TYCHEVM_INSTRUCTIONS_H_
 ]]
@@ -171,6 +175,22 @@ size_t instruction_size(TYC_INST inst, int32_t operand)
     return 1;
 }
 
+bool is_jump_instruction(TYC_INST inst)
+{
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+    switch (inst) {
+]]
+
+for _, inst in ipairs(jump_instructions) do
+    S('        case TO_' .. inst:upper() .. ': return true;')
+end
+
+S [[
+        default: return false;
+    }
+#pragma GCC diagnostic pop
+}
 ]]
 
 --

@@ -106,7 +106,7 @@ static void test_bytecode_gen(void)
 
     uint8_t bytecode_expected[] = {
         // header
-        (MAGIC >> 24), (MAGIC >> 16) & 0xff, (MAGIC >> 8) & 0xff, (MAGIC & 0xff),   // magic number
+        MAGIC, (MAGIC >> 8) & 0xff, (MAGIC >> 16) & 0xff, (MAGIC >> 24) & 0xff,   // magic number
         VERSION_MINOR, VERSION_MAJOR, 0x00, 0x00,                                   // version + reserved
 
         // constants
@@ -130,8 +130,12 @@ static void test_bytecode_gen(void)
     uint8_t* bytecode; size_t bytecode_sz;
     assert(code_assemble(assembly_code, &bytecode, &bytecode_sz) == T_OK);
 
-    for (size_t i = 0; i < (bytecode_sz < sizeof bytecode_expected ? bytecode_sz : sizeof bytecode_expected); ++i)
+    for (size_t i = 0; i < (bytecode_sz < sizeof bytecode_expected ? bytecode_sz : sizeof bytecode_expected); ++i) {
         printf("%02X|%02X ", bytecode[i], bytecode_expected[i]);
+        if (i % 8 == 7)
+            printf("\n");
+    }
+    printf("\n");
 
     assert(bytecode_sz == sizeof bytecode_expected);
     assert(memcmp(bytecode, bytecode_expected, bytecode_sz) == 0);

@@ -49,6 +49,7 @@ TYC_RESULT code_assemble(const char* code, uint8_t** bytecode, size_t* bytecode_
 
     Assembly* assembly = assembly_new();
     TRY(assemble(code, assembly))
+    TRY(assembler_adjust_labels(assembly))
     r = bytecode_gen(assembly, bytecode, bytecode_sz);
     assembly_destroy(assembly);
 

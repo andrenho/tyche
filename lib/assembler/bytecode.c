@@ -13,6 +13,7 @@ static size_t extend_bin(Binary* bin, size_t n_bytes)
         bin->cap *= 2;
         bin->data = xrealloc(bin->data, bin->cap);
     }
+    bin->sz += n_bytes;
     return sz;
 }
 
@@ -25,38 +26,38 @@ static void add_8(Binary* bin, uint8_t value)
 static void add_16(Binary* bin, uint16_t value)
 {
     size_t i = extend_bin(bin, 2);
-    bin->data[i] = (uint8_t) (value >> 8);
-    bin->data[i+1] = (uint8_t) value;
+    bin->data[i] = (uint8_t) value;
+    bin->data[i+1] = (uint8_t) (value >> 8);
 }
 
 static void add_32(Binary* bin, uint32_t value)
 {
     size_t i = extend_bin(bin, 4);
-    bin->data[i] = (uint8_t) (value >> 24);
-    bin->data[i+1] = (uint8_t) (value >> 16);
-    bin->data[i+2] = (uint8_t) (value >> 8);
-    bin->data[i+3] = (uint8_t) value;
+    bin->data[i] = (uint8_t) value;
+    bin->data[i+1] = (uint8_t) (value >> 8);
+    bin->data[i+2] = (uint8_t) (value >> 16);
+    bin->data[i+3] = (uint8_t) (value >> 24);
 }
 
 static void set_32(Binary* bin, size_t pos, uint32_t value)
 {
-    bin->data[pos] = (uint8_t) (value >> 24);
-    bin->data[pos+1] = (uint8_t) (value >> 16);
-    bin->data[pos+2] = (uint8_t) (value >> 8);
-    bin->data[pos+3] = (uint8_t) value;
+    bin->data[pos] = (uint8_t) value;
+    bin->data[pos+1] = (uint8_t) (value >> 8);
+    bin->data[pos+2] = (uint8_t) (value >> 16);
+    bin->data[pos+3] = (uint8_t) (value >> 24);
 }
 
 static void add_64(Binary* bin, uint64_t value)
 {
     size_t i = extend_bin(bin, 8);
-    bin->data[i] = (uint8_t) (value >> 56);
-    bin->data[i+1] = (uint8_t) (value >> 48);
-    bin->data[i+2] = (uint8_t) (value >> 40);
-    bin->data[i+3] = (uint8_t) (value >> 32);
-    bin->data[i+4] = (uint8_t) (value >> 24);
-    bin->data[i+5] = (uint8_t) (value >> 16);
-    bin->data[i+6] = (uint8_t) (value >> 8);
-    bin->data[i+7] = (uint8_t) value;
+    bin->data[i] = (uint8_t) value;
+    bin->data[i+1] = (uint8_t) (value >> 8);
+    bin->data[i+2] = (uint8_t) (value >> 16);
+    bin->data[i+3] = (uint8_t) (value >> 24);
+    bin->data[i+4] = (uint8_t) (value >> 32);
+    bin->data[i+5] = (uint8_t) (value >> 40);
+    bin->data[i+6] = (uint8_t) (value >> 48);
+    bin->data[i+7] = (uint8_t) (value >> 56);
 }
 
 static void add_str(Binary* bin, const char* str)
@@ -76,8 +77,8 @@ TYC_RESULT bytecode_gen(Assembly const* as, uint8_t** bytecode, size_t* bytecode
 
     // header
     add_32(&bin, MAGIC);
-    add_8(&bin, VERSION_MAJOR);
     add_8(&bin, VERSION_MINOR);
+    add_8(&bin, VERSION_MAJOR);
     add_16(&bin, 0);
 
     // constants
@@ -110,7 +111,10 @@ TYC_RESULT bytecode_gen(Assembly const* as, uint8_t** bytecode, size_t* bytecode
             if (inst->operator.type == OP_NONE) {
                 add_8(&bin, inst->instruction);
             } else if (inst->operator.type == OP_INT) {
-                if (inst->operator.v.i >= -128 && inst->operator.v.i <= 127) {
+                if (is_jump_instruction(inst->instruction)) {
+                    add_8(&bin, inst->instruction);
+                    add_16(&bin, (uint16_t) (inst->operator.v.i));
+                } else if (inst->operator.v.i >= -128 && inst->operator.v.i <= 127) {
                     add_8(&bin, inst->instruction);
                     add_8(&bin, (uint8_t) inst->operator.v.i);
                 } else if (inst->operator.v.i >= -32768 && inst->operator.v.i <= 32767) {
