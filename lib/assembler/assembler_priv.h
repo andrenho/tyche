@@ -70,6 +70,6 @@ TYC_RESULT assembler_adjust_labels(Assembly* assembly);
 // BYTECODE
 //
 
-TYC_RESULT bytecode_gen(Assembly const* assembly, uint8_t** bytecode, size_t* bytecode_sz);
+TYC_RESULT bytecode_gen(Assembly const* as, uint8_t** bytecode, size_t* bytecode_sz);
 
 #endif //TYCHE_ASSEMBLER_PRIV_H

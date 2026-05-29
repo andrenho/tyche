@@ -4,6 +4,7 @@
 #include "tyche.h"
 
 #include <stdbool.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <stddef.h>
 #include <stdio.h>
