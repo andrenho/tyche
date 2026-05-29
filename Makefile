@@ -48,7 +48,7 @@ endif
 RELEASE_CFLAGS=-O3 -flto=auto -march=native -mtune=native -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -fstack-protector-strong
 RELEASE_LDFLAGS=-flto=auto
 
-CFLAGS+=-std=c99 -D_GNU_SOURCE -fPIC -fvisibility=hidden -isystem lib/contrib -MMD -MP -DVERSION="\"${VERSION}\""
+CFLAGS+=-std=c99 -D_GNU_SOURCE -fPIC -fvisibility=hidden -isystem lib/contrib -MMD -MP -DVERSION='"${VERSION}"'
 LDFLAGS+=-lm
 
 ifeq ($(DEBUG_ASSEMBLY),1)
@@ -107,7 +107,7 @@ tyche: src/tyche.o libtyche.a
 
 tyche-test-as: CFLAGS += ${DEBUG_CFLAGS} -DDEBUG_ASSEMBLY
 tyche-test-as: LDFLAGS += ${DEBUG_LDFLAGS}
-tyche-test-am: lib/instructions/instructions.h
+tyche-test-as: lib/instructions/instructions.h
 tyche-test-as: test/tests-as.o libtyche.a
 	$(CC) -o $@ $^ ${LDFLAGS} -I../lib
 
