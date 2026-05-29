@@ -17,8 +17,6 @@ DEBUG_ASSEMBLY ?= 0
 VERSION_MAJOR=0
 VERSION_MINOR=1
 
-VERSION=${VERSION_MAJOR}.${VERSION_MINOR}
-
 # add compiler-specific warnings
 
 IS_CLANG := $(shell $(CC) -dM -E - < /dev/null | grep -c __clang__)
@@ -48,7 +46,7 @@ endif
 RELEASE_CFLAGS=-O3 -flto=auto -march=native -mtune=native -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -fstack-protector-strong
 RELEASE_LDFLAGS=-flto=auto
 
-CFLAGS+=-std=c99 -D_GNU_SOURCE -fPIC -fvisibility=hidden -isystem lib/contrib -MMD -MP -DVERSION='"${VERSION}"'
+CFLAGS+=-std=c99 -D_GNU_SOURCE -fPIC -fvisibility=hidden -isystem lib/contrib -MMD -MP -DVERSION_MINOR=${VERSION_MINOR} -DVERSION_MAJOR=${VERSION_MAJOR}
 LDFLAGS+=-lm
 
 ifeq ($(DEBUG_ASSEMBLY),1)

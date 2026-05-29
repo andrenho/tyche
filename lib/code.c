@@ -10,8 +10,6 @@
 #  error Sorry, big endian architectures are not supported at this time.
 #endif
 
-#define MAGIC 0xa7d6e9b1
-
 #define VERSION_ADDR        0x04
 #define CODE_START_ADDR     0x08
 #define N_CONST_ADDR        0x0c

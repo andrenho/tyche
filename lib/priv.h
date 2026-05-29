@@ -179,6 +179,8 @@ void       heap_gc(Heap* h, VALUE const* roots, size_t n_roots);
 // CODE
 //
 
+#define MAGIC 0xa7d6e9b1
+
 TYC_RESULT     code_assemble(const char* code, uint8_t** bytecode, size_t* bytecode_sz);
 
 Code*          code_new(void);

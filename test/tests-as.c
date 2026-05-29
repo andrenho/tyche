@@ -88,12 +88,127 @@ static void test_labels(void)
     assembly_destroy(assembly);
 }
 
+static void test_bytecode_gen(void)
+{
+    const char* assembly_code =
+            ".const\n"
+            "    0: 3.14\n"
+            "    1: \"Hello\"\n"
+            "\n"
+            ".func 0\n"
+            "    pushi   2   ; this is a comment\n"
+            "    ret\n"
+            ".func 1\n"
+            "    pushi   5000\n"
+            "    ret";
+
+    uint8_t bytecode_expected[] = {
+        // header
+        (MAGIC >> 24), (MAGIC >> 16) & 0xff, (MAGIC >> 8) & 0xff, (MAGIC & 0xff),   // magic number
+        VERSION_MINOR, VERSION_MAJOR, 0x00, 0x00,                                   // version + reserved
+
+        // constants
+        0xff, 0xff, 0xff, 0xff,  // code start address
+        0x02, 0x00, 0x00, 0x00,  // number of constants
+        0x01, 0xff, 0xff, 0xff, 0xff,           // 3.14
+        0x00, 'H', 'e', 'l', 'l', 'o', 0x00,    // "Hello"
+
+        // code
+    };
+    // TODO - replace 0xff
+}
+
+static void test_bytecode_parsing(void)
+{
+    printf("## Bytecode\n");
+    const char* assembly_code =
+            ".const\n"
+            "    0: 3.14\n"
+            "    1: \"Hello world\"\n"
+            "\n"
+            ".func 0\n"
+            "    pushi   2   ; this is a comment\n"
+            "    pushi   -3\n"
+            "    sum\n"
+            "    ret\n"
+            ".func 1\n"
+            "    pushi   5000\n"
+            "    ret";
+
+    uint8_t* bytecode; size_t bytecode_sz;
+    assert(code_assemble(assembly_code, &bytecode, &bytecode_sz) == T_OK);
+
+    Code* code = code_new();
+
+    assert(code_load_bytecode(code, bytecode, bytecode_sz) == T_OK);
+
+    assert(code_n_consts(code) == 2);
+    assert(code_const_type(code, 0) == TC_REAL);
+    assert(code_const_type(code, 1) == TC_STRING);
+    assert(code_const_real(code, 0) > 3.13 && code_const_real(code, 0) < 3.15);
+    assert(strcmp(code_const_string(code, 1), "Hello world") == 0);
+    assert(code_n_functions(code) == 2);
+    assert(code_function_sz(code, 0) == 6);
+    assert(code_function_sz(code, 1) == 4);
+
+    uint32_t addr = 0;
+    Instruction inst = code_next_instruction(code, 0, addr);
+    assert(inst.operator == TO_PUSHI);
+    assert(inst.operand == 2);
+    assert(inst.sz == 2);
+    addr += inst.sz;
+
+    inst = code_next_instruction(code, 0, addr);
+    assert(inst.operator == TO_PUSHI);
+    assert(inst.operand == -3);
+    addr += inst.sz;
+
+    inst = code_next_instruction(code, 0, addr);
+    assert(inst.operator == TO_SUM);
+    assert(inst.operand == 0);
+    addr += inst.sz;
+
+    inst = code_next_instruction(code, 1, 0);
+    assert(inst.operator == TO_PUSHI + TO_16BIT);
+    assert(inst.operand == 5000);
+    assert(inst.sz == 3);
+
+    code_destroy(code);
+    free(bytecode);
+}
+
+static void test_bytecode_labels()
+{
+    printf("## Bytecode - labels\n");
+    const char* assembly_code =
+            ".func 0\n"
+            "    jmp    @my_label\n"
+            "    pushi  \n"
+            "@my_label:\n"
+            "    ret";
+
+    uint8_t* bytecode; size_t bytecode_sz;
+    assert(code_assemble(assembly_code, &bytecode, &bytecode_sz) == T_OK);
+
+    Code* code = code_new();
+    assert(code_load_bytecode(code, bytecode, bytecode_sz) == T_OK);
+
+    Instruction inst = code_next_instruction(code, 0, 0);
+    assert(inst.operator == TO_JMP);
+    assert(inst.operand == 4);
+    assert(inst.sz == 3);
+
+    code_destroy(code);
+    free(bytecode);
+}
+
 int main(void)
 {
     test_assembly();
     test_labels();
+    test_bytecode_gen();
+    /*
+    test_bytecode_parsing();
+    test_bytecode_labels();
+     */
 }
-
-// TODO - adjust labels
-
-// TODO - bytecode generation
