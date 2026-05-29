@@ -919,9 +919,11 @@ static TYC_RESULT step(TycheVM* T)
             break;
         }
 
-        case TO_VER:
-            TRY(tyc_pushstring(T, VERSION))
+        case TO_VER: {
+            char version[10]; snprintf(version, 10, "%d.%d", VERSION_MAJOR, VERSION_MINOR);
+            TRY(tyc_pushstring(T, version))
             break;
+        }
 
         //
         // jumps/branching

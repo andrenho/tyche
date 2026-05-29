@@ -93,7 +93,7 @@ lib/instructions/instructions.h: lib/instructions/gen-inst.lua
 
 LIB_SRC=lib/value.o lib/stack.o lib/array.o lib/table.o lib/heap.o lib/vm.o lib/expr.o \
  	lib/code.o lib/utils.o lib/assembler/assembly.o lib/assembler/assembler.o lib/assembler/adj_labels.o \
- 	lib/instructions/instructions.o
+ 	lib/assembler/bytecode.o lib/instructions/instructions.o
 
 $(LIB_SRC:.o=.c) test/tests-as.c test/tests-vm.c: lib/instructions/instructions.h
 

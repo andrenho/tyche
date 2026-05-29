@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "assembler/assembler_priv.h"
 #include "instructions/instructions.h"
 
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
@@ -44,7 +45,14 @@ void code_destroy(Code* code)
 
 TYC_RESULT code_assemble(const char* code, uint8_t** bytecode, size_t* bytecode_sz)
 {
-    return T_ERR;
+    TYC_RESULT r = T_OK;
+
+    Assembly* assembly = assembly_new();
+    TRY(assemble(code, assembly))
+    r = bytecode_gen(assembly, bytecode, bytecode_sz);
+    assembly_destroy(assembly);
+
+    return r;
 }
 
 TYC_RESULT code_load_bytecode(Code* code, uint8_t const* bytecode, size_t bytecode_sz)

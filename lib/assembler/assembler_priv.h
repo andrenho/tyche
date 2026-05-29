@@ -66,5 +66,10 @@ void      assembly_label_next_inst(Assembly* as, const char* label);
 TYC_RESULT assemble(const char* code, Assembly* assembly);
 TYC_RESULT assembler_adjust_labels(Assembly* assembly);
 
+//
+// BYTECODE
+//
+
+TYC_RESULT bytecode_gen(Assembly const* assembly, uint8_t** bytecode, size_t* bytecode_sz);
 
 #endif //TYCHE_ASSEMBLER_PRIV_H

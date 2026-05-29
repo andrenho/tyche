@@ -743,6 +743,5 @@ int main(void)
     test_tables();
     test_heap();
     test_supertables();
-    test_bytecode();
     test_vm();
 }

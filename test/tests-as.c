@@ -96,7 +96,9 @@ static void test_bytecode_gen(void)
             "    1: \"Hello\"\n"
             "\n"
             ".func 0\n"
+            "    jmp @skip\n"
             "    pushi   2   ; this is a comment\n"
+            "@skip:\n"
             "    ret\n"
             ".func 1\n"
             "    pushi   5000\n"
@@ -108,14 +110,31 @@ static void test_bytecode_gen(void)
         VERSION_MINOR, VERSION_MAJOR, 0x00, 0x00,                                   // version + reserved
 
         // constants
-        0xff, 0xff, 0xff, 0xff,  // code start address
-        0x02, 0x00, 0x00, 0x00,  // number of constants
-        0x01, 0xff, 0xff, 0xff, 0xff,           // 3.14
-        0x00, 'H', 'e', 'l', 'l', 'o', 0x00,    // "Hello"
+        0x21, 0x00, 0x00, 0x00,                 // code start address
+        0x02, 0x00, 0x00, 0x00,                 // number of constants
+        0x01, 0x1F, 0x85, 0xEB, 0x51, 0xB8, 0x1E, 0x09, 0x40,   // 3.14
+        0x00, 'H', 'e', 'l', 'l', 'o', 0x00,                    // "Hello"
 
         // code
+        0x00, 0x00, 0x00, 0x00,                 // debug start address
+        0x02, 0x00, 0x00, 0x00,                 // number of functions
+        0x33, 0x00, 0x00, 0x00,                 // address of function #1
+        0xcc, 0x05, 0x00,           // jmp 5 (@skip)
+        0xa0, 0x02,                 // pushi 2
+        0x10,                       // ret
+        0x00, 0x00, 0x00, 0x00,                 // address of function #1
+        0xc0, 0x88, 0x13,           // pushi 500
+        0x10,                       // ret
     };
-    // TODO - replace 0xff
+
+    uint8_t* bytecode; size_t bytecode_sz;
+    assert(code_assemble(assembly_code, &bytecode, &bytecode_sz) == T_OK);
+
+    for (size_t i = 0; i < (bytecode_sz < sizeof bytecode_expected ? bytecode_sz : sizeof bytecode_expected); ++i)
+        printf("%02X|%02X ", bytecode[i], bytecode_expected[i]);
+
+    assert(bytecode_sz == sizeof bytecode_expected);
+    assert(memcmp(bytecode, bytecode_expected, bytecode_sz) == 0);
 }
 
 static void test_bytecode_parsing(void)
