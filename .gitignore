@@ -39,4 +39,4 @@ tyche
 tyche-test-*
 libtyche.a
 libtyche.so*
-lib/compiler/compiler.lua.h
+lib/assembler/compiler.lua.h

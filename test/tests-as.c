@@ -1,4 +1,4 @@
-#include "../lib/compiler/compiler_priv.h"
+#include "../lib/assembler/assembler_priv.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -74,6 +74,16 @@ static void test_labels(void)
     assert(assembly->functions[0].instructions[2].n_labels == 1);
     assert(strcmp(assembly->functions[0].instructions[2].labels[0], "@my_label") == 0);
     assert(assembly->functions[0].instructions[2].instruction == TO_RET);
+
+    // adjust labels
+
+    assert(assembler_adjust_labels(assembly) == T_OK);
+
+    assert(assembly->functions_n == 1);
+    assert(assembly->functions[0].n_instructions == 3);
+    assert(assembly->functions[0].instructions[0].instruction == TO_JMP);
+    assert(assembly->functions[0].instructions[0].operator.type == OP_INT);
+    assert(assembly->functions[0].instructions[0].operator.v.i == 4);
 
     assembly_destroy(assembly);
 }

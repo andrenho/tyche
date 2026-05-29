@@ -217,10 +217,4 @@ bool       expr_is_binary(TYC_EXPR op);
 TYC_RESULT unary_expr(TycheVM* T, TYC_EXPR op, VALUE a, VALUE* result);
 TYC_RESULT binary_expr(TycheVM* T, TYC_EXPR op, VALUE a, VALUE b, VALUE* result);
 
-//
-// ASSEMBLER
-//
-
-TYC_RESULT assemble(const char* code, Assembly* assembly);
-
 #endif //TYCHE_PRIV_H

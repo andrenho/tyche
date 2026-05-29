@@ -1,5 +1,5 @@
-#ifndef TYCHE_COMPILER_PRIV_H
-#define TYCHE_COMPILER_PRIV_H
+#ifndef TYCHE_ASSEMBLER_PRIV_H
+#define TYCHE_ASSEMBLER_PRIV_H
 
 #include "../priv.h"
 
@@ -44,6 +44,10 @@ struct Assembly {
     AssemblyPriv*     priv_;
 };
 
+//
+// ASSEMBLY
+//
+
 Assembly* assembly_new(void);
 void      assembly_destroy(Assembly* as);
 
@@ -55,4 +59,12 @@ void      assembly_add_inst_p(Assembly* as, uint32_t f_id, TYC_INST inst, int32_
 void      assembly_add_inst_label(Assembly* as, uint32_t f_id, TYC_INST inst, const char* label);
 void      assembly_label_next_inst(Assembly* as, const char* label);
 
-#endif //TYCHE_COMPILER_PRIV_H
+//
+// ASSEMBLER
+//
+
+TYC_RESULT assemble(const char* code, Assembly* assembly);
+TYC_RESULT assembler_adjust_labels(Assembly* assembly);
+
+
+#endif //TYCHE_ASSEMBLER_PRIV_H

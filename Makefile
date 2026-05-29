@@ -67,7 +67,7 @@ check: tyche-test-as tyche-test-vm
 
 clean:
 	find . -name '*.[od]' -delete
-	rm -f tyche libtyche.a libtyche.so* tyche-test-* lib/compiler/compiler.lua.h \
+	rm -f tyche libtyche.a libtyche.so* tyche-test-* \
 		lib/instructions/instructions.h lib/instructions/instructions.c
 
 install: tyche libtyche.a libtyche.so.${VERSION} lib/tyche.h
@@ -94,7 +94,8 @@ lib/instructions/instructions.h: lib/instructions/gen-inst.lua
 #
 
 LIB_SRC=lib/value.o lib/stack.o lib/array.o lib/table.o lib/heap.o lib/vm.o lib/expr.o \
- 	lib/code.o lib/utils.o lib/compiler/assembly.o lib/compiler/assembler.o lib/instructions/instructions.o
+ 	lib/code.o lib/utils.o lib/assembler/assembly.o lib/assembler/assembler.o lib/assembler/adj_labels.o \
+ 	lib/instructions/instructions.o
 
 $(LIB_SRC:.o=.c) test/tests-as.c test/tests-vm.c: lib/instructions/instructions.h
 

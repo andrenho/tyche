@@ -101,6 +101,9 @@ local function H(txt) table.insert(header, txt) end
 H [[#ifndef TYCHEVM_INSTRUCTIONS_H_
 #define TYCHEVM_INSTRUCTIONS_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #define PARAMETER_INST 0xa0
 
 #define TO_16BIT 0x20
@@ -117,6 +120,7 @@ H [[    TO_UNKNOWN = -1,
 
 const char* instruction_name(TYC_INST inst);
 TYC_INST    instruction_from_name(const char* name);
+size_t      instruction_size(TYC_INST inst, int32_t operand);
 
 #endif  // TYCHEVM_INSTRUCTIONS_H_
 ]]
@@ -155,6 +159,18 @@ end
 
 S [[    return TO_UNKNOWN;
 }
+
+size_t instruction_size(TYC_INST inst, int32_t operand)
+{
+    if (inst >= PARAMETER_INST + TO_32BIT)
+        return 5;
+    if (inst >= PARAMETER_INST + TO_16BIT)
+        return 3;
+    if (inst >= PARAMETER_INST)
+        return 2;
+    return 1;
+}
+
 ]]
 
 --
