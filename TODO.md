@@ -59,13 +59,14 @@ Decisions:
       - [x] Len (table, array, string)
       - [x] Type, ver
   - [x] Error handling
+  - [x] Assembler in C
   - [ ] Native pointers
   - [ ] Run GC occasionally
-  - [ ] Assembler in C
   - [ ] Main application
 - [ ] Prepare for release
   - [ ] Review public function names
   - [ ] Documentation and webpage
+  - [ ] Code review
   - [ ] Migrate to Codeberg?
     - [ ] Actions
 
