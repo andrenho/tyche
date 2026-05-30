@@ -61,11 +61,14 @@ Decisions:
   - [x] Error handling
   - [x] Native pointers
   - [x] Run GC occasionally
-  - [ ] Assembler in C
+  - [x] Assembler in C
   - [ ] Main application
 - [ ] Prepare for release
   - [ ] Review public function names
   - [ ] Documentation and webpage
+  - [ ] Code review
+  - [ ] Migrate to Codeberg?
+    - [ ] Actions
 
 # Version 1
 

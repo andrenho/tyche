@@ -5,91 +5,13 @@
 
 #include <limits.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <stddef.h>
 #include <stdio.h>
 
 #include "nanbox.h"
-
-//
-// INSTRUCTIONS
-//
-
-typedef enum {
-    // STACK OPERATIONS
-    TO_PUSHI = 0xA0,
-    TO_PUSHC = 0xA1,
-    TO_PUSHF = 0xA2,
-    TO_PUSHN = 0x00,
-    TO_PUSHZ = 0x01,
-    TO_PUSHT = 0x02,
-    TO_NEWA  = 0x03,
-    TO_NEWT  = 0x04,
-    TO_POP   = 0x05,
-    TO_DUP   = 0x06,
-
-    // VARIABLES
-    TO_PUSHV = 0xA3,
-    TO_SET   = 0xAE,
-    TO_DUPV  = 0xA4,
-    TO_GLBL  = 0x07,
-
-    // FUNCTION OPERATIONS
-    TO_CALL = 0xA7,
-    TO_RET  = 0x10,
-    TO_RETN = 0x11,
-
-    // TABLE AND ARRAY OPERATIONS
-    TO_GETKV = 0x16,
-    TO_SETKV = 0x17,
-    TO_GETI  = 0xA8,
-    TO_SETI  = 0xA9,
-    TO_APPND = 0x18,
-    TO_NEXT  = 0x19,
-    TO_SPTB  = 0x1A,
-
-    // LOGICAL/ARITHMETIC
-    TO_SUM     = 0x20,
-    TO_SUB     = 0x21,
-    TO_MUL     = 0x22,
-    TO_DIV     = 0x23,
-    TO_IDIV    = 0x24,
-    TO_MOD     = 0x25,
-    TO_EQ      = 0x26,
-    TO_NEQ     = 0x27,
-    TO_LT      = 0x28,
-    TO_LTE     = 0x29,
-    TO_GT      = 0x2A,
-    TO_GTE     = 0x2B,
-    TO_AND     = 0x2C,
-    TO_OR      = 0x2D,
-    TO_XOR     = 0x2E,
-    TO_POW     = 0x2F,
-    TO_SHL     = 0x30,
-    TO_SHR     = 0x31,
-    TO_NOT     = 0x32,
-    TO_NEG     = 0x33,
-
-    // OTHER VALUE OPERATIONS
-    TO_LEN  = 0x40,
-    TO_TYPE = 0x41,
-    TO_VER  = 0x42,
-
-    // CONTROL FLOW
-    TO_BZ   = 0xAA,
-    TO_BNZ  = 0xAB,
-    TO_BNIL = 0xAF,
-    TO_JMP  = 0xAC,
-
-    // MEMORY MANAGEMENT
-    TO_GC = 0x4B,
-
-    // ERROR MANAGEMENT
-    TO_PUSHE = 0xAD,
-    TO_POPE  = 0x5A,
-    TO_THRW  = 0x5B,
-
-} TYC_INST;
+#include "instructions/instructions.h"
 
 //
 // ERROR MANAGEMENT
@@ -263,6 +185,8 @@ void       heap_gc(Heap* h, VALUE const* roots, size_t n_roots);
 //
 // CODE
 //
+
+#define MAGIC 0xa7d6e9b1
 
 TYC_RESULT     code_assemble(const char* code, uint8_t** bytecode, size_t* bytecode_sz);
 

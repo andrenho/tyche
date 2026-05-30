@@ -220,8 +220,8 @@ return {
                 pushi   7           ; 18
                 ret                 ; 20
         ]],
-        --debug_bytecode = true,
-        --decompile = true,
+        -- debug_bytecode = true,
+        -- decompile = true,
         --debug = true,
         expected_stack_top = 6,
     },
@@ -580,7 +580,7 @@ return {
         expected_stack_top = 6,
     },
     {
-        name = "VM: error handling with the same function",
+        name = "VM: error handling within the same function",
         code = [[
             .func 0
                 pushe   @catch
@@ -595,7 +595,7 @@ return {
         expected_stack_top = 30,
     },
     {
-        name = "VM: error handling with the same function, exception value",
+        name = "VM: error handling within the same function, exception value",
         code = [[
             .func 0
                 pushe   @catch
@@ -620,7 +620,7 @@ return {
             @catch:
                 ret
 
-            .func 1:
+            .func 1
                 pushi   10
                 thrw
                 pushi   40

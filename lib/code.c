@@ -4,11 +4,12 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "assembler/assembler_priv.h"
+#include "instructions/instructions.h"
+
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
 #  error Sorry, big endian architectures are not supported at this time.
 #endif
-
-#define MAGIC 0xa7d6e9b1
 
 #define VERSION_ADDR        0x04
 #define CODE_START_ADDR     0x08
@@ -40,6 +41,19 @@ void code_destroy(Code* code)
     free(code->fn_addr);
     free(code->fn_sz);
     free(code);
+}
+
+TYC_RESULT code_assemble(const char* code, uint8_t** bytecode, size_t* bytecode_sz)
+{
+    TYC_RESULT r = T_OK;
+
+    Assembly* assembly = assembly_new();
+    TRY(assemble(code, assembly))
+    TRY(assembler_adjust_labels(assembly))
+    r = bytecode_gen(assembly, bytecode, bytecode_sz);
+    assembly_destroy(assembly);
+
+    return r;
 }
 
 TYC_RESULT code_load_bytecode(Code* code, uint8_t const* bytecode, size_t bytecode_sz)
@@ -154,12 +168,12 @@ Instruction code_next_instruction(Code const* code, uint32_t function_id, uint32
         operand = (int8_t) code->bytecode[addr + 1];
         sz = 2;
     } else if (opcode >= OP_16BIT_OPERAND && opcode < OP_32BIT_OPERAND) {
-        opcode -= 0x20;
+        // opcode -= 0x20;
         operand = (int16_t) ((uint16_t) code->bytecode[addr + 1] |
                              (uint16_t) (code->bytecode[addr + 2] << 8));
         sz = 3;
     } else if (opcode >= OP_32BIT_OPERAND) {
-        opcode -= 0x40;
+        // opcode -= 0x40;
         operand = (int32_t) ((uint32_t) code->bytecode[addr + 1] |
                              (uint32_t) (code->bytecode[addr + 2] << 8) |
                              (uint32_t) (code->bytecode[addr + 3] << 16) |
@@ -216,65 +230,7 @@ void code_decompile(Code const* code)
 
 void code_parse_instruction(Instruction inst, char* outbuf, size_t sz)
 {
-    int n;
-    switch (inst.operator) {
-        case TO_PUSHI: n = snprintf(outbuf, sz, "pushi  "); break;
-        case TO_PUSHC: n = snprintf(outbuf, sz, "pushc  "); break;
-        case TO_PUSHF: n = snprintf(outbuf, sz, "pushf  "); break;
-        case TO_PUSHN: n = snprintf(outbuf, sz, "pushn  "); break;
-        case TO_PUSHZ: n = snprintf(outbuf, sz, "pushz  "); break;
-        case TO_PUSHT: n = snprintf(outbuf, sz, "pusht  "); break;
-        case TO_NEWA:  n = snprintf(outbuf, sz, "newa   "); break;
-        case TO_NEWT:  n = snprintf(outbuf, sz, "newt   "); break;
-        case TO_POP:   n = snprintf(outbuf, sz, "pop    "); break;
-        case TO_DUP:   n = snprintf(outbuf, sz, "dup    "); break;
-        case TO_PUSHV: n = snprintf(outbuf, sz, "pushv  "); break;
-        case TO_SET:   n = snprintf(outbuf, sz, "set    "); break;
-        case TO_DUPV:  n = snprintf(outbuf, sz, "dupv   "); break;
-        case TO_GLBL:  n = snprintf(outbuf, sz, "glbl   "); break;
-        case TO_CALL:  n = snprintf(outbuf, sz, "call   "); break;
-        case TO_RET:   n = snprintf(outbuf, sz, "ret    "); break;
-        case TO_RETN:  n = snprintf(outbuf, sz, "reti   "); break;
-        case TO_GETKV: n = snprintf(outbuf, sz, "getkv  "); break;
-        case TO_SETKV: n = snprintf(outbuf, sz, "setkv  "); break;
-        case TO_GETI:  n = snprintf(outbuf, sz, "geti   "); break;
-        case TO_SETI:  n = snprintf(outbuf, sz, "seti   "); break;
-        case TO_APPND: n = snprintf(outbuf, sz, "appnd  "); break;
-        case TO_NEXT:  n = snprintf(outbuf, sz, "next   "); break;
-        case TO_SPTB:  n = snprintf(outbuf, sz, "sptb   "); break;
-        case TO_SUM:   n = snprintf(outbuf, sz, "sum    "); break;
-        case TO_SUB:   n = snprintf(outbuf, sz, "sub    "); break;
-        case TO_MUL:   n = snprintf(outbuf, sz, "mul    "); break;
-        case TO_DIV:   n = snprintf(outbuf, sz, "div    "); break;
-        case TO_IDIV:  n = snprintf(outbuf, sz, "idiv   "); break;
-        case TO_MOD:   n = snprintf(outbuf, sz, "mod    "); break;
-        case TO_EQ:    n = snprintf(outbuf, sz, "eq     "); break;
-        case TO_NEQ:   n = snprintf(outbuf, sz, "neq    "); break;
-        case TO_LT:    n = snprintf(outbuf, sz, "lt     "); break;
-        case TO_LTE:   n = snprintf(outbuf, sz, "lte    "); break;
-        case TO_GT:    n = snprintf(outbuf, sz, "gt     "); break;
-        case TO_GTE:   n = snprintf(outbuf, sz, "gte    "); break;
-        case TO_AND:   n = snprintf(outbuf, sz, "and    "); break;
-        case TO_OR:    n = snprintf(outbuf, sz, "or     "); break;
-        case TO_XOR:   n = snprintf(outbuf, sz, "xor    "); break;
-        case TO_POW:   n = snprintf(outbuf, sz, "pow    "); break;
-        case TO_SHL:   n = snprintf(outbuf, sz, "shl    "); break;
-        case TO_SHR:   n = snprintf(outbuf, sz, "shr    "); break;
-        case TO_NOT:   n = snprintf(outbuf, sz, "not    "); break;
-        case TO_NEG:   n = snprintf(outbuf, sz, "neg    "); break;
-        case TO_LEN:   n = snprintf(outbuf, sz, "len    "); break;
-        case TO_TYPE:  n = snprintf(outbuf, sz, "type   "); break;
-        case TO_VER:   n = snprintf(outbuf, sz, "ver    "); break;
-        case TO_BZ:    n = snprintf(outbuf, sz, "bz     "); break;
-        case TO_BNZ:   n = snprintf(outbuf, sz, "bnz    "); break;
-        case TO_BNIL:  n = snprintf(outbuf, sz, "bnil   "); break;
-        case TO_JMP:   n = snprintf(outbuf, sz, "jmp    "); break;
-        case TO_GC:    n = snprintf(outbuf, sz, "gc     "); break;
-        case TO_PUSHE: n = snprintf(outbuf, sz, "pushe  "); break;
-        case TO_POPE:  n = snprintf(outbuf, sz, "pope   "); break;
-        case TO_THRW:  n = snprintf(outbuf, sz, "thrw   "); break;
-        default:       n = snprintf(outbuf, sz, "???    "); break;
-    }
+    int n = snprintf(outbuf, sz, "%s", instruction_name(inst.operator));
 
     if (inst.operator >= OP_8BIT_OPERAND)
         snprintf(&outbuf[n], sz + (size_t) n, "%2d", inst.operand);

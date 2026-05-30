@@ -31,8 +31,8 @@ static TYC_RESULT default_unary_op(TycheVM* T, VALUE a, VALUE b, VALUE* r) {
 }
 
 #define OP(name) static TYC_RESULT name(TycheVM* T, VALUE a, VALUE b, VALUE* r)
-OP(and_bool)     { (void) T; *r = create_value_bool(value_boolean(a) & value_boolean(b)); return T_OK; }
-OP(or_bool)      { (void) T; *r = create_value_bool(value_boolean(a) | value_boolean(b)); return T_OK; }
+OP(and_bool)     { (void) T; *r = create_value_bool(value_boolean(a) && value_boolean(b)); return T_OK; }
+OP(or_bool)      { (void) T; *r = create_value_bool(value_boolean(a) || value_boolean(b)); return T_OK; }
 OP(xor_bool)     { (void) T; *r = create_value_bool(value_boolean(a) ^ value_boolean(b)); return T_OK; }
 OP(eq_bool)      { (void) T; *r = create_value_bool(value_boolean(a) == value_boolean(b)); return T_OK; }
 OP(neq_bool)     { (void) T; *r = create_value_bool(value_boolean(a) != value_boolean(b)); return T_OK; }
@@ -108,9 +108,9 @@ void expr_init(void)
         return;
 
     // default (reject)
-    for (size_t i = 0; i < TX_COUNT__; ++i)
-        for (size_t j = 0; j < TT_COUNT__; ++j)
-            for (size_t k = 0; k < TT_COUNT__; ++k)
+    for (TYC_EXPR i = 0; i < TX_COUNT__; ++i)
+        for (TYC_TYPE j = 0; j < TT_COUNT__; ++j)
+            for (TYC_TYPE k = 0; k < TT_COUNT__; ++k)
                 expr_fn[i][j][k] = expr_is_binary(i) ? default_binary_op : default_unary_op;
 
     // boolean

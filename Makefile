@@ -17,7 +17,7 @@ DEBUG_ASSEMBLY ?= 0
 VERSION_MAJOR=0
 VERSION_MINOR=1
 
-VERSION=${VERSION_MAJOR}.${VERSION_MINOR}
+VERSION=${VERSION_MAJOR}.${VERSION.MINOR}
 
 # add compiler-specific warnings
 
@@ -48,8 +48,8 @@ endif
 RELEASE_CFLAGS=-O3 -flto=auto -march=native -mtune=native -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -fstack-protector-strong
 RELEASE_LDFLAGS=-flto=auto
 
-CFLAGS+=-std=c99 -D_GNU_SOURCE -fPIC -fvisibility=hidden -isystem lib/contrib -MMD -MP -DVERSION="\"${VERSION}\""
-LDFLAGS+=
+CFLAGS+=-std=c99 -D_GNU_SOURCE -fPIC -fvisibility=hidden -isystem lib/contrib -MMD -MP -DVERSION_MINOR=${VERSION_MINOR} -DVERSION_MAJOR=${VERSION_MAJOR}
+LDFLAGS+=-lm
 
 ifeq ($(DEBUG_ASSEMBLY),1)
     CFLAGS += -DDEBUG_ASSEMBLY
@@ -61,11 +61,14 @@ endif
 
 all: tyche libtyche.a libtyche.so.${VERSION}
 
-check: tyche-test
-	./tyche-test
+check: tyche-test-as tyche-test-vm
+	./tyche-test-as
+	./tyche-test-vm
 
 clean:
-	rm -f tyche libtyche.a libtyche.so* tyche-test **/*.o **/*.d lib/compiler/compiler.lua.h
+	find . -name '*.[od]' -delete
+	rm -f tyche libtyche.a libtyche.so* tyche-test-* \
+		lib/instructions/instructions.h lib/instructions/instructions.c
 
 install: tyche libtyche.a libtyche.so.${VERSION} lib/tyche.h
 	install -m 644 libtyche.a libtyche.so.${VERSION} ${PREFIX}/lib
@@ -80,21 +83,21 @@ uninstall:
 .PHONY: all check clean install uninstall
 
 #
-# TODO - temporary, using Lua for compilation for now
+# custom instructions for code generation
 #
-CFLAGS+=`pkg-config --cflags lua`
-LDFLAGS+=`pkg-config --libs lua`
-lib/compiler/compiler.lua.h: lib/compiler/compiler.lua
-	luac -o lib/compiler/compiler.out lib/compiler/compiler.lua
-	xxd -i lib/compiler/compiler.out > lib/compiler/compiler.lua.h
-	rm lib/compiler/compiler.out
-lib/compiler.o: lib/compiler.c lib/compiler/compiler.lua.h
+
+lib/instructions/instructions.h: lib/instructions/gen-inst.lua
+	cd lib/instructions && ./gen-inst.lua
 
 #
 # executable files
 #
 
-LIB_SRC=lib/value.o lib/stack.o lib/array.o lib/table.o lib/heap.o lib/vm.o lib/expr.o lib/compiler.o lib/code.o lib/utils.o
+LIB_SRC=lib/value.o lib/stack.o lib/array.o lib/table.o lib/heap.o lib/vm.o lib/expr.o \
+ 	lib/code.o lib/utils.o lib/assembler/assembly.o lib/assembler/assembler.o lib/assembler/adj_labels.o \
+ 	lib/assembler/bytecode.o lib/instructions/instructions.o
+
+$(LIB_SRC:.o=.c) test/tests-as.c test/tests-vm.c: lib/instructions/instructions.h
 
 tyche: CFLAGS += ${RELEASE_CFLAGS} -Ilib
 tyche: LDFLAGS += ${RELEASE_LDFLAGS}
@@ -102,9 +105,16 @@ tyche: src/tyche.o libtyche.a
 	$(CC) -o $@ $^ ${LDFLAGS}
 	strip $@
 
-tyche-test: CFLAGS += ${DEBUG_CFLAGS} -DDEBUG_ASSEMBLY
-tyche-test: LDFLAGS += ${DEBUG_LDFLAGS}
-tyche-test: test/tests.o libtyche.a
+tyche-test-as: CFLAGS += ${DEBUG_CFLAGS} -DDEBUG_ASSEMBLY
+tyche-test-as: LDFLAGS += ${DEBUG_LDFLAGS}
+tyche-test-as: lib/instructions/instructions.h
+tyche-test-as: test/tests-as.o libtyche.a
+	$(CC) -o $@ $^ ${LDFLAGS} -I../lib
+
+tyche-test-vm: CFLAGS += ${DEBUG_CFLAGS} -DDEBUG_ASSEMBLY `pkg-config --cflags lua`
+tyche-test-vm: LDFLAGS += ${DEBUG_LDFLAGS} `pkg-config --libs lua`
+tyche-test-vm: lib/instructions/instructions.h
+tyche-test-vm: test/tests-vm.o libtyche.a
 	$(CC) -o $@ $^ ${LDFLAGS} -I../lib
 
 libtyche.a: ${LIB_SRC}
