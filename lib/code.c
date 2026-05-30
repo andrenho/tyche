@@ -188,8 +188,6 @@ Instruction code_next_instruction(Code const* code, uint32_t function_id, uint32
     };
 }
 
-#ifdef DEBUG_ASSEMBLY
-
 void code_debug_bytecode(Code const* code)
 {
     for (int i = 0; i < (int) code->bytecode_sz; ++i) {
@@ -237,5 +235,3 @@ void code_parse_instruction(Instruction inst, char* outbuf, size_t sz)
     else
         snprintf(&outbuf[n], sz + (size_t) n, "  ");
 }
-
-#endif

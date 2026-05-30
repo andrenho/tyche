@@ -42,12 +42,13 @@ const char* tyc_last_error(void);
 TycheVM*   tyc_new(void);
 void       tyc_destroy(TycheVM* T);
 
-// debugging (DEBUG_ASSEMBLY needs to be setup in compilation options)
+// debugging
 void       tyc_debug_to_console(TycheVM* T, bool activate);
 void       tyc_assembly_decompile(TycheVM* T);
 void       tyc_print_bytecode(TycheVM* T);
 
 // code loading and execution
+TYC_RESULT tyc_load_assembly(TycheVM* T, const char* asm_src);
 TYC_RESULT tyc_load_bytecode(TycheVM* T, uint8_t const* bytecode, size_t bytecode_sz);
 TYC_RESULT tyc_call(TycheVM* t, uint16_t n_pars);
 

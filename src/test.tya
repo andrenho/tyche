@@ -1,0 +1,6 @@
+.assembly
+.const
+    0: 3.14
+.func 0
+    pushc   0
+    ret

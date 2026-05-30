@@ -6,20 +6,45 @@
 #include "tyche.h"
 #include "contrib/c-args-parser.h"
 
+typedef enum FileType {
+    FT_SOURCE, FT_ASSEMBLY, FT_BINARY,
+} FileType;
+
 typedef struct Options {
-    bool repl;
     bool print_bytecode;
     bool decompile_assembly;
     bool debug_assembly;
+    const char* output_file;
 } Options;
+
+#define TRY(cmd) { if ((cmd) != T_OK) { fprintf(stderr, "error: %s\n", tyc_last_error()); exit(EXIT_FAILURE); } }
 
 //
 // MAIN
 //
 
+static FileType identify_file_type(const char* src, size_t len)
+{
+    if (strlen(src) < 24)
+        return FT_SOURCE;
+
+    uint8_t const* bin = (uint8_t const *) src;
+    if (bin[0] == 0xb1 && bin[1] == 0xe9 && bin[2] == 0xd6 && bin[3] == 0xa7)
+        return FT_BINARY;
+
+    size_t i = 0;
+    while (i < len && isspace(src[i]))
+        ++i;
+    if (len > i + 9 && memcmp(&src[i], ".assembly", 9) == 0)
+        return FT_ASSEMBLY;
+
+    return FT_SOURCE;
+}
+
 static int execute(int argc, char **argv, void *user)
 {
     assert(argc == 1);
+    Options* opt = user;
 
     // load file
 
@@ -36,10 +61,33 @@ static int execute(int argc, char **argv, void *user)
     }
     fclose(f);
 
-    // TODO - idenitfy file type
-    // TODO - execute file (apply options)
+    FileType file_type = identify_file_type(src, n);
 
+    // TODO - possibly generate output
+
+    TycheVM* T = tyc_new();
+
+    if (file_type == FT_BINARY) {
+        TRY(tyc_load_bytecode(T, (uint8_t const *) src, n))
+    } else if (file_type == FT_ASSEMBLY) {
+        TRY(tyc_load_assembly(T, src))
+    } else {
+        fprintf(stderr, "Sorry, tyche code not supported yet.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if (opt->print_bytecode)
+        tyc_print_bytecode(T);
+    if (opt->decompile_assembly)
+        tyc_assembly_decompile(T);
+    if (opt->debug_assembly)
+        tyc_debug_to_console(T, true);
+
+    TRY(tyc_call(T, 0))
+
+    tyc_destroy(T);
     free(src);
+
     return CARGS_OK;
 }
 
@@ -47,27 +95,35 @@ static int execute(int argc, char **argv, void *user)
 // COMMAND LINE OPTIONS
 //
 
-int cmd_print_bytecode(const char *value, void *user) {
+static int cmd_print_bytecode(const char *value, void *user) {
     (void) value;
     ((Options *) user)->print_bytecode = true;
     return CARGS_OK;
 }
 
-int cmd_decompile_assembly(const char *value, void *user) {
+static int cmd_decompile_assembly(const char *value, void *user) {
     (void) value;
     ((Options *) user)->decompile_assembly = true;
     return CARGS_OK;
 }
 
-int cmd_debug_assembly(const char *value, void *user) {
+static int cmd_debug_assembly(const char *value, void *user) {
     (void) value;
     ((Options *) user)->debug_assembly = true;
     return CARGS_OK;
 }
 
+static int cmd_gen_bytecode(const char* value, void* user) {
+    ((Options *) user)->output_file = value;
+    return CARGS_OK;
+}
+
 int main(int argc, char* argv[])
 {
+    // TODO - option to execute vs compile
+
     static const cargs_opt opts[] = {
+            { "output", 'o', CARGS_ARG_NONE, NULL, "Generate output file (bytecode)", cmd_gen_bytecode, NULL, NULL, 0, CARGS_ARG_OPTIONAL },
             { "print-bytecode", 'B', CARGS_ARG_NONE, NULL, "Print bytecode", cmd_print_bytecode, NULL, NULL, 0, CARGS_ARG_NONE },
             { "decompile", 'D', CARGS_ARG_NONE, NULL, "Decompile assembly", cmd_decompile_assembly, NULL, NULL, 0, CARGS_ARG_NONE },
             { "debug-assembly", 'a', CARGS_ARG_NONE, NULL, "Print assembly commands as it runs", cmd_debug_assembly, NULL, NULL, 0, CARGS_ARG_NONE },
@@ -105,6 +161,11 @@ int main(int argc, char* argv[])
             .err          = stderr
     };
 
-    Options options;
+    Options options = {
+            .debug_assembly = false,
+            .decompile_assembly = false,
+            .print_bytecode = false,
+            .output_file = NULL,
+    };
     return cargs_dispatch(&env, &root, argc, argv, &options) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
 }
