@@ -23,18 +23,7 @@ TYC_RESULT assembler_adjust_labels(Assembly* assembly)
                 if (ret && kk != kh_end(label_pc))
                     kh_value(label_pc, kk) = pc;
             }
-            switch (inst->operator.type) {
-                case OP_NONE:
-                    ++pc;
-                    break;
-                case OP_INT:
-                    pc += (uint32_t) instruction_size(inst->instruction, inst->operator.v.i);
-                    break;
-                case OP_LABEL:
-                    pc += (uint32_t) instruction_size(inst->instruction, 0);
-                    break;
-                default: abort();
-            }
+            pc += (uint32_t) instruction_size(inst->instruction);
         }
 
         // replace labels

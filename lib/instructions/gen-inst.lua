@@ -78,7 +78,7 @@ local instructions = {
     thrw    = 0x5b,
 }
 
-local jump_instructions = { 'bz', 'bnz', 'bnil', 'jmp' }
+local jump_instructions = { 'bz', 'bnz', 'bnil', 'jmp', 'pushe' }
 
 -----------------------------------------------------------------------------------
 
@@ -123,8 +123,8 @@ H [[    TO_UNKNOWN = -1,
 
 const char* instruction_name(TYC_INST inst);
 TYC_INST    instruction_from_name(const char* name);
-size_t      instruction_size(TYC_INST inst, int32_t operand);
-bool        is_jump_instruction(TYC_INST inst);
+size_t      instruction_size(TYC_INST inst);
+bool        is_16bit_instruction(TYC_INST inst);
 
 #endif  // TYCHEVM_INSTRUCTIONS_H_
 ]]
@@ -164,7 +164,7 @@ end
 S [[    return TO_UNKNOWN;
 }
 
-size_t instruction_size(TYC_INST inst, int32_t operand)
+size_t instruction_size(TYC_INST inst)
 {
     if (inst >= PARAMETER_INST + TO_32BIT)
         return 5;
@@ -175,7 +175,7 @@ size_t instruction_size(TYC_INST inst, int32_t operand)
     return 1;
 }
 
-bool is_jump_instruction(TYC_INST inst)
+bool is_16bit_instruction(TYC_INST inst)
 {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch-enum"

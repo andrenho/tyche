@@ -20,7 +20,7 @@ typedef struct {
     } v;
 } Token;
 
-bool is_idchar(char c)
+static bool is_idchar(char c)
 {
     return isalpha(c) || isdigit(c) || c == '_';
 }

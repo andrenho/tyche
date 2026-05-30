@@ -111,7 +111,7 @@ TYC_RESULT bytecode_gen(Assembly const* as, uint8_t** bytecode, size_t* bytecode
             if (inst->operator.type == OP_NONE) {
                 add_8(&bin, inst->instruction);
             } else if (inst->operator.type == OP_INT) {
-                if (is_jump_instruction(inst->instruction)) {
+                if (is_16bit_instruction(inst->instruction)) {
                     add_8(&bin, inst->instruction);
                     add_16(&bin, (uint16_t) (inst->operator.v.i));
                 } else if (inst->operator.v.i >= -128 && inst->operator.v.i <= 127) {
