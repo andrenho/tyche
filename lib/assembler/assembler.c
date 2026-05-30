@@ -20,6 +20,11 @@ typedef struct {
     } v;
 } Token;
 
+bool is_idchar(char c)
+{
+    return isalpha(c) || isdigit(c) || c == '_';
+}
+
 static TYC_RESULT assembler_tokenize_line(const char* line, size_t line_no, Token* tokens, size_t* n_tokens)
 {
     TYC_RESULT r = T_OK;
@@ -34,13 +39,13 @@ static TYC_RESULT assembler_tokenize_line(const char* line, size_t line_no, Toke
             break;
 
         if (*c == '.') {
-            const char* start = c; while (*c && (*c == '.' || *c == '_' || isalpha(*c))) ++c;
+            const char* start = c; while (*c && (*c == '.' || is_idchar(*c))) ++c;
             char* token = xcalloc(1, c - start + 1); memcpy(token, start, c - start);
             tokens[i++] = (Token) { .type = TA_DIRECTIVE, .v.s = token };
         }
 
         else if (*c == '@') {
-            const char* start = c; while (*c && (*c == '@' || *c == '_' || isalpha(*c))) ++c;
+            const char* start = c; while (*c && (*c == '@' || is_idchar(*c))) ++c;
             char* token = xcalloc(1, c - start + 1); memcpy(token, start, c - start);
             tokens[i++] = (Token) { .type = TA_LABEL, .v.s = token };
             if (*c == ':')
