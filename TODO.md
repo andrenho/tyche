@@ -59,9 +59,9 @@ Decisions:
       - [x] Len (table, array, string)
       - [x] Type, ver
   - [x] Error handling
+  - [x] Native pointers
+  - [x] Run GC occasionally
   - [x] Assembler in C
-  - [ ] Native pointers
-  - [ ] Run GC occasionally
   - [ ] Main application
 - [ ] Prepare for release
   - [ ] Review public function names

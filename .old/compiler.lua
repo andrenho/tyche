@@ -89,6 +89,7 @@ local instructions = {
     pushn = 0x00,
     pushz = 0x01,
     pusht = 0x02,
+    pushx = 0x07,
     newa  = 0x03,
     newt  = 0x04,
     pop   = 0x05,

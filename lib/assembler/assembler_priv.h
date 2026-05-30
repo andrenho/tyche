@@ -35,14 +35,14 @@ typedef struct {
     size_t               n_instructions;
 } AssemblyFunction;
 
-struct Assembly {
+typedef struct Assembly {
     AssemblyConst*    consts;
     size_t            consts_n;
     AssemblyFunction* functions;
     size_t            functions_n;
     char*             error;
     AssemblyPriv*     priv_;
-};
+} Assembly;
 
 //
 // ASSEMBLY

@@ -17,6 +17,8 @@ DEBUG_ASSEMBLY ?= 0
 VERSION_MAJOR=0
 VERSION_MINOR=1
 
+VERSION=${VERSION_MAJOR}.${VERSION.MINOR}
+
 # add compiler-specific warnings
 
 IS_CLANG := $(shell $(CC) -dM -E - < /dev/null | grep -c __clang__)
@@ -97,7 +99,7 @@ LIB_SRC=lib/value.o lib/stack.o lib/array.o lib/table.o lib/heap.o lib/vm.o lib/
 
 $(LIB_SRC:.o=.c) test/tests-as.c test/tests-vm.c: lib/instructions/instructions.h
 
-tyche: CFLAGS += ${RELEASE_CFLAGS}
+tyche: CFLAGS += ${RELEASE_CFLAGS} -Ilib
 tyche: LDFLAGS += ${RELEASE_LDFLAGS}
 tyche: src/tyche.o libtyche.a
 	$(CC) -o $@ $^ ${LDFLAGS}

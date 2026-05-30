@@ -118,10 +118,10 @@ TYC_RESULT bytecode_gen(Assembly const* as, uint8_t** bytecode, size_t* bytecode
                     add_8(&bin, inst->instruction);
                     add_8(&bin, (uint8_t) inst->operator.v.i);
                 } else if (inst->operator.v.i >= -32768 && inst->operator.v.i <= 32767) {
-                    add_8(&bin, inst->instruction + TO_16BIT);
+                    add_8(&bin, (uint8_t) (inst->instruction + TO_16BIT));
                     add_16(&bin, (uint16_t) (inst->operator.v.i));
                 } else {
-                    add_8(&bin, inst->instruction + TO_32BIT);
+                    add_8(&bin, (uint8_t) (inst->instruction + TO_32BIT));
                     add_32(&bin, (uint32_t) (inst->operator.v.i));
                 }
             }

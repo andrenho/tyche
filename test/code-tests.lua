@@ -711,6 +711,4 @@ return {
         -- debug = true,
         expected_stack_top = 30,
     },
-
-    -- TODO - error handling for exceptions (divide by zero, stack underflow, etc)
 }

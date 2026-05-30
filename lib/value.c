@@ -5,10 +5,11 @@
 #include <stdlib.h>
 
 typedef enum {
-    TTT_STRING   = NANBOX_MIN_AUX_TAG,
-    TTT_ARRAY    = NANBOX_MIN_AUX_TAG + 1,
-    TTT_TABLE    = NANBOX_MIN_AUX_TAG + 2,
-    TTT_FUNCTION = NANBOX_MIN_AUX_TAG + 3,
+    TTT_STRING    = NANBOX_MIN_AUX_TAG,
+    TTT_ARRAY     = NANBOX_MIN_AUX_TAG + 1,
+    TTT_TABLE     = NANBOX_MIN_AUX_TAG + 2,
+    TTT_FUNCTION  = NANBOX_MIN_AUX_TAG + 3,
+    TTT_NATIVE_FN = NANBOX_MIN_AUX_TAG + 4,
 } TagType;
 
 TYC_TYPE value_type(VALUE v)
@@ -24,10 +25,11 @@ TYC_TYPE value_type(VALUE v)
     if (nanbox_is_pointer(v))
         return TT_NATIVE_PTR;
     switch (v.as_bits.tag) {
-        case TTT_STRING:   return TT_STRING;
-        case TTT_ARRAY:    return TT_ARRAY;
-        case TTT_TABLE:    return TT_TABLE;
-        case TTT_FUNCTION: return TT_FUNCTION;
+        case TTT_STRING:    return TT_STRING;
+        case TTT_ARRAY:     return TT_ARRAY;
+        case TTT_TABLE:     return TT_TABLE;
+        case TTT_FUNCTION:  return TT_FUNCTION;
+        case TTT_NATIVE_FN: return TT_NATIVE_FN;
         default:;
     }
 
@@ -47,6 +49,7 @@ const char* type_name(TYC_TYPE t)
         case TT_TABLE:      return "table";
         case TT_FUNCTION:   return "function";
         case TT_NATIVE_PTR: return "native pointer";
+        case TT_NATIVE_FN:  return "native function";
         case TT_COUNT__:
         default:
             return "invalid type";
@@ -110,7 +113,7 @@ uint32_t value_function_idx(VALUE v)
 HEAP_KEY value_heap_key(VALUE v)
 {
 #ifdef CHECK_TYCHE_BUGS
-    if (value_type(v) != TT_ARRAY && value_type(v) != TT_TABLE && value_type(v) != TT_STRING){
+    if (value_type(v) != TT_ARRAY && value_type(v) != TT_TABLE && value_type(v) != TT_STRING && value_type(v) != TT_NATIVE_FN) {
         fprintf(stderr, "Expected table, array or string, found %s.\n", type_name(value_type(v)));
         abort();
     }
@@ -157,14 +160,18 @@ VALUE create_value_function_idx(uint32_t idx)
 VALUE create_value_heap_key(TYC_TYPE type, HEAP_KEY key)
 {
 #ifdef CHECK_TYCHE_BUGS
-    if (type != TT_ARRAY && type != TT_TABLE && type != TT_STRING)
+    if (type != TT_ARRAY && type != TT_TABLE && type != TT_STRING && type != TT_NATIVE_FN)
         abort();
 #endif
     if (type == TT_ARRAY)
         return (VALUE) { .as_bits = { .tag = TTT_ARRAY, .payload = key } };
     if (type == TT_TABLE)
         return (VALUE) { .as_bits = { .tag = TTT_TABLE, .payload = key } };
-    return (VALUE) { .as_bits = { .tag = TTT_STRING, .payload = key } };
+    if (type == TT_STRING)
+        return (VALUE) { .as_bits = { .tag = TTT_STRING, .payload = key } };
+    if (type == TT_NATIVE_FN)
+        return (VALUE) { .as_bits = { .tag = TTT_NATIVE_FN, .payload = key } };
+    __builtin_unreachable();
 }
 
 VALUE create_value_native_pointer(void* ptr)

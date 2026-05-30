@@ -17,6 +17,7 @@ typedef enum {
     TT_NATIVE_PTR   = 8,
 
     // internal types
+    TT_NATIVE_FN    = 9,
     TT_COUNT__
 } TYC_TYPE;
 
@@ -55,9 +56,12 @@ TYC_RESULT tyc_pushnil(TycheVM* T);
 TYC_RESULT tyc_pushboolean(TycheVM* T, bool value);
 TYC_RESULT tyc_pushinteger(TycheVM* T, int32_t value);
 TYC_RESULT tyc_pushstring(TycheVM* T, const char* value);
+TYC_RESULT tyc_pushnativeptr(TycheVM* T, void* ptr);
+TYC_RESULT tyc_pushnativefunction(TycheVM* T, void(*f)(TycheVM*));
 TYC_RESULT tyc_newarray(TycheVM* T);
 TYC_RESULT tyc_newtable(TycheVM* T);
 TYC_RESULT tyc_dup(TycheVM* T, int idx);
+TYC_RESULT tyc_pop(TycheVM* T);
 
 // stack query
 size_t     tyc_stack_size(TycheVM* T);
@@ -66,6 +70,7 @@ TYC_RESULT tyc_toboolean(TycheVM* T, int idx, bool* value);
 TYC_RESULT tyc_tointeger(TycheVM* T, int idx, int32_t* value);
 TYC_RESULT tyc_toreal(TycheVM* T, int idx, T_REAL* value);
 TYC_RESULT tyc_tostring(TycheVM* T, int idx, const char** str);
+TYC_RESULT tyc_tonativeptr(TycheVM* T, int idx, void** ptr);
 
 // table/array operations
 TYC_RESULT tyc_geti(TycheVM* T, int index, size_t n);
