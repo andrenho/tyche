@@ -106,11 +106,11 @@ static void test_bytecode_gen(void)
 
     uint8_t bytecode_expected[] = {
         // header
-        MAGIC, (MAGIC >> 8) & 0xff, (MAGIC >> 16) & 0xff, (MAGIC >> 24) & 0xff,   // magic number
+        (uint8_t) MAGIC, (MAGIC >> 8) & 0xff, (MAGIC >> 16) & 0xff, (MAGIC >> 24) & 0xff,   // magic number
         VERSION_MINOR, VERSION_MAJOR, 0x00, 0x00,                                   // version + reserved
 
         // constants
-        0x21, 0x00, 0x00, 0x00,                 // code start address
+        0x20, 0x00, 0x00, 0x00,                 // code start address
         0x02, 0x00, 0x00, 0x00,                 // number of constants
         0x01, 0x1F, 0x85, 0xEB, 0x51, 0xB8, 0x1E, 0x09, 0x40,   // 3.14
         0x00, 'H', 'e', 'l', 'l', 'o', 0x00,                    // "Hello"
@@ -118,11 +118,11 @@ static void test_bytecode_gen(void)
         // code
         0x00, 0x00, 0x00, 0x00,                 // debug start address
         0x02, 0x00, 0x00, 0x00,                 // number of functions
-        0x33, 0x00, 0x00, 0x00,                 // address of function #1
+        0x32, 0x00, 0x00, 0x00,                 // address of function #1
         0xcc, 0x05, 0x00,           // jmp 5 (@skip)
         0xa0, 0x02,                 // pushi 2
         0x10,                       // ret
-        0x00, 0x00, 0x00, 0x00,                 // address of function #1
+        0x3a, 0x00, 0x00, 0x00,                 // address of function #1
         0xc0, 0x88, 0x13,           // pushi 500
         0x10,                       // ret
     };
@@ -130,15 +130,19 @@ static void test_bytecode_gen(void)
     uint8_t* bytecode; size_t bytecode_sz;
     assert(code_assemble(assembly_code, &bytecode, &bytecode_sz) == T_OK);
 
+    /*
     for (size_t i = 0; i < (bytecode_sz < sizeof bytecode_expected ? bytecode_sz : sizeof bytecode_expected); ++i) {
         printf("%02X|%02X ", bytecode[i], bytecode_expected[i]);
         if (i % 8 == 7)
             printf("\n");
     }
     printf("\n");
+    */
 
     assert(bytecode_sz == sizeof bytecode_expected);
     assert(memcmp(bytecode, bytecode_expected, bytecode_sz) == 0);
+
+    free(bytecode);
 }
 
 static void test_bytecode_parsing(void)
@@ -160,6 +164,15 @@ static void test_bytecode_parsing(void)
 
     uint8_t* bytecode; size_t bytecode_sz;
     assert(code_assemble(assembly_code, &bytecode, &bytecode_sz) == T_OK);
+
+    /*
+    for (size_t i = 0; i < bytecode_sz; ++i) {
+        printf("%02X ", bytecode[i]);
+        if (i % 8 == 7)
+            printf("\n");
+    }
+    printf("\n");
+    */
 
     Code* code = code_new();
 
@@ -206,7 +219,7 @@ static void test_bytecode_labels()
     const char* assembly_code =
             ".func 0\n"
             "    jmp    @my_label\n"
-            "    pushi  \n"
+            "    sum  \n"
             "@my_label:\n"
             "    ret";
 
@@ -230,8 +243,6 @@ int main(void)
     test_assembly();
     test_labels();
     test_bytecode_gen();
-    /*
     test_bytecode_parsing();
     test_bytecode_labels();
-     */
 }
