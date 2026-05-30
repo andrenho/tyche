@@ -10,6 +10,7 @@ static void test_assembly(void)
     printf("## Test assembly\n");
 
     const char* assembly_code =
+            ".assembly\n"
             ".const\n"
             "    0: 3.14\n"
             "    1: \"Hello world\"\n"
@@ -56,6 +57,7 @@ static void test_labels(void)
     printf("## Test labels\n");
 
     const char* assembly_code =
+            ".assembly\n"
             ".func 0\n"
             "    jmp    @my_label\n"
             "    pop   \n"
@@ -91,6 +93,7 @@ static void test_labels(void)
 static void test_bytecode_gen(void)
 {
     const char* assembly_code =
+            ".assembly\n"
             ".const\n"
             "    0: 3.14\n"
             "    1: \"Hello\"\n"
@@ -149,6 +152,7 @@ static void test_bytecode_parsing(void)
 {
     printf("## Bytecode\n");
     const char* assembly_code =
+            ".assembly\n"
             ".const\n"
             "    0: 3.14\n"
             "    1: \"Hello world\"\n"
@@ -217,6 +221,7 @@ static void test_bytecode_labels()
 {
     printf("## Bytecode - labels\n");
     const char* assembly_code =
+            ".assembly\n"
             ".func 0\n"
             "    jmp    @my_label\n"
             "    sum  \n"

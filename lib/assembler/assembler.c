@@ -115,8 +115,13 @@ TYC_RESULT assemble(const char* code, Assembly* as)
             if (n_tokens == 0)
                 goto skip;
 
+            // if .assembly
+            if (line_no == 1) {
+                if (!(n_tokens == 1 && tokens[0].type == TA_DIRECTIVE && strcmp(tokens[0].v.s, ".assembly") == 0))
+                    ERROR("Not an assembly file")
+
             // if .const
-            if (n_tokens == 1 && tokens[0].type == TA_DIRECTIVE && strcmp(tokens[0].v.s, ".const") == 0) {
+            } else if (n_tokens == 1 && tokens[0].type == TA_DIRECTIVE && strcmp(tokens[0].v.s, ".const") == 0) {
                 section = TS_CONST;
             }
 
