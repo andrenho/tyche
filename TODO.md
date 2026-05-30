@@ -45,13 +45,13 @@ Decisions:
     - messages
     - abort if debug
   - [x] Globals (?)
-  - [ ] Expression improvements
+  - [x] Expression improvements
     - [x] Supertables
     - [x] Boolean and floats
       - [x] Support for booleans
       - [x] Boolean opcodes
       - [x] Support for doubles in const
-    - [ ] Operators
+    - [x] Operators
       - [x] Real
       - [x] Mix real and integer
       - [x] Unary operators (NOT, NEG, INC, DEC, LEN)
