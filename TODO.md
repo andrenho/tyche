@@ -62,7 +62,7 @@ Decisions:
   - [x] Native pointers
   - [x] Run GC occasionally
   - [x] Assembler in C
-  - [ ] Main application
+  - [x] Main application
 - [ ] Prepare for release
   - [ ] Review public function names
   - [ ] Documentation and webpage
