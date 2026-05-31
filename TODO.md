@@ -77,6 +77,7 @@ Decisions:
 - [ ] Debugging information
 - [ ] Stack trace in case of errors
 - [ ] Debugger
+- [ ] REPL
 
 # Version 2
 

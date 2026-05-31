@@ -25,7 +25,7 @@ typedef struct Options {
 
 static FileType identify_file_type(const char* src, size_t len)
 {
-    if (strlen(src) < 24)
+    if (len < 24)
         return FT_SOURCE;
 
     uint8_t const* bin = (uint8_t const *) src;
@@ -39,6 +39,68 @@ static FileType identify_file_type(const char* src, size_t len)
         return FT_ASSEMBLY;
 
     return FT_SOURCE;
+}
+
+static void load_source(TycheVM* T, FileType file_type, char const* src, size_t src_sz)
+{
+    if (file_type == FT_BINARY) {
+        TRY(tyc_load_bytecode(T, (uint8_t const *) src, (size_t) src_sz))
+    } else if (file_type == FT_ASSEMBLY) {
+        TRY(tyc_load_assembly(T, src))
+    } else {
+        fprintf(stderr, "Sorry, tyche code not supported yet.\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+static void debug(FileType file_type, char* src, size_t src_sz, Options* opt)
+{
+    TycheVM* T = tyc_new();
+
+    load_source(T, file_type, src, src_sz);
+
+    if (opt->print_bytecode)
+        tyc_print_bytecode(T);
+    if (opt->decompile_assembly)
+        tyc_assembly_decompile(T);
+
+    tyc_destroy(T);
+}
+
+static void compile(FileType file_type, char* src, Options* opt)
+{
+    if (file_type == FT_BINARY) {
+        fprintf(stderr, "Won't generate bytecode out of bytecode.\n");
+        exit(EXIT_FAILURE);
+    } else if (file_type == FT_ASSEMBLY) {
+        uint8_t* bytecode;
+        size_t   bytecode_sz;
+        TRY(tyc_assemble(src, &bytecode, &bytecode_sz))
+        FILE* f = fopen(opt->output_file, "wb");
+        if (!f) {
+            fprintf(stderr, "Could not open file for creation: %s\n", opt->output_file);
+            exit(EXIT_FAILURE);
+        }
+        if (fwrite(bytecode, 1, bytecode_sz, f) != bytecode_sz) {
+            fprintf(stderr, "Error writing output file: %s\n", opt->output_file);
+            exit(EXIT_FAILURE);
+        }
+        fclose(f);
+        free(bytecode);
+    } else {
+        fprintf(stderr, "Sorry, tyche code not supported yet.\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+static void run_vm(FileType file_type, char* src, size_t src_sz, Options* opt)
+{
+    TycheVM* T = tyc_new();
+    load_source(T, file_type, src, src_sz);
+    if (opt->debug_assembly)
+        tyc_debug_to_console(T, true);
+    TRY(tyc_call(T, 0))
+    tyc_destroy(T);
 }
 
 static int execute(int argc, char **argv, void *user)
@@ -63,33 +125,17 @@ static int execute(int argc, char **argv, void *user)
     }
     fclose(f);
 
+    // execute
+
     FileType file_type = identify_file_type(src, (size_t) n);
+    debug(file_type, src, (size_t) n, opt);
 
-    // TODO - possibly generate output
+    if (opt->output_file)
+        compile(file_type, src, opt);
+    else
+        run_vm(file_type, src, (size_t) n, opt);
 
-    TycheVM* T = tyc_new();
-
-    if (file_type == FT_BINARY) {
-        TRY(tyc_load_bytecode(T, (uint8_t const *) src, (size_t) n))
-    } else if (file_type == FT_ASSEMBLY) {
-        TRY(tyc_load_assembly(T, src))
-    } else {
-        fprintf(stderr, "Sorry, tyche code not supported yet.\n");
-        exit(EXIT_FAILURE);
-    }
-
-    if (opt->print_bytecode)
-        tyc_print_bytecode(T);
-    if (opt->decompile_assembly)
-        tyc_assembly_decompile(T);
-    if (opt->debug_assembly)
-        tyc_debug_to_console(T, true);
-
-    TRY(tyc_call(T, 0))
-
-    tyc_destroy(T);
     free(src);
-
     return CARGS_OK;
 }
 
@@ -122,13 +168,11 @@ static int cmd_gen_bytecode(const char* value, void* user) {
 
 int main(int argc, char* argv[])
 {
-    // TODO - option to execute vs compile
-
     static const cargs_opt opts[] = {
-            { "output", 'o', CARGS_ARG_NONE, NULL, "Generate output file (bytecode)", cmd_gen_bytecode, NULL, NULL, 0, CARGS_ARG_OPTIONAL },
-            { "print-bytecode", 'B', CARGS_ARG_NONE, NULL, "Print bytecode", cmd_print_bytecode, NULL, NULL, 0, CARGS_ARG_NONE },
-            { "decompile", 'D', CARGS_ARG_NONE, NULL, "Decompile assembly", cmd_decompile_assembly, NULL, NULL, 0, CARGS_ARG_NONE },
-            { "debug-assembly", 'a', CARGS_ARG_NONE, NULL, "Print assembly commands as it runs", cmd_debug_assembly, NULL, NULL, 0, CARGS_ARG_NONE },
+            { "output", 'o', CARGS_ARG_OPTIONAL, NULL, "Generate output file (bytecode) instead of running the file", cmd_gen_bytecode, NULL, NULL, 0, CARGS_ARG_NONE },
+            { "print-bytecode", 'B', CARGS_ARG_NONE, NULL, "[Assembly debug] Print bytecode", cmd_print_bytecode, NULL, NULL, 0, CARGS_ARG_NONE },
+            { "decompile", 'D', CARGS_ARG_NONE, NULL, "[Assembly debug] Decompile assembly", cmd_decompile_assembly, NULL, NULL, 0, CARGS_ARG_NONE },
+            { "debug-assembly", 'a', CARGS_ARG_NONE, NULL, "[Assembly debug] Print assembly commands as it runs", cmd_debug_assembly, NULL, NULL, 0, CARGS_ARG_NONE },
     };
 
     static const cargs_pos pos_schema[] = {
@@ -157,7 +201,7 @@ int main(int argc, char* argv[])
             .auto_help    = true,
             .auto_version = true,
             .auto_author  = false,
-            .wrap_cols    = 80,
+            .wrap_cols    = 0,
             .color        = true,
             .out          = stdout,
             .err          = stderr

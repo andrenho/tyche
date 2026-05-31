@@ -260,6 +260,11 @@ static void location_pop(TycheVM* T)
 // CODE LOADING AND EXECUTION
 //
 
+TYC_RESULT tyc_assemble(const char* asm_src, uint8_t** bytecode, size_t* bytecode_sz)
+{
+    return code_assemble(asm_src, bytecode, bytecode_sz);
+}
+
 TYC_RESULT tyc_load_assembly(TycheVM* T, const char* asm_src)
 {
     TYC_RESULT r;
