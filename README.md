@@ -1,5 +1,7 @@
 # tyche
 
+![Cornucopia](doc/cornucopia.png)
+
 A programming language that can be run either by itself, or embedded in an application.
 
 The language has the following inspirations:
