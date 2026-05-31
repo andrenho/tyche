@@ -1,6 +1,6 @@
 # tyche
 
-![Cornucopia](doc/cornucopia.png)
+![Cornucopia](doc/cornucopia-64.png)
 
 A programming language that can be run either by itself, or embedded in an application.
 
