@@ -4,7 +4,7 @@
 #include <string.h>
 
 #include "tyche.h"
-#include "contrib/c-args-parser.h"
+#include "c-args-parser.h"
 
 typedef enum FileType {
     FT_SOURCE, FT_ASSEMBLY, FT_BINARY,
@@ -54,21 +54,23 @@ static int execute(int argc, char **argv, void *user)
         exit(EXIT_FAILURE);
     }
     fseek(f, 0, SEEK_END); long n = ftell(f); rewind(f);
-    char *src = calloc(1, n + 1);
-    if (fread(src, 1, n, f) != n) {
+    char *src = calloc(1, (size_t) (n + 1));
+    if (!src)
+        abort();
+    if (fread(src, 1, (size_t) n, f) != (size_t) n) {
         fprintf(stderr, "Error reading source file: %s\n", strerror(errno));
         exit(EXIT_FAILURE);
     }
     fclose(f);
 
-    FileType file_type = identify_file_type(src, n);
+    FileType file_type = identify_file_type(src, (size_t) n);
 
     // TODO - possibly generate output
 
     TycheVM* T = tyc_new();
 
     if (file_type == FT_BINARY) {
-        TRY(tyc_load_bytecode(T, (uint8_t const *) src, n))
+        TRY(tyc_load_bytecode(T, (uint8_t const *) src, (size_t) n))
     } else if (file_type == FT_ASSEMBLY) {
         TRY(tyc_load_assembly(T, src))
     } else {
