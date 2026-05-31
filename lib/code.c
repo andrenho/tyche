@@ -21,12 +21,12 @@
 #define OP_32BIT_OPERAND 0xe0
 
 struct Code {
-    uint8_t const* bytecode;
-    size_t         bytecode_sz;
-    uint32_t*      const_addr;
-    uint32_t       fn_count;
-    uint32_t*      fn_addr;
-    uint32_t*      fn_sz;
+    uint8_t*  bytecode;
+    size_t    bytecode_sz;
+    uint32_t* const_addr;
+    uint32_t  fn_count;
+    uint32_t* fn_addr;
+    uint32_t* fn_sz;
 };
 
 Code* code_new(void)
@@ -37,6 +37,7 @@ Code* code_new(void)
 
 void code_destroy(Code* code)
 {
+    free(code->bytecode);
     free(code->const_addr);
     free(code->fn_addr);
     free(code->fn_sz);
@@ -60,7 +61,7 @@ TYC_RESULT code_load_bytecode(Code* code, uint8_t const* bytecode, size_t byteco
 {
     // TODO - linking
 
-    if (bytecode_sz < 24)
+    if (bytecode == NULL || bytecode_sz < 24)
         ERROR("Bytecode: too small")
 
     uint32_t magic;
@@ -68,7 +69,8 @@ TYC_RESULT code_load_bytecode(Code* code, uint8_t const* bytecode, size_t byteco
     if (magic != MAGIC)
         ERROR("Bytecode: invalid magic number")
 
-    code->bytecode = bytecode;
+    code->bytecode = xmalloc(bytecode_sz);
+    memcpy(code->bytecode, bytecode, bytecode_sz);
     code->bytecode_sz = bytecode_sz;
 
     /*
