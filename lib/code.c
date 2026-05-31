@@ -172,14 +172,14 @@ Instruction code_next_instruction(Code const* code, uint32_t function_id, uint32
     } else if (opcode >= OP_16BIT_OPERAND && opcode < OP_32BIT_OPERAND) {
         // opcode -= 0x20;
         operand = (int16_t) ((uint16_t) code->bytecode[addr + 1] |
-                             (uint16_t) (code->bytecode[addr + 2] << 8));
+                             (uint16_t) code->bytecode[addr + 2] << 8);
         sz = 3;
     } else if (opcode >= OP_32BIT_OPERAND) {
         // opcode -= 0x40;
         operand = (int32_t) ((uint32_t) code->bytecode[addr + 1] |
-                             (uint32_t) (code->bytecode[addr + 2] << 8) |
-                             (uint32_t) (code->bytecode[addr + 3] << 16) |
-                             (uint32_t) (code->bytecode[addr + 4] << 24));
+                             (uint32_t) code->bytecode[addr + 2] << 8 |
+                             (uint32_t) code->bytecode[addr + 3] << 16 |
+                             (uint32_t) code->bytecode[addr + 4] << 24);
         sz = 5;
     }
 
@@ -233,7 +233,7 @@ void code_parse_instruction(Instruction inst, char* outbuf, size_t sz)
     int n = snprintf(outbuf, sz, "%s", instruction_name(inst.operator));
 
     if (inst.operator >= OP_8BIT_OPERAND)
-        snprintf(&outbuf[n], sz + (size_t) n, "%2d", inst.operand);
+        snprintf(&outbuf[n], sz - (size_t) n, "%2d", inst.operand);
     else
-        snprintf(&outbuf[n], sz + (size_t) n, "  ");
+        snprintf(&outbuf[n], sz - (size_t) n, "  ");
 }
