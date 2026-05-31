@@ -2,6 +2,9 @@
 # user overwritable variables
 #
 
+# add debugging info to library/executable (slower)
+DEBUG ?= 0
+
 # install prefix
 PREFIX ?= /usr/local
 
@@ -46,13 +49,24 @@ ifneq ($(UNAME_S),Darwin)
 endif
 
 RELEASE_CFLAGS=-O3 -flto=auto -march=native -mtune=native -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -fstack-protector-strong
-RELEASE_LDFLAGS=-flto=auto
+RELEASE_LDFLAGS=-flto=auto -s
 
-CFLAGS+=-std=c99 -D_GNU_SOURCE -fPIC -fvisibility=hidden -isystem lib/contrib -MMD -MP -DVERSION_MINOR=${VERSION_MINOR} -DVERSION_MAJOR=${VERSION_MAJOR}
+CFLAGS+=-std=c99 -D_GNU_SOURCE -fPIC -fvisibility=hidden -isystem lib/contrib -isystem src/contrib -MMD -MP \
+	-DVERSION_MINOR=${VERSION_MINOR} -DVERSION_MAJOR=${VERSION_MAJOR} -Ilib
 LDFLAGS+=-lm
 
 ifeq ($(DEBUG_ASSEMBLY),1)
-    CFLAGS += -DDEBUG_ASSEMBLY
+  CFLAGS += -DDEBUG_ASSEMBLY
+endif
+
+# adjust CFLAGS/LDFLAGS
+
+ifeq ($(DEBUG),1)
+  CFLAGS+=${DEBUG_CFLAGS}
+  LDFLAGS+=${DEBUG_LDFLAGS}
+else
+  CFLAGS+=${RELEASE_CFLAGS}
+  LDFLAGS+=${RELEASE_LDFLAGS}
 endif
 
 #
@@ -99,20 +113,15 @@ LIB_SRC=lib/value.o lib/stack.o lib/array.o lib/table.o lib/heap.o lib/vm.o lib/
 
 $(LIB_SRC:.o=.c) test/tests-as.c test/tests-vm.c: lib/instructions/instructions.h
 
-tyche: CFLAGS += ${RELEASE_CFLAGS} -Ilib
-tyche: LDFLAGS += ${RELEASE_LDFLAGS}
 tyche: src/tyche.o libtyche.a
 	$(CC) -o $@ $^ ${LDFLAGS}
-	strip $@
 
-tyche-test-as: CFLAGS += ${DEBUG_CFLAGS} -DDEBUG_ASSEMBLY
-tyche-test-as: LDFLAGS += ${DEBUG_LDFLAGS}
 tyche-test-as: lib/instructions/instructions.h
 tyche-test-as: test/tests-as.o libtyche.a
 	$(CC) -o $@ $^ ${LDFLAGS} -I../lib
 
-tyche-test-vm: CFLAGS += ${DEBUG_CFLAGS} -DDEBUG_ASSEMBLY `pkg-config --cflags lua`
-tyche-test-vm: LDFLAGS += ${DEBUG_LDFLAGS} `pkg-config --libs lua`
+tyche-test-vm: CFLAGS += `pkg-config --cflags lua`
+tyche-test-vm: LDFLAGS += `pkg-config --libs lua`
 tyche-test-vm: lib/instructions/instructions.h
 tyche-test-vm: test/tests-vm.o libtyche.a
 	$(CC) -o $@ $^ ${LDFLAGS} -I../lib
@@ -120,7 +129,6 @@ tyche-test-vm: test/tests-vm.o libtyche.a
 libtyche.a: ${LIB_SRC}
 	ar rcs $@ $^
 
-libtyche.so.${VERSION}: LDFLAGS += ${RELEASE_LDFLAGS}
 libtyche.so.${VERSION}: ${LIB_SRC}
 	$(CC) -shared -o $@ -Wl,-soname,libfoo.so.${VERSION_MAJOR} $^ ${LDFLAGS}
 

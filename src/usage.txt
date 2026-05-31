@@ -1,0 +1,9 @@
+REPL:
+  - run code
+    - as compiled
+    - as bytecode
+    - as assembly
+  - debugging options
+    - show bytecode
+    - decompile
+    - show assembly as commands are executed

@@ -2,6 +2,7 @@ return {
     {
         name = "VM: basic",
         code = [[
+            .assembly
             .func 0
                 pushi   2
                 pushi   3
@@ -14,6 +15,7 @@ return {
     {
         name = "VM: real values",
         code = [[
+            .assembly
             .const
                 0: 3.14
             .func 0
@@ -26,6 +28,7 @@ return {
     {
         name = "VM: integer expressions",
         template = [[
+            .assembly
             .func 0
                 pushi   %d
                 pushi   %d
@@ -58,6 +61,7 @@ return {
     {
         name = "VM: integer unary expressions",
         template = [[
+            .assembly
             .func 0
                 pushi   %d
                 %s
@@ -72,6 +76,7 @@ return {
     {
         name = "VM: real unary expressions",
         template = [[
+            .assembly
             .const
                 0: %f
             .func 0
@@ -87,6 +92,7 @@ return {
     {
         name = "VM: real expressions",
         template = [[
+            .assembly
             .const
                 0: %f
                 1: %f
@@ -116,6 +122,7 @@ return {
     {
         name = "VM: mix integer and real (1)",
         code = [[
+            .assembly
             .const
                 0: 3.14
             .func 0
@@ -129,6 +136,7 @@ return {
     {
         name = "VM: mix integer and real (2)",
         code = [[
+            .assembly
             .const
                 0: 3.14
             .func 0
@@ -142,6 +150,7 @@ return {
     {
         name = "VM: boolean expressions",
         template = [[
+            .assembly
             .func 0
                 push%s
                 push%s
@@ -159,6 +168,7 @@ return {
     {
         name = "VM: unary boolean expressions",
         template = [[
+            .assembly
             .func 0
                 push%s
                 %s
@@ -172,6 +182,7 @@ return {
     {
         name = "VM: local variables",
         code = [[
+            .assembly
             .func 0
                 pushv 2         ; local a, b
                 pushi 3         ; a = 3
@@ -187,6 +198,7 @@ return {
     {
         name = "VM: functions",
         code = [[
+            .assembly
             .func 0
                 pushf   1
                 pushi   2
@@ -205,6 +217,7 @@ return {
     {
         name = "VM: jumps (jmp + bnz)",
         code = [[
+            .assembly
             .func 0
                 jmp     @x1         ; 0
                 pushi   5           ; 3
@@ -228,26 +241,28 @@ return {
     {
         name = "VM: jumps (bz)",
         code = [[
-        .func 0
-            jmp     @x1
-            pushi   5
-        @x1:
-            pushi   0
-            bnz     @x2
-            pushi   0
-            bz      @x3
-        @x2:
-            pushi   6
-            ret
-        @x3:
-            pushi   7
-            ret
+            .assembly
+            .func 0
+                jmp     @x1
+                pushi   5
+            @x1:
+                pushi   0
+                bnz     @x2
+                pushi   0
+                bz      @x3
+            @x2:
+                pushi   6
+                ret
+            @x3:
+                pushi   7
+                ret
         ]],
         expected_stack_top = 7,
     },
     {
         name = "VM: arrays",
         code = [[
+            .assembly
             .func 0
                 newa
                 pushi   10
@@ -265,6 +280,7 @@ return {
     {
         name = "VM: arrays GC",
         code = [[
+            .assembly
             .func 0
                 pushn
                 newa
@@ -279,6 +295,7 @@ return {
     {
         name = "VM: string from const",
         code = [[
+            .assembly
             .const
                 0: "Hello"
             .func 0
@@ -290,6 +307,7 @@ return {
     {
         name = "VM: concatenate strings (GC won't delete)",
         code = [[
+            .assembly
             .const
                 0: "Hello "
                 1: "world"
@@ -306,6 +324,7 @@ return {
     {
         name = "VM: GC strings (GC will delete)",
         code = [[
+            .assembly
             .const
                 0: "Hello "
                 1: "world"
@@ -324,6 +343,7 @@ return {
     {
         name = "VM: array GC items (1st level) - no items removed",
         code = [[
+            .assembly
             .const
                 0: "Hello "
                 1: "world"
@@ -343,6 +363,7 @@ return {
     {
         name = "VM: array GC items (1st level) - all items removed",
         code = [[
+            .assembly
             .const
                 0: "Hello "
                 1: "world"
@@ -362,6 +383,7 @@ return {
     {
         name = "VM: array GC items (2nd level) - no items removed",
         code = [[
+            .assembly
             .const
                 0: "Hello "
                 1: "world"
@@ -383,6 +405,7 @@ return {
     {
         name = "VM: array GC items (2nd level) - all items removed",
         code = [[
+            .assembly
             .const
                 0: "Hello "
                 1: "world"
@@ -404,6 +427,7 @@ return {
     {
         name = "VM: iterate over arrays",
         code = [[
+            .assembly
             .func 0
                 pushi   0           ; sum = 0
 
@@ -435,6 +459,7 @@ return {
     {
         name = "VM: tables",
         code = [[
+            .assembly
             .const
                 0: "k1"
                 1: "k2"
@@ -456,6 +481,7 @@ return {
     {
         name = "VM: iterate over tables",
         code = [[
+            .assembly
             .const
                 0: "k1"
                 1: "k2"
@@ -490,6 +516,7 @@ return {
     {
         name = "Globals",
         code = [[
+            .assembly
             .const
                 0: "Hello"
             .func 0
@@ -508,6 +535,7 @@ return {
     {
         name = "Supertables",
         code = [[
+            .assembly
             .const
                 0: "f"
             .func 0
@@ -530,6 +558,7 @@ return {
     {
         name = "VM: len (string)",
         code = [[
+            .assembly
             .const
                 0: "Hello"
             .func 0
@@ -542,6 +571,7 @@ return {
     {
         name = "VM: len (array)",
         code = [[
+            .assembly
             .func 0
                 newa
                 pushi   10
@@ -556,6 +586,7 @@ return {
     {
         name = "VM: len (table)",
         code = [[
+            .assembly
             .func 0
                 newt
                 pushi   10
@@ -572,6 +603,7 @@ return {
     {
         name = "VM: type",
         code = [[
+            .assembly
             .func 0
                 newt
                 type
@@ -582,6 +614,7 @@ return {
     {
         name = "VM: error handling within the same function",
         code = [[
+            .assembly
             .func 0
                 pushe   @catch
                 pushi   10
@@ -597,6 +630,7 @@ return {
     {
         name = "VM: error handling within the same function, exception value",
         code = [[
+            .assembly
             .func 0
                 pushe   @catch
                 pushi   10
@@ -611,6 +645,7 @@ return {
     {
         name = "VM: error handling across functions",
         code = [[
+            .assembly
             .func 0
                 pushe   @catch
                 pushf   1
@@ -631,6 +666,7 @@ return {
     {
         name = "VM: multilevel error handling (1)",
         code = [[
+            .assembly
             .func 0
                 pushe   @catch1
                 pushf   1
@@ -653,6 +689,7 @@ return {
     {
         name = "VM: multilevel error handling (2)",
         code = [[
+            .assembly
             .func 0
                 pushe   @catch1
                 pushf   1
@@ -680,6 +717,7 @@ return {
     --{
     --    name = "VM: toplevel error",
     --    code = [[
+    --        .assembly
     --        .const
     --            0: "error"
     --            1: "Error message"
@@ -697,6 +735,7 @@ return {
     {
         name = "VM: error handling on expression",
         code = [[
+            .assembly
             .func 0
                 pushe   @catch
                 newt

@@ -184,7 +184,6 @@ static void debug_value(TycheVM* T, VALUE a)
     }
 }
 
-#ifdef DEBUG_ASSEMBLY
 
 static void debug_instruction(TycheVM* T, Location* loc, Instruction inst)
 {
@@ -223,8 +222,6 @@ void tyc_print_bytecode(TycheVM* T)
     code_debug_bytecode(T->code);
 }
 
-#endif
-
 //
 // LOCATION STACK
 //
@@ -262,6 +259,24 @@ static void location_pop(TycheVM* T)
 //
 // CODE LOADING AND EXECUTION
 //
+
+TYC_RESULT tyc_assemble(const char* asm_src, uint8_t** bytecode, size_t* bytecode_sz)
+{
+    return code_assemble(asm_src, bytecode, bytecode_sz);
+}
+
+TYC_RESULT tyc_load_assembly(TycheVM* T, const char* asm_src)
+{
+    TYC_RESULT r;
+    uint8_t* bytecode;
+    size_t bytecode_sz;
+
+    TRY(code_assemble(asm_src, &bytecode, &bytecode_sz))
+    r = tyc_load_bytecode(T, bytecode, bytecode_sz);
+    free(bytecode);
+
+    return r;
+}
 
 TYC_RESULT tyc_load_bytecode(TycheVM* T, uint8_t const* bytecode, size_t bytecode_sz)
 {
@@ -778,9 +793,7 @@ static TYC_RESULT step(TycheVM* T)
     Location* loc = location_top(T);
     Instruction inst = code_next_instruction(T->code, loc->function_id, loc->pc);
 
-#ifdef DEBUG_ASSEMBLY
     debug_instruction(T, loc, inst);
-#endif
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch"
@@ -1066,9 +1079,7 @@ static TYC_RESULT step(TycheVM* T)
     loc->pc += inst.sz;
 
 dont_update_pc:
-#ifdef DEBUG_ASSEMBLY
     debug_stack(T);
-#endif
 
     if (heap_should_gc(T->heap))
         tyc_gc(T);
