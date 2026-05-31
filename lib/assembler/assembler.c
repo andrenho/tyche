@@ -27,7 +27,7 @@ static bool is_idchar(char c)
 
 static TYC_RESULT assembler_tokenize_line(const char* line, size_t line_no, Token* tokens, size_t* n_tokens)
 {
-    TYC_RESULT r = T_OK;
+    TYC_RESULT r = TYC_OK;
     size_t i = 0;
     const char* c = line;
 
@@ -186,7 +186,7 @@ skip:
         }
     }
 
-    return T_OK;
+    return TYC_OK;
 }
 
 #pragma GCC diagnostic pop

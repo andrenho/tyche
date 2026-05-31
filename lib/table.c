@@ -53,7 +53,7 @@ static TABLE_HASH value_hash(VALUE v)
 
 void table_set(Table* t, VALUE key, VALUE value)
 {
-    if (value_type(value) == TT_NIL) {  // if value = nil, delete from table
+    if (value_type(value) == TYC_NIL) {  // if value = nil, delete from table
         table_del(t, key);
         return;
     }
@@ -82,7 +82,7 @@ TYC_RESULT table_get(Table const* t, VALUE key, VALUE* value)
         }
     }
 
-    return T_OK;
+    return TYC_OK;
 }
 
 bool table_has_key(Table const* t, VALUE key)
@@ -105,7 +105,7 @@ static bool table_next_with_child(Table* t, Table* child, VALUE key, VALUE* out_
 {
     // if nil, start from the beginning, else find next
     khint_t k;
-    if (value_type(key) == TT_NIL) {
+    if (value_type(key) == TYC_NIL) {
         k = kh_begin(t->tbl_int);
     } else {
         TABLE_HASH hash = value_hash(key);
@@ -159,7 +159,7 @@ void table_setsuper(Table* t, Table* super)
     if (super != NULL) {
         VALUE key = create_value_nil(), value;
         while (table_next(t->super, key, &key, &value)) {
-            if (value_type(value) != TT_FUNCTION)
+            if (value_type(value) != TYC_FUNCTION)
                 table_set(t, key, value);
         }
     }

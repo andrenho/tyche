@@ -134,5 +134,5 @@ TYC_RESULT bytecode_gen(Assembly const* as, uint8_t** bytecode, size_t* bytecode
     *bytecode = bin.data;
     *bytecode_sz = bin.sz;
 
-    return T_OK;
+    return TYC_OK;
 }

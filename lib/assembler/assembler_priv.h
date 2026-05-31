@@ -9,7 +9,7 @@ typedef struct {
     TYC_CONST_TYPE type;
     union {
         char*  string;
-        T_REAL real;
+        TYCHE_REAL real;
     } value;
 } AssemblyConst;
 

@@ -42,5 +42,5 @@ TYC_RESULT assembler_adjust_labels(Assembly* assembly)
         kh_destroy_LBL(label_pc);
     }
 
-    return T_OK;
+    return TYC_OK;
 }

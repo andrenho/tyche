@@ -27,17 +27,17 @@ extern bool abort_on_errors;   // only on debug mode
         fprintf(stderr, "%s\n", last_err_msg);                  \
         abort();                                                \
     }                                                           \
-    return T_ERR;                                               \
+    return TYC_ERR;                                               \
 }
 #else
 #define ERROR(...) {                                            \
     snprintf(last_err_msg, sizeof last_err_msg, __VA_ARGS__);   \
     fprintf(stderr, "%s\n", last_err_msg);                      \
-    return T_ERR;                                               \
+    return TYC_ERR;                                               \
 }
 #endif
 
-#define TRY(x) if ((r = (x)) != T_OK) { return r; }
+#define TRY(x) if ((r = (x)) != TYC_OK) { return r; }
 
 
 //
@@ -48,7 +48,7 @@ typedef uint32_t HEAP_KEY;
 
 typedef nanbox_t VALUE;
 
-typedef void(*TYCHE_CB)(TycheVM* T);
+typedef TYC_RESULT(*TYCHE_CB)(TycheVM* T);
 
 typedef struct Stack   Stack;
 typedef struct Array   Array;
@@ -89,7 +89,7 @@ bool        type_is_collectable(TYC_TYPE t);
 
 bool     value_boolean(VALUE v);
 int32_t  value_integer(VALUE v);
-T_REAL   value_real(VALUE v);
+TYCHE_REAL   value_real(VALUE v);
 uint32_t value_function_idx(VALUE v);
 HEAP_KEY value_heap_key(VALUE v);
 bool     value_is_zero(VALUE v);
@@ -98,7 +98,7 @@ void*    value_native_pointer(VALUE v);
 VALUE create_value_nil(void);
 VALUE create_value_bool(bool b);
 VALUE create_value_integer(int32_t v);
-VALUE create_value_real(T_REAL f);
+VALUE create_value_real(TYCHE_REAL f);
 VALUE create_value_function_idx(uint32_t idx);
 VALUE create_value_heap_key(TYC_TYPE type, HEAP_KEY key);
 VALUE create_value_native_pointer(void* ptr);
@@ -198,7 +198,7 @@ TYC_RESULT     code_load_bytecode(Code* code, uint8_t const* bytecode, size_t by
 uint32_t       code_n_consts(Code const* code);
 TYC_CONST_TYPE code_const_type(Code const* code, size_t n);
 
-T_REAL         code_const_real(Code const* code, size_t n);
+TYCHE_REAL         code_const_real(Code const* code, size_t n);
 const char*    code_const_string(Code const* code, size_t n);
 
 uint32_t       code_n_functions(Code const* code);

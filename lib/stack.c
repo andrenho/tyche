@@ -48,7 +48,7 @@ TYC_RESULT stack_push(Stack* s, VALUE v)
 
     s->stack[s->stack_n] = v;
     ++s->stack_n;
-    return T_OK;
+    return TYC_OK;
 }
 
 size_t stack_top_fp(Stack const* s)
@@ -62,7 +62,7 @@ TYC_RESULT stack_peek(Stack const* s, VALUE* v_out)
         ERROR("Stack underflow")
     if (v_out)
         *v_out = s->stack[s->stack_n - 1];
-    return T_OK;
+    return TYC_OK;
 }
 
 TYC_RESULT stack_pop(Stack* s, VALUE* v_out)
@@ -71,7 +71,7 @@ TYC_RESULT stack_pop(Stack* s, VALUE* v_out)
     if (err)
         return err;
     --s->stack_n;
-    return T_OK;
+    return TYC_OK;
 }
 
 size_t stack_size(Stack const* s)
@@ -91,7 +91,7 @@ TYC_RESULT stack_at(Stack const* s, int32_t pos, VALUE* v)
         *v = s->stack[(int) s->stack_n + pos];
     }
 
-    return T_OK;
+    return TYC_OK;
 }
 
 TYC_RESULT stack_set(Stack* s, int32_t pos, VALUE v)
@@ -106,7 +106,7 @@ TYC_RESULT stack_set(Stack* s, int32_t pos, VALUE v)
         s->stack[(int) s->stack_n + pos] = v;
     }
 
-    return T_OK;
+    return TYC_OK;
 }
 
 TYC_RESULT stack_push_fp(Stack* s)
@@ -119,7 +119,7 @@ TYC_RESULT stack_push_fp(Stack* s)
 
     s->fp[s->fp_n] = (uint32_t) s->stack_n;
     ++s->fp_n;
-    return T_OK;
+    return TYC_OK;
 }
 
 TYC_RESULT stack_pop_fp(Stack* s)
@@ -128,7 +128,7 @@ TYC_RESULT stack_pop_fp(Stack* s)
         ERROR("Stack frame pointer underflow")
     s->stack_n = stack_top_fp(s);
     --s->fp_n;
-    return T_OK;
+    return TYC_OK;
 }
 
 size_t stack_fp_level(Stack const* s)

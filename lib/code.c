@@ -46,7 +46,7 @@ void code_destroy(Code* code)
 
 TYC_RESULT code_assemble(const char* code, uint8_t** bytecode, size_t* bytecode_sz)
 {
-    TYC_RESULT r = T_OK;
+    TYC_RESULT r = TYC_OK;
 
     Assembly* assembly = assembly_new();
     TRY(assemble(code, assembly))
@@ -120,7 +120,7 @@ TYC_RESULT code_load_bytecode(Code* code, uint8_t const* bytecode, size_t byteco
     memcpy(&addr_next, &bytecode[addr], sizeof(uint32_t));
     code->fn_sz[code->fn_count-1] = addr_next - addr - 4;
 
-    return T_OK;
+    return TYC_OK;
 }
 
 uint32_t code_n_consts(Code const* code)
@@ -137,10 +137,10 @@ TYC_CONST_TYPE code_const_type(Code const* code, size_t n)
     return t;
 }
 
-T_REAL code_const_real(Code const* code, size_t n)
+TYCHE_REAL code_const_real(Code const* code, size_t n)
 {
-    T_REAL f;
-    memcpy(&f, &code->bytecode[code->const_addr[n] + 1], sizeof(T_REAL));
+    TYCHE_REAL f;
+    memcpy(&f, &code->bytecode[code->const_addr[n] + 1], sizeof(TYCHE_REAL));
     return f;
 }
 

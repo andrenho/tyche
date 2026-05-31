@@ -64,11 +64,10 @@ Decisions:
   - [x] Assembler in C
   - [x] Main application
 - [ ] Prepare for release
+  - [x] Documentation and webpage
   - [ ] Review public function names
-  - [ ] Documentation and webpage
+  - [ ] Actions
   - [ ] Code review
-  - [ ] Migrate to Codeberg?
-    - [ ] Actions
 
 # Version 1
 

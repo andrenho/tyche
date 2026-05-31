@@ -730,11 +730,12 @@ static void test_vm(void)
     }
 }
 
-static void test_function(TycheVM* T)
+static TYC_RESULT test_function(TycheVM* T)
 {
     int x;
     assert(tyc_tointeger(T, 0, &x) == T_OK);
     tyc_pushinteger(T, x + 5);
+    return T_OK;
 }
 
 static void test_native_pointer(void)

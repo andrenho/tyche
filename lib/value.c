@@ -15,21 +15,21 @@ typedef enum {
 TYC_TYPE value_type(VALUE v)
 {
     if (nanbox_is_null(v))
-        return TT_NIL;
+        return TYC_NIL;
     if (nanbox_is_boolean(v))
-        return TT_BOOLEAN;
+        return TYC_BOOLEAN;
     if (nanbox_is_int(v))
-        return TT_INTEGER;
+        return TYC_INTEGER;
     if (nanbox_is_double(v))
-        return TT_REAL;
+        return TYC_REAL;
     if (nanbox_is_pointer(v))
-        return TT_NATIVE_PTR;
+        return TYC_NATIVE_PTR;
     switch (v.as_bits.tag) {
-        case TTT_STRING:    return TT_STRING;
-        case TTT_ARRAY:     return TT_ARRAY;
-        case TTT_TABLE:     return TT_TABLE;
-        case TTT_FUNCTION:  return TT_FUNCTION;
-        case TTT_NATIVE_FN: return TT_NATIVE_FN;
+        case TTT_STRING:    return TYC_STRING;
+        case TTT_ARRAY:     return TYC_ARRAY;
+        case TTT_TABLE:     return TYC_TABLE;
+        case TTT_FUNCTION:  return TYC_FUNCTION;
+        case TTT_NATIVE_FN: return TYC_NATIVE_FN__;
         default:;
     }
 
@@ -40,17 +40,17 @@ TYC_TYPE value_type(VALUE v)
 const char* type_name(TYC_TYPE t)
 {
     switch (t) {
-        case TT_NIL:        return "nil";
-        case TT_BOOLEAN:    return "boolean";
-        case TT_INTEGER:    return "integer";
-        case TT_REAL:       return "real";
-        case TT_STRING:     return "string";
-        case TT_ARRAY:      return "array";
-        case TT_TABLE:      return "table";
-        case TT_FUNCTION:   return "function";
-        case TT_NATIVE_PTR: return "native pointer";
-        case TT_NATIVE_FN:  return "native function";
-        case TT_COUNT__:
+        case TYC_NIL:        return "nil";
+        case TYC_BOOLEAN:    return "boolean";
+        case TYC_INTEGER:    return "integer";
+        case TYC_REAL:       return "real";
+        case TYC_STRING:     return "string";
+        case TYC_ARRAY:      return "array";
+        case TYC_TABLE:      return "table";
+        case TYC_FUNCTION:   return "function";
+        case TYC_NATIVE_PTR: return "native pointer";
+        case TYC_NATIVE_FN__:  return "native function";
+        case TYC_COUNT__:
         default:
             return "invalid type";
     }
@@ -58,13 +58,13 @@ const char* type_name(TYC_TYPE t)
 
 bool type_is_collectable(TYC_TYPE t)
 {
-    return t == TT_STRING || t == TT_ARRAY || t == TT_TABLE;
+    return t == TYC_STRING || t == TYC_ARRAY || t == TYC_TABLE;
 }
 
 bool value_boolean(VALUE v)
 {
 #ifdef CHECK_TYCHE_BUGS
-    if (value_type(v) != TT_BOOLEAN) {
+    if (value_type(v) != TYC_BOOLEAN) {
         fprintf(stderr, "Expected boolean, found %s.\n", type_name(value_type(v)));
         abort();
     }
@@ -75,7 +75,7 @@ bool value_boolean(VALUE v)
 int32_t value_integer(VALUE v)
 {
 #ifdef CHECK_TYCHE_BUGS
-    if (value_type(v) != TT_INTEGER && value_type(v) != TT_REAL) {
+    if (value_type(v) != TYC_INTEGER && value_type(v) != TYC_REAL) {
         fprintf(stderr, "Expected number, found %s.\n", type_name(value_type(v)));
         abort();
     }
@@ -86,23 +86,23 @@ int32_t value_integer(VALUE v)
     return nanbox_to_int(v);
 }
 
-T_REAL value_real(VALUE v)
+TYCHE_REAL value_real(VALUE v)
 {
 #ifdef CHECK_TYCHE_BUGS
-    if (value_type(v) != TT_INTEGER && value_type(v) != TT_REAL){
+    if (value_type(v) != TYC_INTEGER && value_type(v) != TYC_REAL){
         fprintf(stderr, "Expected number, found %s.\n", type_name(value_type(v)));
         abort();
     }
 #endif
     if (nanbox_is_int(v))
-        return (T_REAL) nanbox_to_int(v);
+        return (TYCHE_REAL) nanbox_to_int(v);
     return nanbox_to_double(v);
 }
 
 uint32_t value_function_idx(VALUE v)
 {
 #ifdef CHECK_TYCHE_BUGS
-    if (value_type(v) != TT_FUNCTION) {
+    if (value_type(v) != TYC_FUNCTION) {
         fprintf(stderr, "Expected function, found %s.\n", type_name(value_type(v)));
         abort();
     }
@@ -113,7 +113,7 @@ uint32_t value_function_idx(VALUE v)
 HEAP_KEY value_heap_key(VALUE v)
 {
 #ifdef CHECK_TYCHE_BUGS
-    if (value_type(v) != TT_ARRAY && value_type(v) != TT_TABLE && value_type(v) != TT_STRING && value_type(v) != TT_NATIVE_FN) {
+    if (value_type(v) != TYC_ARRAY && value_type(v) != TYC_TABLE && value_type(v) != TYC_STRING && value_type(v) != TYC_NATIVE_FN__) {
         fprintf(stderr, "Expected table, array or string, found %s.\n", type_name(value_type(v)));
         abort();
     }
@@ -124,7 +124,7 @@ HEAP_KEY value_heap_key(VALUE v)
 void* value_native_pointer(VALUE v)
 {
 #ifdef CHECK_TYCHE_BUGS
-    if (value_type(v) != TT_NATIVE_PTR) {
+    if (value_type(v) != TYC_NATIVE_PTR) {
         fprintf(stderr, "Expected native pointer, found %s.\n", type_name(value_type(v)));
         abort();
     }
@@ -147,7 +147,7 @@ VALUE create_value_integer(int32_t v)
     return nanbox_from_int(v);
 }
 
-VALUE create_value_real(T_REAL f)
+VALUE create_value_real(TYCHE_REAL f)
 {
     return nanbox_from_double(f);
 }
@@ -160,16 +160,16 @@ VALUE create_value_function_idx(uint32_t idx)
 VALUE create_value_heap_key(TYC_TYPE type, HEAP_KEY key)
 {
 #ifdef CHECK_TYCHE_BUGS
-    if (type != TT_ARRAY && type != TT_TABLE && type != TT_STRING && type != TT_NATIVE_FN)
+    if (type != TYC_ARRAY && type != TYC_TABLE && type != TYC_STRING && type != TYC_NATIVE_FN__)
         abort();
 #endif
-    if (type == TT_ARRAY)
+    if (type == TYC_ARRAY)
         return (VALUE) { .as_bits = { .tag = TTT_ARRAY, .payload = key } };
-    if (type == TT_TABLE)
+    if (type == TYC_TABLE)
         return (VALUE) { .as_bits = { .tag = TTT_TABLE, .payload = key } };
-    if (type == TT_STRING)
+    if (type == TYC_STRING)
         return (VALUE) { .as_bits = { .tag = TTT_STRING, .payload = key } };
-    if (type == TT_NATIVE_FN)
+    if (type == TYC_NATIVE_FN__)
         return (VALUE) { .as_bits = { .tag = TTT_NATIVE_FN, .payload = key } };
     __builtin_unreachable();
 }
@@ -181,5 +181,5 @@ VALUE create_value_native_pointer(void* ptr)
 
 bool value_is_zero(VALUE v)
 {
-    return value_type(v) == TT_NIL || (value_type(v) == TT_INTEGER && value_integer(v) == 0);
+    return value_type(v) == TYC_NIL || (value_type(v) == TYC_INTEGER && value_integer(v) == 0);
 }

@@ -7,7 +7,7 @@
 
 #define GC_EVERY_X_ALLOCATIONS 32
 
-#define TRY(x) if ((r = (x)) != T_OK) { return r; }
+#define TRY(x) if ((r = (x)) != TYC_OK) { return r; }
 
 typedef enum {
     TH_STRING, TH_ARRAY, TH_TABLE, TH_NATIVE_FN,
@@ -125,7 +125,7 @@ static TYC_RESULT heap_get_item(Heap const* h, HEAP_KEY key, HeapValue** out_val
     if (is_missing)
         ERROR("Heap key 0x%0x not found", key)
     *out_value = &kh_value(h->items, k);
-    return T_OK;
+    return TYC_OK;
 }
 
 HEAP_KEY heap_add_string(Heap* h, const char* value, bool constant)
@@ -166,7 +166,7 @@ TYC_RESULT heap_get_string(Heap const* h, HEAP_KEY key, const char** value)
         abort();
     *value = hv->value.string;
 
-    return T_OK;
+    return TYC_OK;
 }
 
 HEAP_KEY heap_add_array(Heap* h)
@@ -189,7 +189,7 @@ TYC_RESULT heap_get_array(Heap const* h, HEAP_KEY key, Array** array)
         abort();
     *array = hv->value.array;
 
-    return T_OK;
+    return TYC_OK;
 }
 
 HEAP_KEY heap_add_table(Heap* h)
@@ -212,7 +212,7 @@ TYC_RESULT heap_get_table(Heap const* h, HEAP_KEY key, Table** table)
         abort();
     *table = hv->value.t.table;
 
-    return T_OK;
+    return TYC_OK;
 }
 
 TYC_RESULT heap_set_supertable(Heap const* h, HEAP_KEY table, HEAP_KEY super)
@@ -223,7 +223,7 @@ TYC_RESULT heap_set_supertable(Heap const* h, HEAP_KEY table, HEAP_KEY super)
     htable->value.t.supertable = super;
     TRY(heap_get_item(h, super, &hsuper))
     table_setsuper(htable->value.t.table, hsuper->value.t.table);
-    return T_OK;
+    return TYC_OK;
 }
 
 TYC_RESULT heap_remove_supertable(Heap const* h, HEAP_KEY table)
@@ -232,7 +232,7 @@ TYC_RESULT heap_remove_supertable(Heap const* h, HEAP_KEY table)
     Table* t;
     TRY(heap_get_table(h, table, &t))
     table_setsuper(t, NULL);
-    return T_OK;
+    return TYC_OK;
 }
 
 HEAP_KEY heap_add_native_function(Heap* h, TYCHE_CB cb)
@@ -255,7 +255,7 @@ TYC_RESULT heap_get_native_function(Heap const* h, HEAP_KEY key, TYCHE_CB* cb)
         abort();
     *cb = hv->value.native_fn;
 
-    return T_OK;
+    return TYC_OK;
 }
 
 size_t heap_size(Heap const* h)
@@ -278,27 +278,27 @@ static void mark(Heap* h, VALUE a, khash_t(MARK)* marked)
         kh_value(marked, k) = true;
     }
 
-    if (value_type(a) == TT_ARRAY) {
+    if (value_type(a) == TYC_ARRAY) {
         Array* array;
-        if (heap_get_array(h, value_heap_key(a), &array) != T_OK)
+        if (heap_get_array(h, value_heap_key(a), &array) != TYC_OK)
             abort();
         size_t len = array_len(array);
         for (size_t i = 0; i < len; ++i) {
             VALUE item = array_get(array, i);
             mark(h, item, marked);
         }
-    } else if (value_type(a) == TT_TABLE) {
+    } else if (value_type(a) == TYC_TABLE) {
         // mark supertable
         HeapValue* htable;
-        if (heap_get_item(h, value_heap_key(a), &htable) != T_OK)
+        if (heap_get_item(h, value_heap_key(a), &htable) != TYC_OK)
             abort();
         HEAP_KEY supertable = htable->value.t.supertable;
         if (supertable != HEAP_VALUE_NIL)
-            mark(h, create_value_heap_key(TT_TABLE, supertable), marked);
+            mark(h, create_value_heap_key(TYC_TABLE, supertable), marked);
 
         // mark items
         Table* table;
-        if (heap_get_table(h, value_heap_key(a), &table) != T_OK)
+        if (heap_get_table(h, value_heap_key(a), &table) != TYC_OK)
             abort();
         VALUE key = create_value_nil(), value;
         while (table_next(table, key, &key, &value)) {

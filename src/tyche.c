@@ -17,7 +17,7 @@ typedef struct Options {
     const char* output_file;
 } Options;
 
-#define TRY(cmd) { if ((cmd) != T_OK) { fprintf(stderr, "error: %s\n", tyc_last_error()); exit(EXIT_FAILURE); } }
+#define TRY(cmd) { if ((cmd) != TYC_OK) { fprintf(stderr, "error: %s\n", tyc_last_error()); exit(EXIT_FAILURE); } }
 
 //
 // MAIN
