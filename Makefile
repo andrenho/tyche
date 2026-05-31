@@ -20,7 +20,7 @@ DEBUG_ASSEMBLY ?= 0
 VERSION_MAJOR=0
 VERSION_MINOR=1
 
-VERSION=${VERSION_MAJOR}.${VERSION.MINOR}
+VERSION=${VERSION_MAJOR}.${VERSION_MINOR}
 
 # add compiler-specific warnings
 
@@ -94,7 +94,10 @@ install: tyche libtyche.a libtyche.so.${VERSION} lib/tyche.h
 uninstall:
 	rm -f ${PREFIX}/lib/libtyche.* ${PREFIX}/bin/tyche ${PREFIX}/include/tyche.h
 
-.PHONY: all check clean install uninstall
+package: clean
+	tar -cjf tyche-${VERSION}.tar.bz2 config doc lib src test LICENSE Makefile README.md
+
+.PHONY: all check clean install uninstall package
 
 #
 # custom instructions for code generation
