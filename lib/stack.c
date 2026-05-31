@@ -1,6 +1,5 @@
 #include "priv.h"
 
-#include <assert.h>
 #include <stdlib.h>
 
 struct Stack {
@@ -21,10 +20,7 @@ Stack* stack_new(void)
     s->stack_cap = 64;
     s->fp_cap = 8;
     s->stack = xmalloc(s->stack_cap * sizeof s->stack[0]);
-    s->fp = xmalloc(s->stack_cap * sizeof s->fp[0]);
-
-    assert(s->stack);
-    assert(s->fp);
+    s->fp = xmalloc(s->fp_cap * sizeof s->fp[0]);
 
     stack_push_fp(s);
 
@@ -43,7 +39,6 @@ TYC_RESULT stack_push(Stack* s, VALUE v)
     if (s->stack_n == s->stack_cap) {
         s->stack_cap *= 2;
         s->stack = xrealloc(s->stack, s->stack_cap * sizeof s->stack[0]);
-        assert(s->stack);
     }
 
     s->stack[s->stack_n] = v;
@@ -82,13 +77,13 @@ size_t stack_size(Stack const* s)
 TYC_RESULT stack_at(Stack const* s, int32_t pos, VALUE* v)
 {
     if (pos >= 0) {
-        if ((int) stack_top_fp(s) + pos >= (int) s->stack_n)
+        if ((int32_t) stack_top_fp(s) + pos >= (int32_t) s->stack_n)
             ERROR("Stack index %d out of range", pos)
-        *v = s->stack[(int) stack_top_fp(s) + pos];
+        *v = s->stack[(int32_t) stack_top_fp(s) + pos];
     } else {
-        if ((int) s->stack_n + pos < (int) stack_top_fp(s))
+        if ((int32_t) s->stack_n + pos < (int32_t) stack_top_fp(s))
             ERROR("Stack index %d out of range", pos)
-        *v = s->stack[(int) s->stack_n + pos];
+        *v = s->stack[(int32_t) s->stack_n + pos];
     }
 
     return TYC_OK;
@@ -97,13 +92,13 @@ TYC_RESULT stack_at(Stack const* s, int32_t pos, VALUE* v)
 TYC_RESULT stack_set(Stack* s, int32_t pos, VALUE v)
 {
     if (pos >= 0) {
-        if ((int) stack_top_fp(s) + pos >= (int) s->stack_n)
+        if ((int32_t) stack_top_fp(s) + pos >= (int32_t) s->stack_n)
             ERROR("Stack index %d out of range", pos)
-        s->stack[(int) stack_top_fp(s) + pos] = v;
+        s->stack[(int32_t) stack_top_fp(s) + pos] = v;
     } else {
-        if ((int) s->stack_n + pos < (int) stack_top_fp(s))
+        if ((int32_t) s->stack_n + pos < (int32_t) stack_top_fp(s))
             ERROR("Stack index %d out of range", pos)
-        s->stack[(int) s->stack_n + pos] = v;
+        s->stack[(int32_t) s->stack_n + pos] = v;
     }
 
     return TYC_OK;
@@ -114,7 +109,6 @@ TYC_RESULT stack_push_fp(Stack* s)
     if (s->fp_n == s->fp_cap) {
         s->fp_cap *= 2;
         s->fp = xrealloc(s->fp, s->fp_cap * sizeof s->fp[0]);
-        assert(s->fp);
     }
 
     s->fp[s->fp_n] = (uint32_t) s->stack_n;
@@ -139,7 +133,7 @@ size_t stack_fp_level(Stack const* s)
 size_t stack_collectable_array(Stack const* s, VALUE** values)
 {
     size_t j = 0;
-    *values = xmalloc(stack_size(s) * sizeof(VALUE));
+    *values = xmalloc(s->stack_n * sizeof(VALUE));
 
     for (size_t i = 0; i < s->stack_n; ++i)
         if (type_is_collectable(value_type(s->stack[i])))

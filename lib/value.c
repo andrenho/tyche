@@ -81,7 +81,7 @@ int32_t value_integer(VALUE v)
     }
 #endif
     if (nanbox_is_double(v))
-        return (int) nanbox_to_double(v);
+        return (int32_t) nanbox_to_double(v);
 
     return nanbox_to_int(v);
 }
@@ -114,7 +114,7 @@ HEAP_KEY value_heap_key(VALUE v)
 {
 #ifdef CHECK_TYCHE_BUGS
     if (value_type(v) != TYC_ARRAY && value_type(v) != TYC_TABLE && value_type(v) != TYC_STRING && value_type(v) != TYC_NATIVE_FN__) {
-        fprintf(stderr, "Expected table, array or string, found %s.\n", type_name(value_type(v)));
+        fprintf(stderr, "Expected table, array, string or function pointer, found %s.\n", type_name(value_type(v)));
         abort();
     }
 #endif
