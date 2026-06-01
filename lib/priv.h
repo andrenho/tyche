@@ -92,7 +92,7 @@ int32_t  value_integer(VALUE v);
 TYCHE_REAL   value_real(VALUE v);
 uint32_t value_function_idx(VALUE v);
 HEAP_KEY value_heap_key(VALUE v);
-bool     value_is_zero(VALUE v);
+bool     value_is_false(VALUE v);
 void*    value_native_pointer(VALUE v);
 
 VALUE create_value_nil(void);
