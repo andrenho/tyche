@@ -16,4 +16,5 @@ At this point only the VM is available.
 
 * Bytecode format: [doc/BYTECODE](doc/BYTECODE)
 * VM opcodes: [doc/OPCODES](doc/OPCODES)
+* Types and memory management: [doc/VM.md](doc/VM.md)
 * C interface: [lib/tyche.h](lib/tyche.h)
