@@ -361,3 +361,40 @@ bool heap_should_gc(Heap* h)
 {
     return h->n_allocations >= h->n_allocations_next_gc;
 }
+
+void heap_debug(Heap* h)
+{
+    printf("HEAP:\n");
+    for (khiter_t k = kh_begin(h->items); k != kh_end(h->items); ++k) {
+        if (kh_exist(h->items, k)) {
+            printf("%08X: ", kh_key(h->items, k));
+            HeapValue value = kh_value(h->items, k);
+            switch (value.type) {
+                case TH_STRING:
+                    printf("\"%s\"\n", value.value.string);
+                    break;
+                case TH_ARRAY:
+                    printf("Array (len: %zu)\n", array_len(value.value.array));
+                    break;
+                case TH_TABLE: {
+                    printf("Table (supertable: %08X, fields: ", value.value.t.supertable);
+                    VALUE key = create_value_nil();
+                    while (table_next(value.value.t.table, key, &key, NULL)) {
+                        if (value_type(key) == TYC_STRING) {
+                            const char* str;
+                            heap_get_string(h, value_heap_key(key), &str);
+                            printf("%s, ", str);
+                        } else {
+                            printf("?, ");
+                        }
+                    }
+                    printf(")\n");
+                    break;
+                }
+                case TH_NATIVE_FN:
+                    printf("Function pointer (%p)\n", value.value.native_fn);
+                    break;
+            }
+        }
+    }
+}

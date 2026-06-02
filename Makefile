@@ -121,13 +121,13 @@ tyche: src/tyche.o libtyche.a
 
 tyche-test-as: lib/instructions/instructions.h
 tyche-test-as: test/tests-as.o libtyche.a
-	$(CC) -o $@ $^ ${LDFLAGS} -I../lib
+	$(CC) -o $@ test/tests-as.o libtyche.a ${LDFLAGS} -I../lib
 
 tyche-test-vm: CFLAGS += `pkg-config --cflags lua`
 tyche-test-vm: LDFLAGS += `pkg-config --libs lua`
 tyche-test-vm: lib/instructions/instructions.h
 tyche-test-vm: test/tests-vm.o libtyche.a
-	$(CC) -o $@ $^ ${LDFLAGS} -I../lib
+	$(CC) -o $@ test/tests-vm.o libtyche.a ${LDFLAGS} -I../lib
 
 libtyche.a: ${LIB_SRC}
 	ar rcs $@ $^

@@ -108,7 +108,7 @@ void tyc_debug_to_console(TycheVM* T, bool activate)
     T->debug = activate;
 }
 
-static void debug_value(TycheVM* T, VALUE a)
+void tyc_debug_value(TycheVM* T, VALUE a)
 {
     switch (value_type(a)) {
         case TYC_NIL:
@@ -136,7 +136,7 @@ static void debug_value(TycheVM* T, VALUE a)
             if (heap_get_array(T->heap, value_heap_key(a), &array) == TYC_OK) {
                 printf("[");
                 for (size_t i = 0; i < array_len(array); ++i) {
-                    debug_value(T, array_get(array, i));
+                    tyc_debug_value(T, array_get(array, i));
                     if (i < array_len(array) - 1)
                         printf(", ");
                 }
@@ -153,9 +153,9 @@ static void debug_value(TycheVM* T, VALUE a)
                 VALUE key = create_value_nil();
                 VALUE value;
                 while (table_next(table, key, &key, &value)) {
-                    debug_value(T, key);
+                    tyc_debug_value(T, key);
                     printf(":");
-                    debug_value(T, value);
+                    tyc_debug_value(T, value);
                     printf(", ");
                 }
                 printf("}");
@@ -206,7 +206,7 @@ static void debug_stack(TycheVM* T)
     for (size_t i = 0; i < stack_size(T->stack); ++i) {
         VALUE a;
         stack_at(T->stack, (int32_t) i, &a);
-        debug_value(T, a);
+        tyc_debug_value(T, a);
         printf(" ");
     }
     printf("\n");
@@ -748,7 +748,7 @@ static TYC_RESULT tyc_throw_raw(TycheVM* T)
     if (T->error_stack.sz == 0) {  // error at toplevel
         VALUE a = create_value_nil();
         stack_peek(T->stack, &a);
-        printf("\ntyche error: "); debug_value(T, a); printf("\n");
+        printf("\ntyche error: "); tyc_debug_value(T, a); printf("\n");
         exit(EXIT_FAILURE);
     }
 
