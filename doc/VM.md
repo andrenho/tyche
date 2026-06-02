@@ -1,3 +1,5 @@
+TycheVM is a stack-based VM for the Tyche language. It's meant to run interpreted.
+
 Types
 -----
 
@@ -12,6 +14,7 @@ Types
 * __Table__: a hashmap. See below.
 * __Function__: a reference to a Tyche function.
 * __Native Pointer__: a pointer to data in C (equivalent to a `void *`)
+
 
 Tables
 ------
@@ -39,12 +42,63 @@ Nils can't be used as keys.
 
 A table can be linked to a supertable, which works similar to inheritance. The rules are:
 
-1) On the moment a table is linked to a supertable, all supertable's keys and values are copied to the
+1) On the moment a table is linked to a supertable (at runtime), all supertable's keys and values are copied to the
    child table (except for functions).
 2) When a field is accessed in the table, and that field is not find in the table, the corresponding field
    in the supertable is used, if found AND it's a function.
 
 A supertable can also have its own supertable, creating a chain of calls.
+
+This is useful for creating Object Orientation, for example:
+
+```
+ParentClass = {
+    defaultValue = 3;
+    
+    doSomething = method() { 
+        print("Parent class, my default value is %d" % [self.defaultValue]);
+    }
+}
+
+ChildClass = {
+    defaultValue = 4;
+    
+    new = func() {
+        return {} <- ChildClass
+    }
+    
+    doSomething = method() { 
+        print("Child class, my default value is %d" % [self.defaultValue]);
+    }
+} <- ParentClass
+
+my_object := ChildClass.new();
+my_object.doSomething();             // result: Child class, my default value is 4
+```
+
+## Operator overloading
+
+The following special fields can be used to do operation overloading on tables:
+
+__sum   +
+__sub   -
+__mul   *
+__div   /
+__idiv  |/
+__mod   %
+__eq    ==  (automatic: neq)
+__lt    <   (automatic: lte)
+__gt    >   (automatic: gte)
+__and   &
+__or    |
+__xor   ~
+__pow   ^
+__shl   <<
+__shr   >>
+__hash  hash
+
+These are special keys which do not share the same space as regular keys.
+
 
 Memory
 ------
@@ -81,23 +135,29 @@ part of these inputs.
 There's a single global table that serves as global, this global table can be loaded and changed at any point of the 
 runtime.
 
-Errors
-------
 
-## Error management
+Error management
+----------------
 
-TODO
+## Exceptions
 
-## Error format
+TycheVM support exceptions. A try block will push an error handler into an error handler stack, and when a error is
+thrown it'll pop our of the error handler stack to know where to return to.
 
+There's no support for `finally` blocks at this time.
+
+## Default error format
+
+This is the error format, when it's thrown due to an error in the VM. Users are encouraged to use the same format,
+but are free to use any object type.
+
+```
 { error: "Error message" }
+```
 
 Additional fields:
-if debugging info: file + line
-if no debugging info: function_id + pc
-
-Errors:
-- OutOfRange
+  * if debugging info: file + line
+  * if no debugging info: function_id + pc
 
 -------------------------------------------------------------------------------------------------------------------
 
@@ -159,9 +219,10 @@ Column legend:
 ## Table and array operations
 
 | NP   | I8   | I16  | I32  | Instruction | Description                                                                |
-| ---- | ---- | ---- | ---- | ----------- | -------------------------------------------------------------------------- |
+| ---- | ---- | ---- | ---- |-------------| -------------------------------------------------------------------------- |
 | `16` |      |      |      | `getkv`     | Get table's value based on key (pull 1 value, push 1 value)                |
 | `17` |      |      |      | `setkv`     | Set table's key and value (pull 2 values from stack)                       |
+| `1c` |      |      |      | `setop`     | Overload table's operator                                                  |
 |      | `a8` | `c8` | `e8` | `geti`      | Get array's position value                                                 |
 |      | `a9` | `c9` | `e9` | `seti`      | Set array's position value                                                 |
 | `18` |      |      |      | `appnd`     | Add value to the end of array                                              |
@@ -193,6 +254,7 @@ Column legend:
 | `31` | `shr`       | Shift right                           |
 | `32` | `not`       | Invert value bits (or negate boolean) |
 | `33` | `neg`       | Invert number sign (negative)         |
+| `34` | `hash`      | Calculate hash for a value            |
 
 ## Other value operations
 
@@ -275,26 +337,3 @@ The max file size is 2 Gb.
  * Constant indexes and function ids are encoded as ints
 ```
 
-
-Additional things not implemented yet
--------------------------------------
-
-## Operator overloading
-
-_(not implemented yet)_
-
-sum   +
-sub   -
-mul   *
-div   /
-idiv  |/
-mod   %
-eq    ==  (automatic: neq)
-lt    <   (automatic: lte)
-gt    >   (automatic: gte)
-and   &
-or    |
-xor   ~
-pow   ^
-shl   <<
-shr   >>
