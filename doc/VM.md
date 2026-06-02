@@ -198,7 +198,7 @@ Operations take either 0 or 1 parameter. The ones that take a parameter, it can 
 Instructions follow this logic:
 
 | Range       | Parameter       |
-| ----------- | --------------- |
+|-------------|-----------------|
 | `00` ~ `9F` | no parameter    |
 | `A0` ~ `BF` | int8 (1 byte)   |
 | `C0` ~ `DF` | int16 (2 bytes) |
@@ -212,121 +212,122 @@ Column legend:
 - **I8** — int8
 - **I16** — int16
 - **I32** — int32
+- **Stack** — net change in stack size (e.g. `-2 +1` pops 2, pushes 1)
 
 ## Stack operations
 
-| NP   | I8   | I16  | I32  | Instruction        | Description               |
-| ---- | ---- | ---- | ---- | ------------------ |---------------------------|
-|      | `a0` | `c0` | `e0` | `pushi [int]`      | Push int                  |
-|      | `a1` | `c1` | `e1` | `pushc [index]`    | Push constant             |
-|      | `a2` | `c2` | `e2` | `pushf [function]` | Push function id          |
-| `00` |      |      |      | `pushn`            | Push nil                  |
-| `01` |      |      |      | `pushz`            | Push false                |
-| `02` |      |      |      | `pusht`            | Push true                 |
-| `03` |      |      |      | `newa`             | Push (create) empty array |
-| `04` |      |      |      | `newt`             | Push (create) empty table |
-| `05` |      |      |      | `pop`              |                           |
-| `06` |      |      |      | `dup`              |                           |
+| NP   | I8   | I16  | I32  | Instruction        | Stack | Description               |
+|------|------|------|------|--------------------|-------|---------------------------|
+|      | `a0` | `c0` | `e0` | `pushi [int]`      | `+1`  | Push int                  |
+|      | `a1` | `c1` | `e1` | `pushc [index]`    | `+1`  | Push constant             |
+|      | `a2` | `c2` | `e2` | `pushf [function]` | `+1`  | Push function id          |
+| `00` |      |      |      | `pushn`            | `+1`  | Push nil                  |
+| `01` |      |      |      | `pushz`            | `+1`  | Push false                |
+| `02` |      |      |      | `pusht`            | `+1`  | Push true                 |
+| `03` |      |      |      | `newa`             | `+1`  | Push (create) empty array |
+| `04` |      |      |      | `newt`             | `+1`  | Push (create) empty table |
+| `05` |      |      |      | `pop`              | `-1`  |                           |
+| `06` |      |      |      | `dup`              | `+1`  |                           |
 
 ## Local variables
 
-| NP   | I8   | I16  | I32  | Instruction    | Description                                                |
-| ---- | ---- | ---- | ---- |----------------| ---------------------------------------------------------- |
-|      | `a3` | `c3` | `e3` | `pushv [int]`  | Push n nil values into the stack (used to init local vars) |
-|      | `ae` | `ce` | `ee` | `set [index]`  | Set value in stack position (set local variable)           |
-|      | `a4` | `c4` | `e4` | `dupv [index]` | Duplicate stack value (load local variable)                |
-| `07` |      |      |      | `glbl`         | Get global table                                           |
+| NP   | I8   | I16  | I32  | Instruction    | Stack | Description                                                |
+|------|------|------|------|----------------|-------|------------------------------------------------------------|
+|      | `a3` | `c3` | `e3` | `pushv [int]`  | `+n`  | Push n nil values into the stack (used to init local vars) |
+|      | `ae` | `ce` | `ee` | `set [index]`  | `-1`  | Set value in stack position (set local variable)           |
+|      | `a4` | `c4` | `e4` | `dupv [index]` | `+1`  | Duplicate stack value (load local variable)                |
+| `07` |      |      |      | `glbl`         | `+1`  | Get global table                                           |
 
 ## Function operations
 
-| NP   | I8   | I16  | I32  | Instruction     | Description                                                                                |
-| ---- | ---- | ---- | ---- | --------------- |--------------------------------------------------------------------------------------------|
-|      | `a7` | `c7` | `e7` | `call [n_pars]` | Enter function on stack toplevel (passing function id + next stack values as parameters) |
-| `10` |      |      |      | `ret`           | Leave a function (return value in stack)                                                   |
-| `11` |      |      |      | `retn`          | Leave a function (return nil)                                                              |
+| NP   | I8   | I16  | I32  | Instruction     | Stack     | Description                                                                              |
+|------|------|------|------|-----------------|-----------|------------------------------------------------------------------------------------------|
+|      | `a7` | `c7` | `e7` | `call [n_pars]` | `-1-n +1` | Enter function on stack toplevel (passing function id + next stack values as parameters) |
+| `10` |      |      |      | `ret`           | `-1`      | Leave a function (return value in stack)                                                 |
+| `11` |      |      |      | `retn`          | `0`       | Leave a function (return nil)                                                            |
 
 ## Table and array operations
 
-| NP   | I8   | I16  | I32  | Instruction | Description                                                                           |
-| ---- | ---- | ---- | ---- |-------------|---------------------------------------------------------------------------------------|
-| `16` |      |      |      | `getkv`     | Get table's value based on key (pull 1 value, push 1 value) (or array based on index) |
-| `17` |      |      |      | `setkv`     | Set table's key and value (pull 2 values from stack) (or array based on index)        |
-| `1c` |      |      |      | `setop`     | Overload table's operator                                                             |
-|      | `a8` | `c8` | `e8` | `geti`      | Get array's value at position n (push on stack)                                       |
-|      | `a9` | `c9` | `e9` | `seti`      | Set array's value at position n (pop value from stack)                                |
-| `18` |      |      |      | `appnd`     | Add value to the end of array                                                         |
-| `19` |      |      |      | `next`      | Push the next pair into the stack (for loops), pushes nil as key when over            |
-| `1a` |      |      |      | `sptb`      | Set table supertable                                                                  |
-| `1b` |      |      |      | `supr`      | Fetch supertable                                                                      |
+| NP   | I8   | I16  | I32  | Instruction | Stack   | Description                                                                |
+|------|------|------|------|-------------|---------|----------------------------------------------------------------------------|
+| `16` |      |      |      | `getkv`     | `-1 +1` | Get table's value based on key (pull 1 value, push 1 value)                |
+| `17` |      |      |      | `setkv`     | `-2`    | Set table's key and value (pull 2 values from stack)                       |
+| `1c` |      |      |      | `setop`     | `-2`    | Overload table's operator                                                  |
+|      | `a8` | `c8` | `e8` | `geti`      | `+1`    | Get array's value at position n (push on stack)                            |
+|      | `a9` | `c9` | `e9` | `seti`      | `-1`    | Set array's value at position n                                            |
+| `18` |      |      |      | `appnd`     | `-1`    | Add value to the end of array                                              |
+| `19` |      |      |      | `next`      | `+1`    | Push the next pair into the stack (for loops), pushes nil as key when over |
+| `1a` |      |      |      | `sptb`      | `-1`    | Set table supertable                                                       |
+| `1b` |      |      |      | `supr`      | `+1`    | Fetch supertable                                                           |
 
 ## Logical/arithmetic
 
-| NP   | Instruction | Description                           |
-| ---- | ----------- | ------------------------------------- |
-| `20` | `sum`       | Sum top 2 values in stack             |
-| `21` | `sub`       | Subtract top 2 values in stack        |
-| `22` | `mul`       | Multiply top 2 values in stack        |
-| `23` | `div`       | Float division                        |
-| `24` | `idiv`      | Integer division                      |
-| `25` | `mod`       | Modulo                                |
-| `26` | `eq`        | Equality                              |
-| `27` | `neq`       | Inequality                            |
-| `28` | `lt`        | Less than                             |
-| `29` | `lte`       | Less than or equals                   |
-| `2a` | `gt`        | Greater than                          |
-| `2b` | `gte`       | Greater than or equals                |
-| `2c` | `and`       | Bitwise AND                           |
-| `2d` | `or`        | Bitwise OR                            |
-| `2e` | `xor`       | Bitwise XOR                           |
-| `2f` | `pow`       | Power                                 |
-| `30` | `shl`       | Shift left                            |
-| `31` | `shr`       | Shift right                           |
-| `32` | `not`       | Invert value bits (or negate boolean) |
-| `33` | `neg`       | Invert number sign (negative)         |
-| `34` | `hash`      | Calculate hash for a value            |
+| NP   | Instruction | Stack   | Description                           |
+|------|-------------|---------|---------------------------------------|
+| `20` | `sum`       | `-2 +1` | Sum top 2 values in stack             |
+| `21` | `sub`       | `-2 +1` | Subtract top 2 values in stack        |
+| `22` | `mul`       | `-2 +1` | Multiply top 2 values in stack        |
+| `23` | `div`       | `-2 +1` | Float division                        |
+| `24` | `idiv`      | `-2 +1` | Integer division                      |
+| `25` | `mod`       | `-2 +1` | Modulo                                |
+| `26` | `eq`        | `-2 +1` | Equality                              |
+| `27` | `neq`       | `-2 +1` | Inequality                            |
+| `28` | `lt`        | `-2 +1` | Less than                             |
+| `29` | `lte`       | `-2 +1` | Less than or equals                   |
+| `2a` | `gt`        | `-2 +1` | Greater than                          |
+| `2b` | `gte`       | `-2 +1` | Greater than or equals                |
+| `2c` | `and`       | `-2 +1` | Bitwise AND                           |
+| `2d` | `or`        | `-2 +1` | Bitwise OR                            |
+| `2e` | `xor`       | `-2 +1` | Bitwise XOR                           |
+| `2f` | `pow`       | `-2 +1` | Power                                 |
+| `30` | `shl`       | `-2 +1` | Shift left                            |
+| `31` | `shr`       | `-2 +1` | Shift right                           |
+| `32` | `not`       | `-1 +1` | Invert value bits (or negate boolean) |
+| `33` | `neg`       | `-1 +1` | Invert number sign (negative)         |
+| `34` | `hash`      | `-1 +1` | Calculate hash for a value            |
 
 ## Other value operations
 
-| NP   | Instruction | Description                                 |
-| ---- | ----------- | ------------------------------------------- |
-| `40` | `len`       | Get table, array or string size             |
-| `41` | `type`      | Get type from value at the top of the stack |
-| `42` | `ver`       | Return VM version                           |
+| NP   | Instruction | Stack   | Description                                 |
+|------|-------------|---------|---------------------------------------------|
+| `40` | `len`       | `-1 +1` | Get table, array or string size             |
+| `41` | `type`      | `-1 +1` | Get type from value at the top of the stack |
+| `42` | `ver`       | `+1`    | Return VM version                           |
 
 ## External code
 
-| NP   | Instruction | Description                                              |
-| ---- | ----------- | -------------------------------------------------------- |
-| `48` | `cmpl`      | Compile code to assembly                                 |
-| `49` | `asmbl`     | Assemble code to bytecode format                         |
-| `4a` | `load`      | Load bytecode as function (will place function on stack) |
+| NP   | Instruction | Stack   | Description                                              |
+|------|-------------|---------|----------------------------------------------------------|
+| `48` | `cmpl`      | `-1 +1` | Compile code to assembly                                 |
+| `49` | `asmbl`     | `-1 +1` | Assemble code to bytecode format                         |
+| `4a` | `load`      | `-1 +1` | Load bytecode as function (will place function on stack) |
 
 ## Control flow
 
 The destination is always a 16-bit field.
 
-| I16  | Instruction | Description              |
-| ---- |-------------|--------------------------|
-| `ca` | `bf [pc]`   | Branch if false (or nil) |
-| `cb` | `bt [pc]`   | Branch if true           |
-| `cf` | `bnil [pc]` | Branch if nil            |
-| `cc` | `jmp [pc]`  | Unconditional jump       |
+| I16  | Instruction | Stack | Description              |
+|------|-------------|-------|--------------------------|
+| `ca` | `bf [pc]`   | `0`   | Branch if false (or nil) |
+| `cb` | `bt [pc]`   | `0`   | Branch if true           |
+| `cf` | `bnil [pc]` | `0`   | Branch if nil            |
+| `cc` | `jmp [pc]`  | `0`   | Unconditional jump       |
 
 > Jumps can only happen within the same function.
 
 ## Memory management
 
-| NP   | Instruction | Description            |
-| ---- | ----------- | ---------------------- |
-| `4b` | `gc`        | Call garbage collector |
+| NP   | Instruction | Stack | Description            |
+|------|-------------|-------|------------------------|
+| `4b` | `gc`        | `0`   | Call garbage collector |
 
 ## Error handling
 
-| NP   | I16  | Instruction  | Description        |
-| ---- | ---- | ------------ | ------------------ |
-|      | `cd` | `pushe [pc]` | Push error handler |
-| `5a` |      | `pope`       | Pop error handler  |
-| `5b` |      | `thrw`       | Throw              |
+| NP   | I16  | Instruction  | Stack | Description        |
+|------|------|--------------|-------|--------------------|
+|      | `cd` | `pushe [pc]` | `0`   | Push error handler |
+| `5a` |      | `pope`       | `0`   | Pop error handler  |
+| `5b` |      | `thrw`       | `-1`  | Throw              |
 
 
 Reference - Bytecode format
