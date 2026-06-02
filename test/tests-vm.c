@@ -649,6 +649,7 @@ static void test_supertables(void)
         assert(table_get(table, va, &a) == TYC_OK); assert(value_integer(a) == 40);
         assert(table_get(table, vb, &a) == TYC_OK); assert(value_integer(a) == 30);
         assert(table_get(table, f1, &a) == TYC_OK); assert(value_function_idx(a) == 1);
+        assert(table_get(table, f99, &a) == TYC_OK); assert(value_function_idx(a) == 99);
 
         // overload function in table
         table_set(table, f1, create_value_function_idx(2));
