@@ -1,36 +1,41 @@
-TycheVM is a stack-based VM for the Tyche language. It's meant to run interpreted.
+TycheVM is a stack-based bytecode interpreter for the Tyche language. It can be embedded in a host native program or
+run standalone. This document describes its value types, memory model, instruction set, and bytecode format.
 
 Types
 -----
 
-* __Nil__: represent a null, non-initialized or missing value.
+* __Nil__: represents a null, non-initialized or missing value.
 * __Boolean__: true/false.
 * __Integer__: a 32-bit signed integer value.
-* __Real__: a 64-bit floating point value (equivalent to `double` in C). It can be NaN too.
-* __String__: a char string. It can either be:
-  * a static string constant in the binary - it's just referred and stored in stack/heap as a integer reference
+* __Real__: a 64-bit floating point value (equivalent to `double` in C).
+* __String__: an immutable char string. It can either be:
+  * a static string constant in the binary - it's just referred and stored in stack/heap as an integer reference
   * a string created during runtime.
-* __Array__: an array of values.
+* __Array__: a dynamically sized array of values.
 * __Table__: a hashmap. See below.
-* __Function__: a reference to a Tyche function.
+* __Function__: a reference to a Tyche function id.
 * __Native Pointer__: a pointer to data in C (equivalent to a `void *`)
 
 _(implementation detail: a special Native Function type exists, it's the same as the Native Pointer but stored
 separately as it doesn't fit in a nanbox)_
 
+Nil, boolean, integer, real, functions and native pointers live inside a nanbox. Arrays, tables, strings and native
+functions live in the heap.
+
 Tables
 ------
 
-Tables are hashmaps that can use any type of value as a key. The most common type for key is `string`.
+Tables are hashmaps that can use different types of values as keys. The most common key type is `string`.
 
 Table keys are resolved in two steps
 
 1) Calculate hash value of the key value _(see below)_
 2) Run the equality operator (which can be overloaded for tables)
 
-# Hash value of keys
+## Hash value of keys
 
-Boolean, integer, functions and native pointer use the value itself to calculate the hash.
+Boolean, integer, functions and native pointer use the value itself to calculate the hash. Strings have their own
+custom calculation.
 
 Tables can be used for keys if they overload `__hash` and `__eq`.
 
@@ -40,12 +45,12 @@ Reals, arrays and nils can't be used as keys.
 
 A table can be linked to a supertable, which works similar to inheritance. The rules are:
 
-1) On the moment a table is linked to a supertable (at runtime), all supertable's keys and values are copied to the
-   child table (except for functions).
-2) When a field is accessed in the table, and that field is not find in the table, the corresponding field
+1) On the moment a table is linked to a supertable (at runtime), all supertable's keys and values are shallow copied to \
+   the child table (except for functions/overloads).
+2) When a field is accessed in the table, and that field is not found in the table, the corresponding field
    in the supertable is used, if found AND it's a function. This also includes operator overloading.
 
-A supertable can also have its own supertable, creating a chain of calls.
+A supertable can also have its own supertable, creating a chain of supertables.
 
 This is useful for creating Object Orientation, for example:
 
@@ -74,6 +79,12 @@ my_object := ChildClass.new();
 my_object.doSomething();             // result: Child class, my default value is 4
 ```
 
+### Supertable updates
+
+* If a supertable function is updated, and that function is missing in the child, this will cause a change of
+  behaviour in the child.
+* Data is not propagated after the child is linked with the parent.
+
 ## Operator overloading
 
 The following special fields can be used to do operation overloading on tables:
@@ -100,7 +111,8 @@ These are special keys which do not share the same space as regular keys.
 Memory
 ------
 
-Every value is stored in a [nanbox](https://github.com/philihp/nanbox), and takes up 64 bits (8 bytes).
+Every value is stored in a [nanbox](https://github.com/philihp/nanbox), and takes up 64 bits (8 bytes). For strings,
+tables, arrays and native pointer, the value is a reference index to the actual value in the heap.
 
 ## Stack
 
@@ -108,8 +120,11 @@ TycheVM is stack based, and the stack is where most operations happen. Values ca
 and accessed out of order.
 
 There's a secondary FP (frame pointer) stack. The top of that stack points to a stack position that serves
-as top of the stack. The goal of this is to allow entering/leaving scopes, particularly when entering/leaving
+as base of the operation stack. The goal of this is to allow entering/leaving scopes, particularly when entering/leaving
 functions.
+
+Indexes are relative to the FP. Indexes work similar to Lua, if negative they represent a count from top to bottom of
+the stack, if position it's from the bottom (relative to FP) to the top.
 
 Example: stack positions below the FP top are invisible and shown as XX.
 
@@ -121,7 +136,7 @@ Stack: XX XX XX XX 00 01 02 03
 
 ## Heap
 
-The heap stores values which are larger than 64-bits: non-static strings, arrays, tables and native function pointers.
+The heap stores values which are larger than 64-bits: strings, arrays, tables and native functions.
 
 Every time the number of allocations hits a ceiling, the GC (garbage collector) is executed. The garbage collector is
 a mark & sweep GC that will receive (1) the global and (2) values in the stack, and will clean up anything that is not
@@ -158,6 +173,8 @@ stack is unwound to the recorded depth and execution jumps to the handler.
 
 There's no support for `finally` blocks at this time.
 
+The thrown value is left on top of the stack for the handler.
+
 ## Default error format
 
 This is the error format, when it's thrown due to an error in the VM. Users are encouraged to use the same format,
@@ -168,8 +185,8 @@ but are free to use any object type.
 ```
 
 Additional fields:
-  * if debugging info: file + line
-  * if no debugging info: function_id + pc
+  * if debugging info: `file` + `line`
+  * if no debugging info: `function_id` + `pc`
 
 -------------------------------------------------------------------------------------------------------------------
 
@@ -230,17 +247,17 @@ Column legend:
 
 ## Table and array operations
 
-| NP   | I8   | I16  | I32  | Instruction | Description                                                                |
-| ---- | ---- | ---- | ---- |-------------| -------------------------------------------------------------------------- |
-| `16` |      |      |      | `getkv`     | Get table's value based on key (pull 1 value, push 1 value)                |
-| `17` |      |      |      | `setkv`     | Set table's key and value (pull 2 values from stack)                       |
-| `1c` |      |      |      | `setop`     | Overload table's operator                                                  |
-|      | `a8` | `c8` | `e8` | `geti`      | Get array's value at position n (push on stack)                            |
-|      | `a9` | `c9` | `e9` | `seti`      | Set array's value at position n (pop value from stack)                     |
-| `18` |      |      |      | `appnd`     | Add value to the end of array                                              |
-| `19` |      |      |      | `next`      | Push the next pair into the stack (for loops), pushes nil as key when over |
-| `1a` |      |      |      | `sptb`      | Set table supertable                                                       |
-| `1b` |      |      |      | `supr`      | Fetch supertable                                                           |
+| NP   | I8   | I16  | I32  | Instruction | Description                                                                           |
+| ---- | ---- | ---- | ---- |-------------|---------------------------------------------------------------------------------------|
+| `16` |      |      |      | `getkv`     | Get table's value based on key (pull 1 value, push 1 value) (or array based on index) |
+| `17` |      |      |      | `setkv`     | Set table's key and value (pull 2 values from stack) (or array based on index)        |
+| `1c` |      |      |      | `setop`     | Overload table's operator                                                             |
+|      | `a8` | `c8` | `e8` | `geti`      | Get array's value at position n (push on stack)                                       |
+|      | `a9` | `c9` | `e9` | `seti`      | Set array's value at position n (pop value from stack)                                |
+| `18` |      |      |      | `appnd`     | Add value to the end of array                                                         |
+| `19` |      |      |      | `next`      | Push the next pair into the stack (for loops), pushes nil as key when over            |
+| `1a` |      |      |      | `sptb`      | Set table supertable                                                                  |
+| `1b` |      |      |      | `supr`      | Fetch supertable                                                                      |
 
 ## Logical/arithmetic
 
