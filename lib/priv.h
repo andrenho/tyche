@@ -145,13 +145,12 @@ void   array_append(Array* a, VALUE v);
 Table*     table_new(Heap const* heap);
 void       table_destroy(Table* t);
 
-size_t     table_len(Table* t);
-TYC_RESULT table_get(Table const* t, VALUE key, VALUE* value);
-void       table_set(Table* t, VALUE key, VALUE value);
-void       table_del(Table* t, VALUE key);
+size_t     table_len(Table const* t);
+TYC_RESULT table_get(Table const* t, VALUE key, VALUE* value, TycheVM* T);
+TYC_RESULT table_set(Table* t, VALUE key, VALUE value, TycheVM* T);
+TYC_RESULT table_del(Table* t, VALUE key, TycheVM* T);
 
 bool       table_has_key(Table const* t, VALUE key);
-size_t     table_size(Table const* t);
 
 bool       table_next(Table* t, VALUE key, VALUE* out_key, VALUE* out_value);
 void       table_setsuper(Table* t, Table* super);
@@ -171,8 +170,8 @@ TYC_RESULT heap_get_array(Heap const* h, HEAP_KEY key, Array** array);
 
 HEAP_KEY   heap_add_table(Heap* h);
 TYC_RESULT heap_get_table(Heap const* h, HEAP_KEY key, Table** table);
-TYC_RESULT heap_set_supertable(Heap const* h, HEAP_KEY table, HEAP_KEY super);
-TYC_RESULT heap_remove_supertable(Heap const* h, HEAP_KEY table);
+TYC_RESULT heap_set_supertable(Heap* h, HEAP_KEY table, HEAP_KEY super);
+TYC_RESULT heap_remove_supertable(Heap* h, HEAP_KEY table);
 
 HEAP_KEY   heap_add_native_function(Heap* h, TYCHE_CB cb);
 TYC_RESULT heap_get_native_function(Heap const* h, HEAP_KEY key, TYCHE_CB* cb);

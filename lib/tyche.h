@@ -27,7 +27,7 @@ typedef enum {
 
 typedef enum {
     TX_SUM, TX_SUB, TX_MUL, TX_DIV, TX_IDIV, TX_EQ, TX_NEQ, TX_LT, TX_LTE, TX_GT, TX_GTE, TX_AND, TX_OR, TX_XOR, TX_POW,
-    TX_SHL, TX_SHR, TX_MOD, TX_NOT, TX_NEG,
+    TX_SHL, TX_SHR, TX_MOD, TX_NOT, TX_NEG, TX_HASH,
     TX_COUNT__
 } TYC_EXPR;
 
@@ -57,7 +57,7 @@ TYC_RESULT tyc_call(TycheVM* T, uint16_t n_pars);
 TYC_RESULT tyc_pushnil(TycheVM* T);
 TYC_RESULT tyc_pushboolean(TycheVM* T, bool value);
 TYC_RESULT tyc_pushinteger(TycheVM* T, int32_t value);
-TYC_RESULT tyc_pushreal(TycheVM* T, double value);
+TYC_RESULT tyc_pushreal(TycheVM* T, TYCHE_REAL value);
 TYC_RESULT tyc_pushstring(TycheVM* T, const char* value);
 TYC_RESULT tyc_pushnativeptr(TycheVM* T, void* ptr);
 TYC_RESULT tyc_pushnativefunction(TycheVM* T, TYC_RESULT(*f)(TycheVM*));
@@ -82,7 +82,10 @@ TYC_RESULT tyc_append(TycheVM* T, int idx);
 TYC_RESULT tyc_next(TycheVM* T, int idx);
 TYC_RESULT tyc_setkv(TycheVM* T, int idx);
 TYC_RESULT tyc_getkv(TycheVM* T, int idx);
+TYC_RESULT tyc_setoper(TycheVM* T, TYC_EXPR oper);
 TYC_RESULT tyc_setsupertable(TycheVM* T, int idx);
+
+TYC_RESULT tyc_global(TycheVM* T);
 
 // memory operations
 TYC_RESULT tyc_gc(TycheVM* T);
