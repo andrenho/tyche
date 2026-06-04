@@ -104,13 +104,13 @@ set(LIB_SRC
         lib/tyche.h
         lib/utils.c
         lib/code.c
-        #lib/value.o
-        #lib/stack.o
-        #lib/array.o
-        #lib/table.o
-        #lib/heap.o
-        #lib/vm.o
-        #lib/expr.o
+        lib/value.c
+        #lib/stack.c
+        #lib/array.c
+        #lib/table.c
+        #lib/heap.c
+        #lib/vm.c
+        #lib/expr.c
 )
 
 # static library
@@ -155,6 +155,10 @@ FetchContent_MakeAvailable(googletest)
 add_executable(tyche-test-as test/tests-as.cc)
 target_link_libraries(tyche-test-as PRIVATE tyche_static GTest::gtest_main m)
 add_dependencies(tyche-test-as gen_instructions)
+
+add_executable(tyche-test-vm test/tests-vm.cc)
+target_link_libraries(tyche-test-vm PRIVATE tyche_static GTest::gtest_main m)
+add_dependencies(tyche-test-vm gen_instructions)
 
 enable_testing()
 add_test(NAME tyche-test-as COMMAND tyche-test-as)

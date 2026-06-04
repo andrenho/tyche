@@ -16,6 +16,7 @@
       <config projectName="tyche" targetName="tyche" />
       <config projectName="tyche" targetName="gmock_main" />
       <config projectName="tyche" targetName="gtest" />
+      <config projectName="tyche" targetName="tyche-test-vm" />
       <config projectName="tyche" targetName="tyche_shared" />
       <config projectName="tyche" targetName="tyche_static" />
       <config projectName="tyche" targetName="gmock" />
@@ -28,24 +29,11 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5601a2be-77e3-47b2-bc63-dd900f122894" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/tyche.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/editor.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile_" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/VM.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/VM.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/assembler/adj_labels.c" beforeDir="false" afterPath="$PROJECT_DIR$/lib/assembler/adj_labels.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/assembler/assembler_priv.h" beforeDir="false" afterPath="$PROJECT_DIR$/lib/assembler/assembler_priv.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/assembler/assembly.c" beforeDir="false" afterPath="$PROJECT_DIR$/lib/assembler/assembly.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/assembler/bytecode.c" beforeDir="false" afterPath="$PROJECT_DIR$/lib/assembler/bytecode.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/code.c" beforeDir="false" afterPath="$PROJECT_DIR$/lib/code.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/priv.h" beforeDir="false" afterPath="$PROJECT_DIR$/lib/priv.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/vm.c" beforeDir="false" afterPath="$PROJECT_DIR$/lib/vm.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/tests-as.c" beforeDir="false" afterPath="$PROJECT_DIR$/test/tests-as.cc" afterDir="false" />
+    <list default="true" id="5601a2be-77e3-47b2-bc63-dd900f122894" name="Changes" comment=".">
+      <change afterPath="$PROJECT_DIR$/test/tests-vm.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/tests-as.cc" beforeDir="false" afterPath="$PROJECT_DIR$/test/tests-as.cc" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,6 +50,8 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Google Test.tyche-test-as.executor": "Run",
+    "Google Test.tyche-test-vm.executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.cidr.known.project.marker": "true",
@@ -73,16 +63,22 @@
     "cidr.known.project.marker": "true",
     "ctest.advertisement.all.test.configuration.is.created": "true",
     "git-widget-placeholder": "new-tests",
-    "settings.editor.selected.configurable": "reference.settings.ide.settings.notifications"
+    "settings.editor.selected.configurable": "CMakeSettings"
   }
 }]]></component>
-  <component name="RunManager" selected="CMake Application.tyche">
+  <component name="RunManager" selected="Google Test.tyche-test-vm">
     <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
         <option name="CLION.EXTERNAL.BUILD" enabled="true" />
       </method>
     </configuration>
     <configuration name="tyche-test-as" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="tyche" TARGET_NAME="tyche-test-as" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="tyche" RUN_TARGET_NAME="tyche-test-as" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="tyche-test-vm" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="tyche" TARGET_NAME="tyche-test-vm" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="tyche" RUN_TARGET_NAME="tyche-test-vm" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
@@ -145,6 +141,7 @@
       <item itemvalue="CMake Application.gtest_main" />
       <item itemvalue="CTest Application.All CTest" />
       <item itemvalue="Google Test.tyche-test-as" />
+      <item itemvalue="Google Test.tyche-test-vm" />
     </list>
   </component>
   <component name="TaskManager">
@@ -154,13 +151,26 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1780589039296</updated>
-      <workItem from="1780589042417" duration="320000" />
+      <workItem from="1780589042417" duration="2051000" />
     </task>
+    <task id="LOCAL-00001" summary=".">
+      <option name="closed" value="true" />
+      <created>1780589416668</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1780589416668</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="VCPKGProject">
     <isAutomaticCheckingOnLaunch value="false" />
     <isAutomaticFoundErrors value="true" />
     <isAutomaticReloadCMake value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="." />
+    <option name="LAST_COMMIT_MESSAGE" value="." />
   </component>
 </project>
