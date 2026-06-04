@@ -12,11 +12,10 @@
   <component name="CMakeRunConfigurationManager">
     <generated>
       <config projectName="tyche" targetName="gen_instructions" />
-      <config projectName="tyche" targetName="tyche-test-as" />
       <config projectName="tyche" targetName="tyche" />
       <config projectName="tyche" targetName="gmock_main" />
       <config projectName="tyche" targetName="gtest" />
-      <config projectName="tyche" targetName="tyche-test-vm" />
+      <config projectName="tyche" targetName="tyche-test" />
       <config projectName="tyche" targetName="tyche_shared" />
       <config projectName="tyche" targetName="tyche_static" />
       <config projectName="tyche" targetName="gmock" />
@@ -30,10 +29,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5601a2be-77e3-47b2-bc63-dd900f122894" name="Changes" comment=".">
-      <change afterPath="$PROJECT_DIR$/test/tests-vm.cc" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/tests-array.cc" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/tests-heap.cc" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/tests-stack.cc" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/tests-table.cc" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/tests-as.cc" beforeDir="false" afterPath="$PROJECT_DIR$/test/tests-as.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/tests-vm.cc" beforeDir="false" afterPath="$PROJECT_DIR$/test/tests-values.cc" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,22 +65,22 @@
     "cidr.known.project.marker": "true",
     "ctest.advertisement.all.test.configuration.is.created": "true",
     "git-widget-placeholder": "new-tests",
+    "last_opened_file_path": "/home/andre/prj/tyche/test",
     "settings.editor.selected.configurable": "CMakeSettings"
   }
 }]]></component>
-  <component name="RunManager" selected="Google Test.tyche-test-vm">
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/test" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Google Test.tyche-test">
     <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
         <option name="CLION.EXTERNAL.BUILD" enabled="true" />
       </method>
     </configuration>
-    <configuration name="tyche-test-as" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="tyche" TARGET_NAME="tyche-test-as" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="tyche" RUN_TARGET_NAME="tyche-test-as" TEST_MODE="SUITE_TEST">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-        <option name="BeforeTestRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="tyche-test-vm" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="tyche" TARGET_NAME="tyche-test-vm" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="tyche" RUN_TARGET_NAME="tyche-test-vm" TEST_MODE="SUITE_TEST">
+    <configuration name="tyche-test" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="tyche" TARGET_NAME="tyche-test" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="tyche" RUN_TARGET_NAME="tyche-test" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
@@ -140,8 +142,7 @@
       <item itemvalue="CMake Application.gtest" />
       <item itemvalue="CMake Application.gtest_main" />
       <item itemvalue="CTest Application.All CTest" />
-      <item itemvalue="Google Test.tyche-test-as" />
-      <item itemvalue="Google Test.tyche-test-vm" />
+      <item itemvalue="Google Test.tyche-test" />
     </list>
   </component>
   <component name="TaskManager">
@@ -151,7 +152,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1780589039296</updated>
-      <workItem from="1780589042417" duration="2051000" />
+      <workItem from="1780589042417" duration="4129000" />
     </task>
     <task id="LOCAL-00001" summary=".">
       <option name="closed" value="true" />
@@ -161,7 +162,15 @@
       <option name="project" value="LOCAL" />
       <updated>1780589416668</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary=".">
+      <option name="closed" value="true" />
+      <created>1780608342207</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1780608342207</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="VCPKGProject">

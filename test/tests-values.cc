@@ -13,8 +13,6 @@ extern "C" {
 #include <set>
 #include <string>
 
-__thread char last_err_msg[256] = {0};
-
 bool abort_on_errors = false;
 
 // ---- helper: build a double from a raw 64-bit pattern -------------------

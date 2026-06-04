@@ -152,17 +152,12 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-add_executable(tyche-test-as test/tests-as.cc)
-target_link_libraries(tyche-test-as PRIVATE tyche_static GTest::gtest_main m)
-add_dependencies(tyche-test-as gen_instructions)
-
-add_executable(tyche-test-vm test/tests-vm.cc)
-target_link_libraries(tyche-test-vm PRIVATE tyche_static GTest::gtest_main m)
-add_dependencies(tyche-test-vm gen_instructions)
+add_executable(tyche-test test/tests-as.cc test/tests-values.cc)
+target_link_libraries(tyche-test PRIVATE tyche_static GTest::gtest_main m)
+add_dependencies(tyche-test gen_instructions)
 
 enable_testing()
-add_test(NAME tyche-test-as COMMAND tyche-test-as)
-add_test(NAME tyche-test-vm COMMAND tyche-test-vm)
+add_test(NAME tyche-test-as COMMAND tyche-test)
 
 #
 # install
