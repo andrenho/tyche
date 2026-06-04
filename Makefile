@@ -8,9 +8,6 @@ DEBUG ?= 0
 # install prefix
 PREFIX ?= /usr/local
 
-# add functions to debug assembly to console
-DEBUG_ASSEMBLY ?= 0
-
 #
 # internal flags/options
 #
@@ -54,10 +51,6 @@ RELEASE_LDFLAGS=-flto=auto -s
 CFLAGS+=-std=c99 -D_GNU_SOURCE -fPIC -fvisibility=hidden -isystem lib/contrib -isystem src/contrib -MMD -MP \
 	-DVERSION_MINOR=${VERSION_MINOR} -DVERSION_MAJOR=${VERSION_MAJOR} -Ilib
 LDFLAGS+=-lm
-
-ifeq ($(DEBUG_ASSEMBLY),1)
-  CFLAGS += -DDEBUG_ASSEMBLY
-endif
 
 # adjust CFLAGS/LDFLAGS
 
@@ -110,9 +103,11 @@ lib/instructions/instructions.h: lib/instructions/gen-inst.lua
 # executable files
 #
 
-LIB_SRC=lib/value.o lib/stack.o lib/array.o lib/table.o lib/heap.o lib/vm.o lib/expr.o \
- 	lib/code.o lib/utils.o lib/assembler/assembly.o lib/assembler/assembler.o lib/assembler/adj_labels.o \
- 	lib/assembler/bytecode.o lib/instructions/instructions.o
+LIB_ASSEMBLER=
+
+LIB_SRC= lib/assembler/assembly.o lib/assembler/assembler.o lib/assembler/adj_labels.o \
+         lib/assembler/bytecode.o lib/instructions/instructions.o lib/utils.o \
+         #lib/value.o lib/stack.o lib/array.o lib/table.o lib/heap.o lib/vm.o lib/expr.o lib/code.o
 
 $(LIB_SRC:.o=.c) test/tests-as.c test/tests-vm.c: lib/instructions/instructions.h
 
