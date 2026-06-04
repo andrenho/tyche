@@ -64,7 +64,7 @@ typedef enum {
 } TYC_CONST_TYPE;
 
 typedef struct Instruction {
-    TYC_INST operator;
+    TYC_INST operator_;
     int32_t  operand;
     uint8_t  sz;
 } Instruction;

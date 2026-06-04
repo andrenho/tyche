@@ -1,14 +1,18 @@
+extern "C" {
 #include "../lib/assembler/assembler_priv.h"
+}
+
+#include <gtest/gtest.h>
 
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
-static void test_assembly(void)
-{
-    printf("## Test assembly\n");
+__thread char last_err_msg[256] = {0};
 
+TEST(Assembly, Compilation)
+{
     const char* assembly_code =
             ".assembly\n"
             ".const\n"
@@ -36,26 +40,24 @@ static void test_assembly(void)
     assert(assembly->functions_n == 2);
     assert(assembly->functions[0].n_instructions == 4);
     assert(assembly->functions[0].instructions[0].instruction == TO_PUSHI);
-    assert(assembly->functions[0].instructions[0].operator.type == OP_INT);
-    assert(assembly->functions[0].instructions[0].operator.v.i == 2);
+    assert(assembly->functions[0].instructions[0].operator_.type == OP_INT);
+    assert(assembly->functions[0].instructions[0].operator_.v.i == 2);
     assert(assembly->functions[0].instructions[1].instruction == TO_PUSHI);
-    assert(assembly->functions[0].instructions[1].operator.type == OP_INT);
-    assert(assembly->functions[0].instructions[1].operator.v.i == -3);
+    assert(assembly->functions[0].instructions[1].operator_.type == OP_INT);
+    assert(assembly->functions[0].instructions[1].operator_.v.i == -3);
     assert(assembly->functions[0].instructions[2].instruction == TO_SUM);
     assert(assembly->functions[0].instructions[3].instruction == TO_RET);
 
     assert(assembly->functions[1].n_instructions == 2);
     assert(assembly->functions[1].instructions[0].instruction == TO_PUSHI);
-    assert(assembly->functions[1].instructions[0].operator.v.i == 5000);
+    assert(assembly->functions[1].instructions[0].operator_.v.i == 5000);
     assert(assembly->functions[1].instructions[1].instruction == TO_RET);
 
     assembly_destroy(assembly);
 }
 
-static void test_labels(void)
+TEST(Assembly, Labels)
 {
-    printf("## Test labels\n");
-
     const char* assembly_code =
             ".assembly\n"
             ".func 0\n"
@@ -70,8 +72,8 @@ static void test_labels(void)
     assert(assembly->functions_n == 1);
     assert(assembly->functions[0].n_instructions == 3);
     assert(assembly->functions[0].instructions[0].instruction == TO_JMP);
-    assert(assembly->functions[0].instructions[0].operator.type == OP_LABEL);
-    assert(strcmp(assembly->functions[0].instructions[0].operator.v.label, "@my_label") == 0);
+    assert(assembly->functions[0].instructions[0].operator_.type == OP_LABEL);
+    assert(strcmp(assembly->functions[0].instructions[0].operator_.v.label, "@my_label") == 0);
     assert(assembly->functions[0].instructions[1].instruction == TO_POP);
     assert(assembly->functions[0].instructions[2].n_labels == 1);
     assert(strcmp(assembly->functions[0].instructions[2].labels[0], "@my_label") == 0);
@@ -84,13 +86,13 @@ static void test_labels(void)
     assert(assembly->functions_n == 1);
     assert(assembly->functions[0].n_instructions == 3);
     assert(assembly->functions[0].instructions[0].instruction == TO_JMP);
-    assert(assembly->functions[0].instructions[0].operator.type == OP_INT);
-    assert(assembly->functions[0].instructions[0].operator.v.i == 4);
+    assert(assembly->functions[0].instructions[0].operator_.type == OP_INT);
+    assert(assembly->functions[0].instructions[0].operator_.v.i == 4);
 
     assembly_destroy(assembly);
 }
 
-static void test_bytecode_gen(void)
+TEST(Bytecode, Generation)
 {
     const char* assembly_code =
             ".assembly\n"
@@ -148,9 +150,8 @@ static void test_bytecode_gen(void)
     free(bytecode);
 }
 
-static void test_bytecode_parsing(void)
+TEST(Bytecode, Parsing)
 {
-    printf("## Bytecode\n");
     const char* assembly_code =
             ".assembly\n"
             ".const\n"
@@ -193,23 +194,23 @@ static void test_bytecode_parsing(void)
 
     uint32_t addr = 0;
     Instruction inst = code_next_instruction(code, 0, addr);
-    assert(inst.operator == TO_PUSHI);
+    assert(inst.operator_ == TO_PUSHI);
     assert(inst.operand == 2);
     assert(inst.sz == 2);
     addr += inst.sz;
 
     inst = code_next_instruction(code, 0, addr);
-    assert(inst.operator == TO_PUSHI);
+    assert(inst.operator_ == TO_PUSHI);
     assert(inst.operand == -3);
     addr += inst.sz;
 
     inst = code_next_instruction(code, 0, addr);
-    assert(inst.operator == TO_SUM);
+    assert(inst.operator_ == TO_SUM);
     assert(inst.operand == 0);
     addr += inst.sz;
 
     inst = code_next_instruction(code, 1, 0);
-    assert(inst.operator == TO_PUSHI + TO_16BIT);
+    assert(inst.operator_ == TO_PUSHI + TO_16BIT);
     assert(inst.operand == 5000);
     assert(inst.sz == 3);
 
@@ -217,9 +218,8 @@ static void test_bytecode_parsing(void)
     free(bytecode);
 }
 
-static void test_bytecode_labels()
+TEST(Bytecode, Labels)
 {
-    printf("## Bytecode - labels\n");
     const char* assembly_code =
             ".assembly\n"
             ".func 0\n"
@@ -235,19 +235,10 @@ static void test_bytecode_labels()
     assert(code_load_bytecode(code, bytecode, bytecode_sz) == TYC_OK);
 
     Instruction inst = code_next_instruction(code, 0, 0);
-    assert(inst.operator == TO_JMP);
+    assert(inst.operator_ == TO_JMP);
     assert(inst.operand == 4);
     assert(inst.sz == 3);
 
     code_destroy(code);
     free(bytecode);
-}
-
-int main(void)
-{
-    test_assembly();
-    test_labels();
-    test_bytecode_gen();
-    test_bytecode_parsing();
-    test_bytecode_labels();
 }

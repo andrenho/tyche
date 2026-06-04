@@ -29,13 +29,13 @@ TYC_RESULT assembler_adjust_labels(Assembly* assembly)
         // replace labels
         for (uint32_t j = 0; j < assembly->functions[i].n_instructions; ++j) {
             AssemblyInstruction* inst = &assembly->functions[i].instructions[j];
-            if (inst->operator.type == OP_LABEL) {
-                khiter_t k = kh_get_LBL(label_pc, inst->operator.v.label);
+            if (inst->operator_.type == OP_LABEL) {
+                khiter_t k = kh_get_LBL(label_pc, inst->operator_.v.label);
                 if (k == kh_end(label_pc))
-                    ERROR("Label '%s' not found", inst->operator.v.label);
-                free(inst->operator.v.label);
-                inst->operator.type = OP_INT;
-                inst->operator.v.i = (int32_t) kh_value(label_pc, k);
+                    ERROR("Label '%s' not found", inst->operator_.v.label);
+                free(inst->operator_.v.label);
+                inst->operator_.type = OP_INT;
+                inst->operator_.v.i = (int32_t) kh_value(label_pc, k);
             }
         }
 

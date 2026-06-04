@@ -33,7 +33,7 @@ endif
 
 # debug and release flags
 
-DEBUG_CFLAGS=-O0 -ggdb3 ${WARNINGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined \
+DEBUG_CPPFLAGS=-O0 -ggdb3 ${WARNINGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined \
   -fno-sanitize-recover=all -fstack-protector-strong -fstack-clash-protection -fno-common ${ADD_DBG_FLAGS} \
   -DCHECK_TYCHE_BUGS=1
 DEBUG_LDFLAGS=-fsanitize=address -fsanitize=undefined
@@ -41,26 +41,30 @@ DEBUG_LDFLAGS=-fsanitize=address -fsanitize=undefined
 # apple clang doesn't support -fsanitize=leak
 UNAME_S := $(shell uname -s)
 ifneq ($(UNAME_S),Darwin)
-  DEBUG_CFLAGS += -fsanitize=leak
+  DEBUG_CPPFLAGS += -fsanitize=leak
   DEBUG_LDFLAGS += -fsanitize=leak
 endif
 
-RELEASE_CFLAGS=-O3 -flto=auto -march=native -mtune=native -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -fstack-protector-strong
+RELEASE_CPPFLAGS=-O3 -flto=auto -march=native -mtune=native -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -fstack-protector-strong
 RELEASE_LDFLAGS=-flto=auto -s
 
-CFLAGS+=-std=c99 -D_GNU_SOURCE -fPIC -fvisibility=hidden -isystem lib/contrib -isystem src/contrib -MMD -MP \
+CFLAGS+=-std=c99
+CXXFLAGS+=-std=c++23
+CPPFLAGS+=-D_GNU_SOURCE -fPIC -fvisibility=hidden -isystem lib/contrib -isystem src/contrib -MMD -MP \
 	-DVERSION_MINOR=${VERSION_MINOR} -DVERSION_MAJOR=${VERSION_MAJOR} -Ilib
 LDFLAGS+=-lm
 
-# adjust CFLAGS/LDFLAGS
+# adjust CPPFLAGS/LDFLAGS
 
 ifeq ($(DEBUG),1)
-  CFLAGS+=${DEBUG_CFLAGS}
+  CPPFLAGS+=${DEBUG_CPPFLAGS}
   LDFLAGS+=${DEBUG_LDFLAGS}
 else
-  CFLAGS+=${RELEASE_CFLAGS}
+  CPPFLAGS+=${RELEASE_CPPFLAGS}
   LDFLAGS+=${RELEASE_LDFLAGS}
 endif
+
+GTEST_LIBS=-lgtest -lgtest_main -lpthread
 
 #
 # generic targets
@@ -106,23 +110,23 @@ lib/instructions/instructions.h: lib/instructions/gen-inst.lua
 LIB_ASSEMBLER=
 
 LIB_SRC= lib/assembler/assembly.o lib/assembler/assembler.o lib/assembler/adj_labels.o \
-         lib/assembler/bytecode.o lib/instructions/instructions.o lib/utils.o \
+         lib/assembler/bytecode.o lib/instructions/instructions.o lib/utils.o lib/code.o \
          #lib/value.o lib/stack.o lib/array.o lib/table.o lib/heap.o lib/vm.o lib/expr.o lib/code.o
 
-$(LIB_SRC:.o=.c) test/tests-as.c test/tests-vm.c: lib/instructions/instructions.h
+$(LIB_SRC:.o=.c) test/tests-as.cc test/tests-vm.c: lib/instructions/instructions.h
 
 tyche: src/tyche.o libtyche.a
 	$(CC) -o $@ $^ ${LDFLAGS}
 
 tyche-test-as: lib/instructions/instructions.h
 tyche-test-as: test/tests-as.o libtyche.a
-	$(CC) -o $@ test/tests-as.o libtyche.a ${LDFLAGS} -I../lib
+	$(CXX) -o $@ test/tests-as.o libtyche.a ${LDFLAGS} -I../lib ${GTEST_LIBS}
 
-tyche-test-vm: CFLAGS += `pkg-config --cflags lua`
+tyche-test-vm: CPPFLAGS += `pkg-config --cflags lua`
 tyche-test-vm: LDFLAGS += `pkg-config --libs lua`
 tyche-test-vm: lib/instructions/instructions.h
 tyche-test-vm: test/tests-vm.o libtyche.a
-	$(CC) -o $@ test/tests-vm.o libtyche.a ${LDFLAGS} -I../lib
+	$(CXX) -o $@ test/tests-vm.o libtyche.a ${LDFLAGS} -I../lib ${GTEST_LIBS}
 
 libtyche.a: ${LIB_SRC}
 	ar rcs $@ $^

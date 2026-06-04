@@ -25,7 +25,7 @@ typedef struct {
 
 typedef struct {
     TYC_INST         instruction;
-    AssemblyOperator operator;
+    AssemblyOperator operator_;
     char**           labels;
     size_t           n_labels;
 } AssemblyInstruction;

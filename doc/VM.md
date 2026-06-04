@@ -30,7 +30,7 @@ Tables are hashmaps that can use different types of values as keys. The most com
 Table keys are resolved in two steps
 
 1) Calculate hash value of the key value _(see below)_
-2) Run the equality operator (which can be overloaded for tables)
+2) Run the equality operator_ (which can be overloaded for tables)
 
 ## Hash value of keys
 
@@ -48,7 +48,7 @@ A table can be linked to a supertable, which works similar to inheritance. The r
 1) On the moment a table is linked to a supertable (at runtime), all supertable's keys and values are shallow copied to \
    the child table (except for functions/overloads).
 2) When a field is accessed in the table, and that field is not found in the table, the corresponding field
-   in the supertable is used, if found AND it's a function. This also includes operator overloading.
+   in the supertable is used, if found AND it's a function. This also includes operator_ overloading.
 
 A supertable can also have its own supertable, creating a chain of supertables.
 
@@ -252,7 +252,7 @@ Column legend:
 |------|------|------|------|-------------|---------|----------------------------------------------------------------------------|
 | `16` |      |      |      | `getkv`     | `-1 +1` | Get table's value based on key (pull 1 value, push 1 value)                |
 | `17` |      |      |      | `setkv`     | `-2`    | Set table's key and value (pull 2 values from stack)                       |
-| `1c` |      |      |      | `setop`     | `-2`    | Overload table's operator                                                  |
+| `1c` |      |      |      | `setop`     | `-2`    | Overload table's operator_                                                  |
 |      | `a8` | `c8` | `e8` | `geti`      | `+1`    | Get array's value at position n (push on stack)                            |
 |      | `a9` | `c9` | `e9` | `seti`      | `-1`    | Set array's value at position n                                            |
 | `18` |      |      |      | `appnd`     | `-1`    | Add value to the end of array                                              |
