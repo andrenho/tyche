@@ -23,9 +23,6 @@ extern "C" {
 #include <cstring>
 #include <map>
 
-__thread char last_err_msg[256] = {0};
-bool abort_on_errors = false;
-
 static_assert(sizeof(VALUE) == 8, "VALUE expected to be a 64-bit nanbox");
 
 static uint64_t vbits(VALUE v) {
@@ -41,16 +38,17 @@ protected:
     Table*   t = nullptr;
 
     void SetUp() override {
-        T = tyc_new();
-        ASSERT_NE(T, nullptr);
-        h = tyc_heap(T);
+        // T = tyc_new();
+        // ASSERT_NE(T, nullptr);
+        h = heap_new();
         ASSERT_NE(h, nullptr);
         t = table_new(h);
         ASSERT_NE(t, nullptr);
     }
     void TearDown() override {
+        if (h) heap_destroy(h);
         if (t) table_destroy(t);   // destroy table before the heap it borrows
-        if (T) tyc_destroy(T);
+        // if (T) tyc_destroy(T);
     }
 
     // Intern a string into the heap and wrap it as a string VALUE.
@@ -239,7 +237,7 @@ TEST_F(TableTest, SuperDataIsCopiedAtLink) {
     ASSERT_EQ(table_set(super, str("x"), create_value_integer(1), T), TYC_OK);
     ASSERT_EQ(table_set(child, str("y"), create_value_integer(2), T), TYC_OK);
 
-    table_setsuper(child, super);
+    table_setsuper(child, super, T);
 
     VALUE out;
     ASSERT_EQ(table_get(child, str("x"), &out, T), TYC_OK);  // copied from super
@@ -257,7 +255,7 @@ TEST_F(TableTest, SuperDataChangeDoesNotPropagateAfterLink) {
     Table* super = table_new(h);
     Table* child = table_new(h);
     ASSERT_EQ(table_set(super, str("x"), create_value_integer(1), T), TYC_OK);
-    table_setsuper(child, super);
+    table_setsuper(child, super, T);
 
     ASSERT_EQ(table_set(super, str("x"), create_value_integer(99), T), TYC_OK);  // after link
 
@@ -273,7 +271,7 @@ TEST_F(TableTest, SuperFunctionFallsThrough) {
     Table* super = table_new(h);
     Table* child = table_new(h);
     ASSERT_EQ(table_set(super, str("f"), create_value_function_idx(7), T), TYC_OK);
-    table_setsuper(child, super);
+    table_setsuper(child, super, T);
 
     VALUE out;
     ASSERT_EQ(table_get(child, str("f"), &out, T), TYC_OK);  // not copied, fell through
@@ -288,7 +286,7 @@ TEST_F(TableTest, SuperFunctionUpdatePropagates) {
     Table* super = table_new(h);
     Table* child = table_new(h);
     ASSERT_EQ(table_set(super, str("f"), create_value_function_idx(7), T), TYC_OK);
-    table_setsuper(child, super);
+    table_setsuper(child, super, T);
 
     ASSERT_EQ(table_set(super, str("f"), create_value_function_idx(8), T), TYC_OK);  // after link
 
@@ -305,8 +303,8 @@ TEST_F(TableTest, SuperChainFunctionFallsThrough) {
     Table* pa = table_new(h);   // parent
     Table* ch = table_new(h);   // child
     ASSERT_EQ(table_set(gp, str("g"), create_value_function_idx(11), T), TYC_OK);
-    table_setsuper(pa, gp);
-    table_setsuper(ch, pa);
+    table_setsuper(pa, gp, T);
+    table_setsuper(ch, pa, T);
 
     VALUE out;
     ASSERT_EQ(table_get(ch, str("g"), &out, T), TYC_OK);  // two hops up the chain

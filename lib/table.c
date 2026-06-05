@@ -33,7 +33,7 @@ void table_destroy(Table* t)
     free(t);
 }
 
-size_t table_len(Table* t)
+size_t table_len(Table const* t)
 {
     if (t->super == NULL)
         return kh_size(t->tbl_int);
@@ -51,11 +51,11 @@ static TABLE_HASH value_hash(VALUE v)
     return v.as_int64;
 }
 
-void table_set(Table* t, VALUE key, VALUE value)
+TYC_RESULT table_set(Table* t, VALUE key, VALUE value, TycheVM* T)
 {
     if (value_type(value) == TYC_NIL) {  // if value = nil, delete from table
-        table_del(t, key);
-        return;
+        table_del(t, key, T);
+        return TYC_OK;
     }
 
     TABLE_HASH hash = value_hash(key);
@@ -65,16 +65,18 @@ void table_set(Table* t, VALUE key, VALUE value)
     if (ret < 0)
         out_of_memory();
     kh_value(t->tbl_int, k) = (TableValue) { key, value };
+
+    return TYC_OK;
 }
 
-TYC_RESULT table_get(Table const* t, VALUE key, VALUE* value)
+TYC_RESULT table_get(Table const* t, VALUE key, VALUE* value, TycheVM* T)
 {
     TABLE_HASH hash = value_hash(key);
     khiter_t k = kh_get(TABLE_INT, t->tbl_int, hash);
     if (value) {
         if (k == kh_end(t->tbl_int)) {                  // if not found,
             if (t->super)                               //   look into the supertable
-                return table_get(t->super, key, value);
+                return table_get(t->super, key, value, T);
             else
                 *value = create_value_nil();            //   no supertable, just return nil
         } else {
@@ -92,16 +94,17 @@ bool table_has_key(Table const* t, VALUE key)
     return k != kh_end(t->tbl_int);
 }
 
-void table_del(Table* t, VALUE key)
+TYC_RESULT table_del(Table* t, VALUE key, TycheVM* T)
 {
     TABLE_HASH hash = value_hash(key);
     khiter_t k = kh_get(TABLE_INT, t->tbl_int, hash);
     if (k == kh_end(t->tbl_int))
-        return;
+        return TYC_OK;
     kh_del(TABLE_INT, t->tbl_int, k);
+    return TYC_OK;
 }
 
-static bool table_next_with_child(Table* t, Table* child, VALUE key, VALUE* out_key, VALUE* out_value)
+static bool table_next_with_child(Table const* t, Table const* child, VALUE key, VALUE* out_key, VALUE* out_value)
 {
     // if nil, start from the beginning, else find next
     khint_t k;
@@ -142,17 +145,12 @@ skip_next:
     }
 }
 
-bool table_next(Table* t, VALUE key, VALUE* out_key, VALUE* out_value)
+bool table_next(Table const* t, VALUE key, VALUE* out_key, VALUE* out_value)
 {
     return table_next_with_child(t, NULL, key, out_key, out_value);
 }
 
-size_t table_size(Table const* t)
-{
-    return kh_size(t->tbl_int);
-}
-
-void table_setsuper(Table* t, Table* super)
+void table_setsuper(Table* t, Table* super, TycheVM* T)
 {
     t->super = super;
 
@@ -160,7 +158,7 @@ void table_setsuper(Table* t, Table* super)
         VALUE key = create_value_nil(), value;
         while (table_next(t->super, key, &key, &value)) {
             if (value_type(value) != TYC_FUNCTION)
-                table_set(t, key, value);
+                table_set(t, key, value, T);
         }
     }
 }

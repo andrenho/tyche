@@ -152,8 +152,8 @@ TYC_RESULT table_del(Table* t, VALUE key, TycheVM* T);
 
 bool       table_has_key(Table const* t, VALUE key);
 
-bool       table_next(Table* t, VALUE key, VALUE* out_key, VALUE* out_value);
-void       table_setsuper(Table* t, Table* super);
+bool       table_next(Table const* t, VALUE key, VALUE* out_key, VALUE* out_value);
+void       table_setsuper(Table* t, Table* super, TycheVM* T);
 
 //
 // HEAP
@@ -170,8 +170,8 @@ TYC_RESULT heap_get_array(Heap const* h, HEAP_KEY key, Array** array);
 
 HEAP_KEY   heap_add_table(Heap* h);
 TYC_RESULT heap_get_table(Heap const* h, HEAP_KEY key, Table** table);
-TYC_RESULT heap_set_supertable(Heap* h, HEAP_KEY table, HEAP_KEY super);
-TYC_RESULT heap_remove_supertable(Heap* h, HEAP_KEY table);
+TYC_RESULT heap_set_supertable(Heap const* h, HEAP_KEY table, HEAP_KEY super, TycheVM* T);
+TYC_RESULT heap_remove_supertable(Heap const* h, HEAP_KEY table, TycheVM* T);
 
 HEAP_KEY   heap_add_native_function(Heap* h, TYCHE_CB cb);
 TYC_RESULT heap_get_native_function(Heap const* h, HEAP_KEY key, TYCHE_CB* cb);

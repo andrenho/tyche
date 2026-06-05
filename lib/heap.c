@@ -215,23 +215,23 @@ TYC_RESULT heap_get_table(Heap const* h, HEAP_KEY key, Table** table)
     return TYC_OK;
 }
 
-TYC_RESULT heap_set_supertable(Heap const* h, HEAP_KEY table, HEAP_KEY super)
+TYC_RESULT heap_set_supertable(Heap const* h, HEAP_KEY table, HEAP_KEY super, TycheVM* T)
 {
     TYC_RESULT r;
     HeapValue *htable, *hsuper;
     TRY(heap_get_item(h, table, &htable))
     htable->value.t.supertable = super;
     TRY(heap_get_item(h, super, &hsuper))
-    table_setsuper(htable->value.t.table, hsuper->value.t.table);
+    table_setsuper(htable->value.t.table, hsuper->value.t.table, T);
     return TYC_OK;
 }
 
-TYC_RESULT heap_remove_supertable(Heap const* h, HEAP_KEY table)
+TYC_RESULT heap_remove_supertable(Heap const* h, HEAP_KEY table, TycheVM* T)
 {
     TYC_RESULT r;
     Table* t;
     TRY(heap_get_table(h, table, &t))
-    table_setsuper(t, NULL);
+    table_setsuper(t, NULL, T);
     return TYC_OK;
 }
 
