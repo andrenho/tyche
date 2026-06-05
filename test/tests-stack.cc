@@ -23,12 +23,6 @@ extern "C" {
 #include <cstring>
 #include <set>
 
-// priv.h declares these extern; stack.c likely references them via ERROR().
-// If multiple test files are linked into ONE binary, centralize these two
-// definitions (or mark them __attribute__((weak))) to avoid duplicate symbols.
-__thread char last_err_msg[256] = {0};
-bool abort_on_errors = false;
-
 static_assert(sizeof(VALUE) == 8, "VALUE expected to be a 64-bit nanbox");
 
 // Raw bits of a (canonical, non-NaN) VALUE — fine for the integer/heap-key
@@ -319,7 +313,7 @@ TEST(Stack, CollectableArrayReturnsOnlyHeapValues) {
     VALUE* out = nullptr;
     size_t n = stack_collectable_array(s, &out);
     EXPECT_EQ(n, 3u);
-    if (n > 0) ASSERT_NE(out, nullptr);
+    if (n > 0) { ASSERT_NE(out, nullptr); }
 
     // Order is not specified, so compare as a set; every returned value must
     // be collectable and must be one we pushed.

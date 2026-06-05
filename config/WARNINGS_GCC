@@ -1,5 +1,4 @@
 -Wlogical-op
--Wjump-misses-init
 -Wduplicated-cond
 -Wduplicated-branches
 -Wtrampolines

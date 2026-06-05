@@ -105,7 +105,7 @@ set(LIB_SRC
         lib/utils.c
         lib/code.c
         lib/value.c
-        #lib/stack.c
+        lib/stack.c
         #lib/array.c
         #lib/table.c
         #lib/heap.c
@@ -152,7 +152,11 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-add_executable(tyche-test test/tests-assembly.cc test/tests-values.cc)
+add_executable(tyche-test
+        test/tests-assembly.cc
+        test/tests-values.cc
+        test/tests-stack.cc
+)
 target_link_libraries(tyche-test PRIVATE tyche_static GTest::gtest_main m)
 add_dependencies(tyche-test gen_instructions)
 

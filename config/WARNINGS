@@ -2,7 +2,6 @@
 -Wextra
 -Wpedantic
 -Wshadow
--Wmissing-prototypes
 -Wcast-qual
 -Wcast-align
 -Wconversion
