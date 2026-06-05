@@ -87,13 +87,13 @@ TYC_TYPE    value_type(VALUE v);
 const char* type_name(TYC_TYPE t);
 bool        type_is_collectable(TYC_TYPE t);
 
-bool     value_boolean(VALUE v);
-int32_t  value_integer(VALUE v);
-TYCHE_REAL   value_real(VALUE v);
-uint32_t value_function_idx(VALUE v);
-HEAP_KEY value_heap_key(VALUE v);
-bool     value_is_zero(VALUE v);
-void*    value_native_pointer(VALUE v);
+bool       value_boolean(VALUE v);
+int32_t    value_integer(VALUE v);
+TYCHE_REAL value_real(VALUE v);
+uint32_t   value_function_idx(VALUE v);
+HEAP_KEY   value_heap_key(VALUE v);
+bool       value_is_zero(VALUE v);
+void*      value_native_pointer(VALUE v);
 
 VALUE create_value_nil(void);
 VALUE create_value_bool(bool b);
@@ -181,6 +181,8 @@ size_t     heap_size(Heap const* h);
 
 bool       heap_should_gc(Heap* h);
 void       heap_gc(Heap* h, VALUE const* roots, size_t n_roots);
+
+void       heap_debug(Heap* h);
 
 //
 // CODE

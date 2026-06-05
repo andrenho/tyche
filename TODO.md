@@ -63,6 +63,13 @@ Decisions:
   - [x] Run GC occasionally
   - [x] Assembler in C
   - [x] Main application
+  - [ ] Improvements
+    - [ ] Rename "operator" (because of C++)
+    - [ ] Implement hash for VM (no hash for array)
+    - [ ] Table
+      - [ ] Pass hash callback (?)
+      - [ ] Store multiple values for the same hash
+    - [ ] Convert tests to Google Test and C++
 - [ ] Prepare for release
   - [x] Documentation and webpage
   - [ ] Review public function names
