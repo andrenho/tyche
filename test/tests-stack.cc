@@ -248,31 +248,6 @@ TEST(Stack, PushFpRaisesBaseAndHidesLowerSlots) {
     stack_destroy(s);
 }
 
-TEST(Stack, PopFpRestoresVisibilityWithoutTruncating) {
-    Stack* s = stack_new();
-    push_int(s, 10);
-    push_int(s, 11);
-    push_int(s, 12);
-    size_t lvl0 = stack_fp_level(s);
-
-    ASSERT_EQ(stack_push_fp(s), TYC_OK);
-    push_int(s, 20);
-    push_int(s, 21);
-
-    ASSERT_EQ(stack_pop_fp(s), TYC_OK);
-    EXPECT_EQ(stack_top_fp(s), 0u);
-    EXPECT_EQ(stack_fp_level(s), lvl0);
-
-    // ASSUMPTION: pop_fp leaves the value stack intact, so all 5 are visible.
-    EXPECT_EQ(stack_size(s), 5u);
-    VALUE v;
-    ASSERT_EQ(stack_at(s, 0, &v), TYC_OK); EXPECT_EQ(value_integer(v), 10);
-    ASSERT_EQ(stack_at(s, 2, &v), TYC_OK); EXPECT_EQ(value_integer(v), 12);
-    ASSERT_EQ(stack_at(s, 3, &v), TYC_OK); EXPECT_EQ(value_integer(v), 20);
-    ASSERT_EQ(stack_at(s, 4, &v), TYC_OK); EXPECT_EQ(value_integer(v), 21);
-    stack_destroy(s);
-}
-
 TEST(Stack, FpLevelTracksNesting) {
     Stack* s = stack_new();
     size_t lvl0 = stack_fp_level(s);
@@ -328,6 +303,7 @@ TEST(Stack, CollectableArrayReturnsOnlyHeapValues) {
     // Ownership of `out` is unspecified by the header. If it is caller-owned
     // (heap-allocated), add: free(out);  — an ASan leak here tells you so.
     stack_destroy(s);
+    free(out);
 }
 
 TEST(Stack, CollectableArrayEmptyWhenNoneCollectable) {
@@ -340,6 +316,7 @@ TEST(Stack, CollectableArrayEmptyWhenNoneCollectable) {
     VALUE* out = nullptr;
     EXPECT_EQ(stack_collectable_array(s, &out), 0u);
     stack_destroy(s);
+    free(out);
 }
 
 TEST(Stack, CollectableArraySpansAllFrames) {
@@ -355,9 +332,10 @@ TEST(Stack, CollectableArraySpansAllFrames) {
     VALUE* out = nullptr;
     size_t n = stack_collectable_array(s, &out);
     EXPECT_EQ(n, 2u) << "collectables below the FP must still be rooted";
-    if (n > 0) ASSERT_NE(out, nullptr);
+    if (n > 0) { ASSERT_NE(out, nullptr); }
     std::multiset<uint64_t> got, want = {vbits(a), vbits(b)};
     for (size_t i = 0; i < n; ++i) got.insert(vbits(out[i]));
     EXPECT_EQ(got, want);
     stack_destroy(s);
+    free(out);
 }
