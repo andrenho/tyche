@@ -246,9 +246,9 @@ return {
                 jmp     @x1
                 pushi   5
             @x1:
-                pushi   0
+                pushz
                 bnz     @x2
-                pushi   0
+                pushz
                 bz      @x3
             @x2:
                 pushi   6
