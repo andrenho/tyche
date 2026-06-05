@@ -13,8 +13,6 @@ extern "C" {
 #include <set>
 #include <string>
 
-bool abort_on_errors = false;
-
 // ---- helper: build a double from a raw 64-bit pattern -------------------
 static double double_from_bits(uint64_t bits) {
     double d;

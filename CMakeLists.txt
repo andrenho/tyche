@@ -30,7 +30,7 @@ if(IS_CLANG)
 else()
     set(WARNINGS "@${CMAKE_SOURCE_DIR}/config/WARNINGS_GCC")
 endif()
-set(WARNINGS "${WARNINGS} @${CMAKE_SOURCE_DIR}/config/WARNINGS")
+set(WARNINGS "${WARNINGS}" "@${CMAKE_SOURCE_DIR}/config/WARNINGS")
 
 add_compile_definitions(
         _GNU_SOURCE
@@ -44,7 +44,7 @@ include_directories(${CMAKE_SOURCE_DIR}/lib)
 
 # Debugging flags
 
-if (DEBUG)
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(SANITIZE_FLAGS -fsanitize=address -fsanitize=undefined -fno-sanitize-recover=all)
     if(NOT CMAKE_SYSTEM_NAME STREQUAL "Darwin")
         list(APPEND SANITIZE_FLAGS -fsanitize=leak)
@@ -152,7 +152,7 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-add_executable(tyche-test test/tests-as.cc test/tests-values.cc)
+add_executable(tyche-test test/tests-assembly.cc test/tests-values.cc)
 target_link_libraries(tyche-test PRIVATE tyche_static GTest::gtest_main m)
 add_dependencies(tyche-test gen_instructions)
 
