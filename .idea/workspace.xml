@@ -3,16 +3,18 @@
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
-  <component name="CMakePresetLoader"><![CDATA[{
-  "useNewFormat": true
-}]]></component>
+  <component name="CMakePresetLoader">{
+  &quot;useNewFormat&quot;: true
+}</component>
+  <component name="CMakeProjectFlavorService">
+    <option name="flavorId" value="CMakePlainProjectFlavor" />
+  </component>
   <component name="CMakeReloadState">
     <option name="reloaded" value="true" />
   </component>
   <component name="CMakeRunConfigurationManager">
     <generated>
       <config projectName="tyche" targetName="gen_instructions" />
-      <config projectName="tyche" targetName="tyche" />
       <config projectName="tyche" targetName="gmock_main" />
       <config projectName="tyche" targetName="gtest" />
       <config projectName="tyche" targetName="tyche-test" />
@@ -24,16 +26,13 @@
   </component>
   <component name="CMakeSettings" AUTO_RELOAD="true">
     <configurations>
-      <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" />
+      <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" GENERATION_OPTIONS="-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON" />
     </configurations>
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5601a2be-77e3-47b2-bc63-dd900f122894" name="Changes" comment=".">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/WARNINGS" beforeDir="false" afterPath="$PROJECT_DIR$/config/WARNINGS" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/WARNINGS_GCC" beforeDir="false" afterPath="$PROJECT_DIR$/config/WARNINGS_GCC" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/tests-stack.cc" beforeDir="false" afterPath="$PROJECT_DIR$/test/tests-stack.cc" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,12 +43,23 @@
     <option name="formatViaClangd" value="false" />
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "customColor": "",
+  "associatedIndex": 7
+}]]></component>
+  <component name="ProjectId" id="3Eil5K6MzOXa9cN5zvR8sGepYX6" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "CTest Application.All CTest.executor": "Run",
+    "Google Test.Stack.CollectableArrayEmptyWhenNoneCollectable.executor": "Run",
+    "Google Test.Stack.PopFpRestoresVisibilityWithoutTruncating.executor": "Run",
     "Google Test.TypeInfo.Collectable.executor": "Run",
     "Google Test.TypeInfo.NameNonNullAndDistinct.executor": "Run",
     "Google Test.Value.IsFalseEverythingElseIsTruthy.executor": "Run",
@@ -66,6 +76,7 @@
     "RunOnceActivity.readMode.enableVisualFormatting": "true",
     "RunOnceActivity.west.config.association.type.startup.service": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "cf.advertisement.text.has.clang-format": "true",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
     "ctest.advertisement.all.test.configuration.is.created": "true",
@@ -80,9 +91,16 @@
     </key>
   </component>
   <component name="RunManager" selected="Google Test.tyche-test">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+    <configuration name="Stack.CollectableArrayEmptyWhenNoneCollectable" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="tyche" TARGET_NAME="tyche-test" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="tyche" RUN_TARGET_NAME="tyche-test" TEST_CLASS="Stack" TEST_METHOD="CollectableArrayEmptyWhenNoneCollectable" TEST_MODE="SUITE_TEST">
       <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Stack.PopFpRestoresVisibilityWithoutTruncating" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="tyche" TARGET_NAME="tyche-test" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="tyche" RUN_TARGET_NAME="tyche-test" TEST_CLASS="Stack" TEST_METHOD="PopFpRestoresVisibilityWithoutTruncating" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration name="TypeInfo.Collectable" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="tyche" TARGET_NAME="tyche-test" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="tyche" RUN_TARGET_NAME="tyche-test" TEST_CLASS="TypeInfo" TEST_METHOD="Collectable" TEST_MODE="SUITE_TEST">
@@ -97,28 +115,15 @@
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="Value.IsFalseEverythingElseIsTruthy" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="tyche" TARGET_NAME="tyche-test" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="tyche" RUN_TARGET_NAME="tyche-test" TEST_CLASS="Value" TEST_METHOD="IsFalseEverythingElseIsTruthy" TEST_MODE="SUITE_TEST">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-        <option name="BeforeTestRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="Value.IsFalseNilAndFalse" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="tyche" TARGET_NAME="tyche-test" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="tyche" RUN_TARGET_NAME="tyche-test" TEST_CLASS="Value" TEST_METHOD="IsFalseNilAndFalse" TEST_MODE="SUITE_TEST">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-        <option name="BeforeTestRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="Value.TypeMatrix" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="tyche" TARGET_NAME="tyche-test" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="tyche" RUN_TARGET_NAME="tyche-test" TEST_CLASS="Value" TEST_METHOD="TypeMatrix" TEST_MODE="SUITE_TEST">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-        <option name="BeforeTestRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="tyche-test" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="tyche" TARGET_NAME="tyche-test" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="tyche" RUN_TARGET_NAME="tyche-test" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration name="gen_instructions" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="tyche" TARGET_NAME="gen_instructions" CONFIG_NAME="Debug">
@@ -146,11 +151,6 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="tyche" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="tyche" TARGET_NAME="tyche" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="tyche" RUN_TARGET_NAME="tyche">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="tyche_shared" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="tyche" TARGET_NAME="tyche_shared" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -161,7 +161,13 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="All CTest" type="CTestRunConfiguration" factoryName="CTestRun" PROGRAM_PARAMS="--extra-verbose" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://$CMakeCurrentLocalGenerationDir$" PASS_PARENT_ENVS_2="true" RUN_PATH="$CTestCurrentExecutableName$" EXPLICIT_BUILD_TARGET_NAME="all" TEST_MODE="SUITE_TEST">
+    <configuration name="All CTest" type="CTestRunConfiguration" factoryName="CTestRun" PROGRAM_PARAMS="--extra-verbose" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://$CMakeCurrentLocalGenerationDir$" PASS_PARENT_ENVS_2="true" CONFIG_NAME="Debug" RUN_PATH="$CTestCurrentExecutableName$" EXPLICIT_BUILD_TARGET_NAME="all" TEST_MODE="PATTERN">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="tyche-test" type="CTestRunConfiguration" factoryName="CTestRun" temporary="true" PROGRAM_PARAMS="--extra-verbose" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://$CMakeCurrentLocalGenerationDir$" PASS_PARENT_ENVS_2="true" RUN_PATH="$CTestCurrentExecutableName$" EXPLICIT_BUILD_TARGET_NAME="all" TEST_METHOD="tyche-test" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
@@ -169,7 +175,6 @@
     </configuration>
     <list>
       <item itemvalue="CMake Application.gen_instructions" />
-      <item itemvalue="CMake Application.tyche" />
       <item itemvalue="CMake Application.tyche_shared" />
       <item itemvalue="CMake Application.tyche_static" />
       <item itemvalue="CMake Application.gmock" />
@@ -177,20 +182,20 @@
       <item itemvalue="CMake Application.gtest" />
       <item itemvalue="CMake Application.gtest_main" />
       <item itemvalue="CTest Application.All CTest" />
+      <item itemvalue="CTest Application.tyche-test" />
       <item itemvalue="Google Test.tyche-test" />
+      <item itemvalue="Google Test.Stack.CollectableArrayEmptyWhenNoneCollectable" />
+      <item itemvalue="Google Test.Stack.PopFpRestoresVisibilityWithoutTruncating" />
       <item itemvalue="Google Test.TypeInfo.Collectable" />
       <item itemvalue="Google Test.TypeInfo.NameNonNullAndDistinct" />
-      <item itemvalue="Google Test.Value.IsFalseEverythingElseIsTruthy" />
-      <item itemvalue="Google Test.Value.IsFalseNilAndFalse" />
-      <item itemvalue="Google Test.Value.TypeMatrix" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="CTest Application.tyche-test" />
+        <item itemvalue="Google Test.Stack.CollectableArrayEmptyWhenNoneCollectable" />
+        <item itemvalue="Google Test.Stack.PopFpRestoresVisibilityWithoutTruncating" />
         <item itemvalue="Google Test.TypeInfo.Collectable" />
         <item itemvalue="Google Test.TypeInfo.NameNonNullAndDistinct" />
-        <item itemvalue="Google Test.Value.IsFalseEverythingElseIsTruthy" />
-        <item itemvalue="Google Test.Value.IsFalseNilAndFalse" />
-        <item itemvalue="Google Test.Value.TypeMatrix" />
       </list>
     </recent_temporary>
   </component>
@@ -201,7 +206,8 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1780589039296</updated>
-      <workItem from="1780589042417" duration="6940000" />
+      <workItem from="1780589042417" duration="8475000" />
+      <workItem from="1780669092864" duration="1391000" />
     </task>
     <task id="LOCAL-00001" summary=".">
       <option name="closed" value="true" />
@@ -251,7 +257,23 @@
       <option name="project" value="LOCAL" />
       <updated>1780625218874</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary=".">
+      <option name="closed" value="true" />
+      <created>1780625407097</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1780625407097</updated>
+    </task>
+    <task id="LOCAL-00008" summary=".">
+      <option name="closed" value="true" />
+      <created>1780670157137</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1780670157137</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="VCPKGProject">

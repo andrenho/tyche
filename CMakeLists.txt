@@ -2,6 +2,8 @@ cmake_minimum_required (VERSION 3.24...4.3.3)
 
 project(tyche VERSION 0.1 LANGUAGES C CXX)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
@@ -17,10 +19,13 @@ endif()
 
 # C/C++ Flags
 
+add_library(tyche_flags INTERFACE)
+
 set(CMAKE_C_STANDARD 99 CACHE STRING "C Standard")
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 23 CACHE STRING "C++ Standard")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
@@ -32,7 +37,7 @@ else()
 endif()
 set(WARNINGS "${WARNINGS}" "@${CMAKE_SOURCE_DIR}/config/WARNINGS")
 
-add_compile_definitions(
+target_compile_definitions(tyche_flags INTERFACE
         _GNU_SOURCE
         VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
         VERSION_MINOR=${PROJECT_VERSION_MINOR}
@@ -50,7 +55,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         list(APPEND SANITIZE_FLAGS -fsanitize=leak)
     endif()
 
-    add_compile_options(
+    target_compile_options(tyche_flags INTERFACE
             -O0 -ggdb3 ${WARNINGS}
             -fno-omit-frame-pointer
             -fstack-protector-strong -fstack-clash-protection -fno-common
@@ -58,16 +63,16 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     )
 
     if (NOT CLANG)
-        add_compile_options(-fanalyzer)
+        target_compile_options(tyche_flags INTERFACE -fanalyzer)
     endif()
     add_compile_definitions(CHECK_TYCHE_BUGS=1)
-    add_link_options(${SANITIZE_FLAGS})
+    target_link_options(tyche_flags INTERFACE ${SANITIZE_FLAGS})
 
 else()  # RELEASE
 
-    add_compile_options(-O3 -flto=auto -march=native -mtune=native
+    target_compile_options(tyche_flags INTERFACE -O3 -flto=auto -march=native -mtune=native
             -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -fstack-protector-strong)
-    add_link_options(-flto=auto -s)
+    target_link_options(tyche_flags INTERFACE -flto=auto -s)
 
 endif()
 
@@ -116,6 +121,7 @@ set(LIB_SRC
 # static library
 add_library(tyche_static STATIC ${LIB_SRC})
 set_target_properties(tyche_static PROPERTIES OUTPUT_NAME tyche)
+target_link_libraries(tyche_static PRIVATE tyche_flags)
 add_dependencies(tyche_static gen_instructions)
 
 # shared library
@@ -124,33 +130,37 @@ set_target_properties(tyche_shared PROPERTIES
         OUTPUT_NAME tyche
         VERSION ${PROJECT_VERSION}
 )
+target_link_libraries(tyche_shared PRIVATE tyche_flags)
 add_dependencies(tyche_shared gen_instructions)
 
 enable_testing()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
 
+##
+## executable
+##
 #
-# executable
-#
-
-add_executable(tyche src/tyche.c)
-target_link_libraries(tyche PRIVATE tyche_static m)
-add_dependencies(tyche gen_instructions)
+#add_executable(tyche src/tyche.c)
+#target_link_libraries(tyche PRIVATE tyche_static m)
+#add_dependencies(tyche gen_instructions)
 
 
 #
 # tests
 #
 
-include(FetchContent)
-FetchContent_Declare(
-        googletest
-        GIT_REPOSITORY https://github.com/google/googletest.git
-        GIT_TAG v1.17.0
-)
-# For Windows: Prevent overriding the parent project's compiler/linker settings
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
+#find_package(GTest QUIET)
+#if(NOT GTest_FOUND)
+    include(FetchContent)
+    FetchContent_Declare(
+            googletest
+            GIT_REPOSITORY https://github.com/google/googletest.git
+            GIT_TAG v1.17.0
+    )
+    # For Windows: Prevent overriding the parent project's compiler/linker settings
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(googletest)
+#endif()
 
 add_executable(tyche-test
         test/tests-assembly.cc
@@ -159,29 +169,30 @@ add_executable(tyche-test
 )
 target_link_libraries(tyche-test PRIVATE tyche_static GTest::gtest_main m)
 add_dependencies(tyche-test gen_instructions)
+target_link_libraries(tyche-test PRIVATE tyche_flags)
 
 enable_testing()
-add_test(NAME tyche-test-as COMMAND tyche-test)
+add_test(NAME tyche-test COMMAND tyche-test)
 
+##
+## install
+##
 #
-# install
+#include(GNUInstallDirs)
+#install(TARGETS tyche tyche_static tyche_shared
+#        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+#        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#)
+#install(FILES lib/tyche.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 #
-
-include(GNUInstallDirs)
-install(TARGETS tyche tyche_static tyche_shared
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-)
-install(FILES lib/tyche.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
-
 #
-# packaging
+##
+## packaging
+##
 #
-
-set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
-set(CPACK_GENERATOR "TBZ2")
-set(CPACK_SOURCE_GENERATOR "TBZ2")
-set(CPACK_SOURCE_IGNORE_FILES "/build/;/.git/")
-include(CPack)
+#set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+#set(CPACK_GENERATOR "TBZ2")
+#set(CPACK_SOURCE_GENERATOR "TBZ2")
+#set(CPACK_SOURCE_IGNORE_FILES "/build/;/.git/")
+#include(CPack)
