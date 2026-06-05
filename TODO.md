@@ -65,10 +65,12 @@ Decisions:
   - [x] Main application
   - [ ] Improvements
     - [ ] Rename "operator" (because of C++)
-    - [ ] Implement hash for VM (no hash for array)
+    - [ ] Implement hash for VM (new opcode, new expression, no hash for array)
     - [ ] Table
       - [ ] Pass hash callback (?)
       - [ ] Store multiple values for the same hash
+    - [ ] Operator overload (new opcode)
+    - [ ] Null native pointer
     - [ ] Convert tests to Google Test and C++
 - [ ] Prepare for release
   - [x] Documentation and webpage

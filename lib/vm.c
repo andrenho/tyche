@@ -393,7 +393,7 @@ TYC_RESULT tyc_pushinteger(TycheVM* T, int32_t value)
     return stack_push(T->stack, create_value_integer(value));
 }
 
-TYC_RESULT tyc_pushreal(TycheVM* T, double value)
+TYC_RESULT tyc_pushreal(TycheVM* T, TYCHE_REAL value)
 {
     return stack_push(T->stack, create_value_real(value));
 }
@@ -1023,7 +1023,7 @@ static TYC_RESULT step(TycheVM* T)
             if (inst.operand < 0 || inst.operand >= (int) code_function_sz(T->code, loc->function_id))
                 ERROR("Value out of range")
             TRY(stack_peek(T->stack, &a))
-            if (value_is_zero(a)) {
+            if (value_is_false(a)) {
                 loc->pc = (uint32_t) inst.operand;
                 goto dont_update_pc;
             }
@@ -1043,7 +1043,7 @@ static TYC_RESULT step(TycheVM* T)
             if (inst.operand < 0 || inst.operand >= (int) code_function_sz(T->code, loc->function_id))
                 ERROR("Value out of range")
             TRY(stack_peek(T->stack, &a))
-            if (!value_is_zero(a)) {
+            if (!value_is_false(a)) {
                 loc->pc = (uint32_t) inst.operand;
                 goto dont_update_pc;
             }

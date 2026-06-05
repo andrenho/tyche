@@ -58,7 +58,7 @@ const char* type_name(TYC_TYPE t)
 
 bool type_is_collectable(TYC_TYPE t)
 {
-    return t == TYC_STRING || t == TYC_ARRAY || t == TYC_TABLE;
+    return t == TYC_STRING || t == TYC_ARRAY || t == TYC_TABLE || t == TYC_NATIVE_FN__;
 }
 
 bool value_boolean(VALUE v)
@@ -179,7 +179,7 @@ VALUE create_value_native_pointer(void* ptr)
     return nanbox_from_pointer(ptr);
 }
 
-bool value_is_zero(VALUE v)
+bool value_is_false(VALUE v)
 {
-    return value_type(v) == TYC_NIL || (value_type(v) == TYC_INTEGER && value_integer(v) == 0);
+    return value_type(v) == TYC_NIL || (value_type(v) == TYC_BOOLEAN && value_boolean(v) == false);
 }

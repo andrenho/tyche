@@ -57,7 +57,7 @@ TYC_RESULT tyc_call(TycheVM* T, uint16_t n_pars);
 TYC_RESULT tyc_pushnil(TycheVM* T);
 TYC_RESULT tyc_pushboolean(TycheVM* T, bool value);
 TYC_RESULT tyc_pushinteger(TycheVM* T, int32_t value);
-TYC_RESULT tyc_pushreal(TycheVM* T, double value);
+TYC_RESULT tyc_pushreal(TycheVM* T, TYCHE_REAL value);
 TYC_RESULT tyc_pushstring(TycheVM* T, const char* value);
 TYC_RESULT tyc_pushnativeptr(TycheVM* T, void* ptr);
 TYC_RESULT tyc_pushnativefunction(TycheVM* T, TYC_RESULT(*f)(TycheVM*));
@@ -83,6 +83,7 @@ TYC_RESULT tyc_next(TycheVM* T, int idx);
 TYC_RESULT tyc_setkv(TycheVM* T, int idx);
 TYC_RESULT tyc_getkv(TycheVM* T, int idx);
 TYC_RESULT tyc_setsupertable(TycheVM* T, int idx);
+TYC_RESULT tyc_global(TycheVM* T);
 
 // memory operations
 TYC_RESULT tyc_gc(TycheVM* T);

@@ -92,7 +92,7 @@ int32_t    value_integer(VALUE v);
 TYCHE_REAL value_real(VALUE v);
 uint32_t   value_function_idx(VALUE v);
 HEAP_KEY   value_heap_key(VALUE v);
-bool       value_is_zero(VALUE v);
+bool       value_is_false(VALUE v);
 void*      value_native_pointer(VALUE v);
 
 VALUE create_value_nil(void);
@@ -200,7 +200,7 @@ TYC_RESULT     code_load_bytecode(Code* code, uint8_t const* bytecode, size_t by
 uint32_t       code_n_consts(Code const* code);
 TYC_CONST_TYPE code_const_type(Code const* code, size_t n);
 
-TYCHE_REAL         code_const_real(Code const* code, size_t n);
+TYCHE_REAL     code_const_real(Code const* code, size_t n);
 const char*    code_const_string(Code const* code, size_t n);
 
 uint32_t       code_n_functions(Code const* code);

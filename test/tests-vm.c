@@ -27,17 +27,17 @@ static void check_expected_top(lua_State* L, TycheVM* T)
     // check stack top
     lua_getfield(L, -1, "expected_stack_top");
     if (lua_isinteger(L, -1)) {
-        TYC_TYPE type; assert(tyc_type(T, -1, &type) == T_OK); assert(type == TT_INTEGER);
-        int32_t v; assert(tyc_tointeger(T, -1, &v) == T_OK); assert(v == lua_tointeger(L, -1));
+        TYC_TYPE type; assert(tyc_type(T, -1, &type) == TYC_OK); assert(type == TYC_INTEGER);
+        int32_t v; assert(tyc_tointeger(T, -1, &v) == TYC_OK); assert(v == lua_tointeger(L, -1));
     } else if (lua_isnumber(L, -1)) {
-        TYC_TYPE type; assert(tyc_type(T, -1, &type) == T_OK); assert(type == TT_REAL);
-        double v; assert(tyc_toreal(T, -1, &v) == T_OK); assert(fabs(v - lua_tonumber(L, -1)) < 0.0001);
+        TYC_TYPE type; assert(tyc_type(T, -1, &type) == TYC_OK); assert(type == TYC_REAL);
+        double v; assert(tyc_toreal(T, -1, &v) == TYC_OK); assert(fabs(v - lua_tonumber(L, -1)) < 0.0001);
     } else if (lua_isstring(L, -1)) {
-        TYC_TYPE type; assert(tyc_type(T, -1, &type) == T_OK); assert(type == TT_STRING);
-        const char* str; assert(tyc_tostring(T, -1, &str) == T_OK); assert(strcmp(str, lua_tostring(L, -1)) == 0);
+        TYC_TYPE type; assert(tyc_type(T, -1, &type) == TYC_OK); assert(type == TYC_STRING);
+        const char* str; assert(tyc_tostring(T, -1, &str) == TYC_OK); assert(strcmp(str, lua_tostring(L, -1)) == 0);
     } else if (lua_isboolean(L, -1)) {
-        TYC_TYPE type; assert(tyc_type(T, -1, &type) == T_OK); assert(type == TT_BOOLEAN);
-        bool v; assert(tyc_toboolean(T, -1, &v) == T_OK); assert(v == lua_toboolean(L, -1));
+        TYC_TYPE type; assert(tyc_type(T, -1, &type) == TYC_OK); assert(type == TYC_BOOLEAN);
+        bool v; assert(tyc_toboolean(T, -1, &v) == TYC_OK); assert(v == lua_toboolean(L, -1));
     } else if (!lua_isnil(L, -1)) {
         abort();
     }
@@ -58,16 +58,16 @@ static void run_assembly_test_code(lua_State* L, bool debug, bool decompile, boo
     // load code
     uint8_t* bytecode; size_t bytecode_sz;
     lua_getfield(L, -1, "code");
-    assert(code_assemble(lua_tostring(L, -1), &bytecode, &bytecode_sz) == T_OK);
+    assert(code_assemble(lua_tostring(L, -1), &bytecode, &bytecode_sz) == TYC_OK);
     lua_pop(L, 1);
 
     // run code
-    assert(tyc_load_bytecode(T, bytecode, bytecode_sz) == T_OK);
+    assert(tyc_load_bytecode(T, bytecode, bytecode_sz) == TYC_OK);
     if (debug_bytecode)
         tyc_print_bytecode(T);
     if (decompile)
         tyc_assembly_decompile(T);
-    assert(tyc_call(T, 0) == T_OK);
+    assert(tyc_call(T, 0) == TYC_OK);
 
     // assert
     check_expected_top(L, T);
@@ -114,13 +114,13 @@ static void run_assembly_test_template(lua_State* L, bool debug, bool decompile,
         TycheVM* T = tyc_new();
         tyc_debug_to_console(T, debug);
         uint8_t* bytecode; size_t bytecode_sz;
-        assert(code_assemble(formatted_code, &bytecode, &bytecode_sz) == T_OK);
-        assert(tyc_load_bytecode(T, bytecode, bytecode_sz) == T_OK);
+        assert(code_assemble(formatted_code, &bytecode, &bytecode_sz) == TYC_OK);
+        assert(tyc_load_bytecode(T, bytecode, bytecode_sz) == TYC_OK);
         if (debug_bytecode)
             tyc_print_bytecode(T);
         if (decompile)
             tyc_assembly_decompile(T);
-        assert(tyc_call(T, 0) == T_OK);
+        assert(tyc_call(T, 0) == TYC_OK);
 
         // assert
         check_expected_top(L, T);
@@ -206,11 +206,11 @@ static void run_assembly_tests(void)
 static void test_values(void)
 {
     printf("## Values\n");
-    assert(value_type(create_value_integer(42)) == TT_INTEGER);
+    assert(value_type(create_value_integer(42)) == TYC_INTEGER);
     assert(value_integer(create_value_integer(-42)) == -42);
     assert(fabs(value_real(create_value_real(42.4)) - 42.4) < 0.00001);
     assert(value_function_idx(create_value_function_idx(42)) == 42);
-    assert(value_heap_key(create_value_heap_key(TT_STRING, 42)) == 42);
+    assert(value_heap_key(create_value_heap_key(TYC_STRING, 42)) == 42);
 }
 
 static void test_stack(void)
@@ -226,26 +226,26 @@ static void test_stack(void)
 
         VALUE v;
         assert(stack_size(s) == 3);
-        assert(stack_at(s, 0, &v) == T_OK); assert(value_integer(v) == 10);
-        assert(stack_at(s, 1, &v) == T_OK); assert(value_integer(v) == 20);
-        assert(stack_at(s, -1, &v) == T_OK); assert(value_integer(v) == 30);
-        assert(stack_at(s, -2, &v) == T_OK); assert(value_integer(v) == 20);
+        assert(stack_at(s, 0, &v) == TYC_OK); assert(value_integer(v) == 10);
+        assert(stack_at(s, 1, &v) == TYC_OK); assert(value_integer(v) == 20);
+        assert(stack_at(s, -1, &v) == TYC_OK); assert(value_integer(v) == 30);
+        assert(stack_at(s, -2, &v) == TYC_OK); assert(value_integer(v) == 20);
 
         abort_on_errors = false;
-        assert(stack_at(s, 3, &v) == T_ERR);
-        assert(stack_at(s, -4, &v) == T_ERR);
+        assert(stack_at(s, 3, &v) == TYC_ERR);
+        assert(stack_at(s, -4, &v) == TYC_ERR);
 
-        assert(stack_set(s, 1, create_value_integer(99)) == T_OK);
-        assert(stack_at(s, 1, &v) == T_OK); assert(value_integer(v) == 99);
-        assert(stack_at(s, -2, &v) == T_OK); assert(value_integer(v) == 99);
+        assert(stack_set(s, 1, create_value_integer(99)) == TYC_OK);
+        assert(stack_at(s, 1, &v) == TYC_OK); assert(value_integer(v) == 99);
+        assert(stack_at(s, -2, &v) == TYC_OK); assert(value_integer(v) == 99);
 
-        assert(stack_pop(s, NULL) == T_OK);
-        assert(stack_pop(s, NULL) == T_OK);
-        assert(stack_at(s, -1, &v) == T_OK); assert(value_integer(v) == 10);
-        assert(stack_pop(s, NULL) == T_OK);
+        assert(stack_pop(s, NULL) == TYC_OK);
+        assert(stack_pop(s, NULL) == TYC_OK);
+        assert(stack_at(s, -1, &v) == TYC_OK); assert(value_integer(v) == 10);
+        assert(stack_pop(s, NULL) == TYC_OK);
         assert(stack_size(s) == 0);
 
-        assert(stack_pop(s, NULL) == T_ERR);
+        assert(stack_pop(s, NULL) == TYC_ERR);
 
         abort_on_errors = true;
 
@@ -266,28 +266,28 @@ static void test_stack(void)
 
         VALUE v;
         assert(stack_size(s) == 3);
-        assert(stack_at(s, 0, &v) == T_OK); assert(value_integer(v) == 30);
-        assert(stack_at(s, 1, &v) == T_OK); assert(value_integer(v) == 40);
-        assert(stack_at(s, -1, &v) == T_OK); assert(value_integer(v) == 50);
-        assert(stack_at(s, -2, &v) == T_OK); assert(value_integer(v) == 40);
+        assert(stack_at(s, 0, &v) == TYC_OK); assert(value_integer(v) == 30);
+        assert(stack_at(s, 1, &v) == TYC_OK); assert(value_integer(v) == 40);
+        assert(stack_at(s, -1, &v) == TYC_OK); assert(value_integer(v) == 50);
+        assert(stack_at(s, -2, &v) == TYC_OK); assert(value_integer(v) == 40);
 
-        assert(stack_set(s, -2, create_value_integer(99)) == T_OK);
-        assert(stack_at(s, -2, &v) == T_OK); assert(value_integer(v) == 99);
+        assert(stack_set(s, -2, create_value_integer(99)) == TYC_OK);
+        assert(stack_at(s, -2, &v) == TYC_OK); assert(value_integer(v) == 99);
 
         abort_on_errors = false;
-        assert(stack_at(s, 3, &v) == T_ERR);
-        assert(stack_at(s, -4, &v) == T_ERR);
+        assert(stack_at(s, 3, &v) == TYC_ERR);
+        assert(stack_at(s, -4, &v) == TYC_ERR);
 
         stack_pop_fp(s);
 
         assert(stack_size(s) == 2);
-        assert(stack_at(s, 0, &v) == T_OK); assert(value_integer(v) == 10);
-        assert(stack_at(s, 1, &v) == T_OK); assert(value_integer(v) == 20);
-        assert(stack_at(s, -1, &v) == T_OK); assert(value_integer(v) == 20);
-        assert(stack_at(s, -2, &v) == T_OK); assert(value_integer(v) == 10);
+        assert(stack_at(s, 0, &v) == TYC_OK); assert(value_integer(v) == 10);
+        assert(stack_at(s, 1, &v) == TYC_OK); assert(value_integer(v) == 20);
+        assert(stack_at(s, -1, &v) == TYC_OK); assert(value_integer(v) == 20);
+        assert(stack_at(s, -2, &v) == TYC_OK); assert(value_integer(v) == 10);
 
-        assert(stack_at(s, 2, &v) == T_ERR);
-        assert(stack_at(s, -3, &v) == T_ERR);
+        assert(stack_at(s, 2, &v) == TYC_ERR);
+        assert(stack_at(s, -3, &v) == TYC_ERR);
         abort_on_errors = true;
 
         stack_destroy(s);
@@ -322,8 +322,8 @@ static void test_arrays(void)
 
     array_set(a, 1, create_value_integer(40));
     assert(array_len(a) == 2);
-    assert(value_type(array_get(a, 0)) == TT_NIL);
-    assert(value_type(array_get(a, 1)) == TT_INTEGER);
+    assert(value_type(array_get(a, 0)) == TYC_NIL);
+    assert(value_type(array_get(a, 1)) == TYC_INTEGER);
 
     array_append(a, create_value_integer(50));
     assert(array_len(a) == 3);
@@ -348,12 +348,12 @@ static void test_tables(void)
         table_set(t, create_value_integer(20), create_value_integer(200));
 
         VALUE v;
-        assert(table_get(t, create_value_integer(10), &v) == T_OK); assert(value_integer(v) == 100);
-        assert(table_get(t, create_value_integer(20), &v) == T_OK); assert(value_integer(v) == 200);
+        assert(table_get(t, create_value_integer(10), &v) == TYC_OK); assert(value_integer(v) == 100);
+        assert(table_get(t, create_value_integer(20), &v) == TYC_OK); assert(value_integer(v) == 200);
 
         table_del(t, create_value_integer(20));
-        assert(table_get(t, create_value_integer(10), &v) == T_OK);
-        assert(table_get(t, create_value_integer(20), &v) == T_OK && value_type(v) == TT_NIL);
+        assert(table_get(t, create_value_integer(10), &v) == TYC_OK);
+        assert(table_get(t, create_value_integer(20), &v) == TYC_OK && value_type(v) == TYC_NIL);
 
         table_destroy(t);
         heap_destroy(h);
@@ -365,22 +365,22 @@ static void test_tables(void)
         Heap* h = heap_new();
         Table* t = table_new(h);
 
-        VALUE key1 = create_value_heap_key(TT_STRING, heap_add_string(h, "key1", false));
-        VALUE key2 = create_value_heap_key(TT_STRING, heap_add_string(h, "key2", false));
+        VALUE key1 = create_value_heap_key(TYC_STRING, heap_add_string(h, "key1", false));
+        VALUE key2 = create_value_heap_key(TYC_STRING, heap_add_string(h, "key2", false));
 
         table_set(t, key1, create_value_integer(100));
         table_set(t, key2, create_value_integer(200));
 
-        VALUE key1b = create_value_heap_key(TT_STRING, heap_add_string(h, "key1", false));
-        VALUE key2b = create_value_heap_key(TT_STRING, heap_add_string(h, "key2", false));
+        VALUE key1b = create_value_heap_key(TYC_STRING, heap_add_string(h, "key1", false));
+        VALUE key2b = create_value_heap_key(TYC_STRING, heap_add_string(h, "key2", false));
 
         VALUE v;
-        assert(table_get(t, key1b, &v) == T_OK); assert(value_integer(v) == 100);
-        assert(table_get(t, key2b, &v) == T_OK); assert(value_integer(v) == 200);
+        assert(table_get(t, key1b, &v) == TYC_OK); assert(value_integer(v) == 100);
+        assert(table_get(t, key2b, &v) == TYC_OK); assert(value_integer(v) == 200);
 
         table_del(t, key2b);
-        assert(table_get(t, key1b, &v) == T_OK);
-        table_get(t, key2b, &v); assert(value_type(v) == TT_NIL);
+        assert(table_get(t, key1b, &v) == TYC_OK);
+        table_get(t, key2b, &v); assert(value_type(v) == TYC_NIL);
 
         table_destroy(t);
         heap_destroy(h);
@@ -395,9 +395,9 @@ static void test_heap(void)
         Stack* s = stack_new();
         Heap* h = heap_new();
 
-        stack_push(s, create_value_heap_key(TT_STRING, heap_add_string(h, "item1", false)));
-        stack_push(s, create_value_heap_key(TT_STRING, heap_add_string(h, "item2", false)));
-        stack_push(s, create_value_heap_key(TT_STRING, heap_add_string(h, "item3", false)));
+        stack_push(s, create_value_heap_key(TYC_STRING, heap_add_string(h, "item1", false)));
+        stack_push(s, create_value_heap_key(TYC_STRING, heap_add_string(h, "item2", false)));
+        stack_push(s, create_value_heap_key(TYC_STRING, heap_add_string(h, "item3", false)));
 
         size_t v_sz;
         VALUE* v_idx;
@@ -432,11 +432,11 @@ static void test_heap(void)
         Stack* s = stack_new();
         Heap* h = heap_new();
 
-        VALUE h1 = create_value_heap_key(TT_STRING, heap_add_string(h, "item1", false));
+        VALUE h1 = create_value_heap_key(TYC_STRING, heap_add_string(h, "item1", false));
         stack_push(s, h1);
-        VALUE h2 = create_value_heap_key(TT_STRING, heap_add_string(h, "item2", false));
+        VALUE h2 = create_value_heap_key(TYC_STRING, heap_add_string(h, "item2", false));
         stack_push(s, h2);
-        VALUE h3 = create_value_heap_key(TT_STRING, heap_add_string(h, "item2", false));
+        VALUE h3 = create_value_heap_key(TYC_STRING, heap_add_string(h, "item2", false));
         stack_push(s, h3);
 
         size_t v_sz;
@@ -472,9 +472,9 @@ static void test_heap(void)
         Stack* s = stack_new();
         Heap* h = heap_new();
 
-        stack_push(s, create_value_heap_key(TT_STRING, heap_add_string(h, "item1", false)));
-        stack_push(s, create_value_heap_key(TT_STRING, heap_add_string(h, "item2", false)));
-        stack_push(s, create_value_heap_key(TT_STRING, heap_add_string(h, "item2", true)));
+        stack_push(s, create_value_heap_key(TYC_STRING, heap_add_string(h, "item1", false)));
+        stack_push(s, create_value_heap_key(TYC_STRING, heap_add_string(h, "item2", false)));
+        stack_push(s, create_value_heap_key(TYC_STRING, heap_add_string(h, "item2", true)));
 
         size_t v_sz;
         VALUE* v_idx;
@@ -514,14 +514,14 @@ static void test_heap(void)
 
         Heap* h = heap_new();
         HEAP_KEY key = heap_add_array(h);
-        VALUE array_val = create_value_heap_key(TT_ARRAY, key);
+        VALUE array_val = create_value_heap_key(TYC_ARRAY, key);
 
         Array* array;
-        assert(heap_get_array(h, key, &array) == T_OK);
+        assert(heap_get_array(h, key, &array) == TYC_OK);
 
         array_set(array, 0, create_value_integer(42));
-        array_set(array, 1, create_value_heap_key(TT_STRING, heap_add_string(h, "Hello", false)));
-        array_set(array, 2, create_value_heap_key(TT_STRING, heap_add_string(h, "World", false)));
+        array_set(array, 1, create_value_heap_key(TYC_STRING, heap_add_string(h, "Hello", false)));
+        array_set(array, 2, create_value_heap_key(TYC_STRING, heap_add_string(h, "World", false)));
         assert(heap_size(h) == 3);
 
         // set item 2, string "World" is now without reference
@@ -542,15 +542,15 @@ static void test_heap(void)
 
         Heap* h = heap_new();
         HEAP_KEY key = heap_add_table(h);
-        VALUE table_value = create_value_heap_key(TT_TABLE, key);
+        VALUE table_value = create_value_heap_key(TYC_TABLE, key);
 
         HEAP_KEY s1 = heap_add_string(h, "Hello", false);
         HEAP_KEY s2 = heap_add_string(h, "World", false);
-        VALUE sv1 = create_value_heap_key(TT_STRING, s1);
-        VALUE sv2 = create_value_heap_key(TT_STRING, s2);
+        VALUE sv1 = create_value_heap_key(TYC_STRING, s1);
+        VALUE sv2 = create_value_heap_key(TYC_STRING, s2);
 
         Table* table;
-        assert(heap_get_table(h, key, &table) == T_OK);
+        assert(heap_get_table(h, key, &table) == TYC_OK);
 
         table_set(table, sv1, sv2);
 
@@ -568,21 +568,21 @@ static void test_heap(void)
 
         // table
         HEAP_KEY table_key = heap_add_table(h);
-        VALUE table_value = create_value_heap_key(TT_TABLE, table_key);
+        VALUE table_value = create_value_heap_key(TYC_TABLE, table_key);
         Table* table;
-        assert(heap_get_table(h, table_key, &table) == T_OK);
+        assert(heap_get_table(h, table_key, &table) == TYC_OK);
 
         // array
         HEAP_KEY array_key = heap_add_array(h);
-        VALUE array_val = create_value_heap_key(TT_ARRAY, array_key);
+        VALUE array_val = create_value_heap_key(TYC_ARRAY, array_key);
         Array* array;
-        assert(heap_get_array(h, array_key, &array) == T_OK);
+        assert(heap_get_array(h, array_key, &array) == TYC_OK);
 
         // strings
         HEAP_KEY s1 = heap_add_string(h, "Hello", false);
         HEAP_KEY s2 = heap_add_string(h, "World", false);
-        VALUE sv1 = create_value_heap_key(TT_STRING, s1);
-        VALUE sv2 = create_value_heap_key(TT_STRING, s2);
+        VALUE sv1 = create_value_heap_key(TYC_STRING, s1);
+        VALUE sv2 = create_value_heap_key(TYC_STRING, s2);
 
         // table.Hello = ["World"]
         array_append(array, sv2);
@@ -596,7 +596,7 @@ static void test_heap(void)
         assert(heap_size(h) == 4);
 
         // remove table key, HEAP=1 now because only the empty table is left
-        VALUE sv3 = create_value_heap_key(TT_STRING, heap_add_string(h, "Hello", false));
+        VALUE sv3 = create_value_heap_key(TYC_STRING, heap_add_string(h, "Hello", false));
         assert(value_heap_key(sv1) == value_heap_key(sv3));
         table_set(table, sv3, create_value_nil());
         assert(table_size(table) == 0);
@@ -626,13 +626,13 @@ static void test_supertables(void)
         Table* table;
         HEAP_KEY table_heap_key = heap_add_table(h);
         heap_get_table(h, table_heap_key, &table);
-        VALUE table_value = create_value_heap_key(TT_TABLE, table_heap_key);
+        VALUE table_value = create_value_heap_key(TYC_TABLE, table_heap_key);
 
         // field names
-        VALUE va = create_value_heap_key(TT_STRING, heap_add_string(h, "va", false));
-        VALUE vb = create_value_heap_key(TT_STRING, heap_add_string(h, "vb", false));
-        VALUE f1 = create_value_heap_key(TT_STRING, heap_add_string(h, "f1", false));
-        VALUE f99 = create_value_heap_key(TT_STRING, heap_add_string(h, "f99", false));
+        VALUE va = create_value_heap_key(TYC_STRING, heap_add_string(h, "va", false));
+        VALUE vb = create_value_heap_key(TYC_STRING, heap_add_string(h, "vb", false));
+        VALUE f1 = create_value_heap_key(TYC_STRING, heap_add_string(h, "f1", false));
+        VALUE f99 = create_value_heap_key(TYC_STRING, heap_add_string(h, "f99", false));
 
         // add fields to supertable
         table_set(super, va, create_value_integer(20));
@@ -646,14 +646,14 @@ static void test_supertables(void)
 
         // check table fields
         VALUE a;
-        assert(table_get(table, va, &a) == T_OK); assert(value_integer(a) == 40);
-        assert(table_get(table, vb, &a) == T_OK); assert(value_integer(a) == 30);
-        assert(table_get(table, f1, &a) == T_OK); assert(value_function_idx(a) == 1);
+        assert(table_get(table, va, &a) == TYC_OK); assert(value_integer(a) == 40);
+        assert(table_get(table, vb, &a) == TYC_OK); assert(value_integer(a) == 30);
+        assert(table_get(table, f1, &a) == TYC_OK); assert(value_function_idx(a) == 1);
 
         // overload function in table
         table_set(table, f1, create_value_function_idx(2));
-        assert(table_get(table, f1, &a) == T_OK); assert(value_function_idx(a) == 2);
-        assert(table_get(super, f1, &a) == T_OK); assert(value_function_idx(a) == 1);
+        assert(table_get(table, f1, &a) == TYC_OK); assert(value_function_idx(a) == 2);
+        assert(table_get(super, f1, &a) == TYC_OK); assert(value_function_idx(a) == 1);
 
         // test iteration
         bool found_va = false, found_vb = false, found_f1 = false, found_f99 = false;
@@ -684,7 +684,7 @@ static void test_supertables(void)
 
         // restore overloaded function
         table_set(table, f1, create_value_nil());
-        assert(table_get(table, f1, &a) == T_OK); assert(value_function_idx(a) == 1);
+        assert(table_get(table, f1, &a) == TYC_OK); assert(value_function_idx(a) == 1);
 
         // test gc
         assert(heap_size(h) == 6);
@@ -708,8 +708,8 @@ static void test_vm(void)
 
         tyc_pushinteger(T, 2);
         tyc_pushinteger(T, 3);
-        assert(tyc_expr(T, TX_SUM) == T_OK);
-        int32_t result; assert(tyc_tointeger(T, -1, &result) == T_OK);
+        assert(tyc_expr(T, TX_SUM) == TYC_OK);
+        int32_t result; assert(tyc_tointeger(T, -1, &result) == TYC_OK);
         assert(result == 5);
 
         tyc_destroy(T);
@@ -733,9 +733,9 @@ static void test_vm(void)
 static TYC_RESULT test_function(TycheVM* T)
 {
     int x;
-    assert(tyc_tointeger(T, 0, &x) == T_OK);
+    assert(tyc_tointeger(T, 0, &x) == TYC_OK);
     tyc_pushinteger(T, x + 5);
-    return T_OK;
+    return TYC_OK;
 }
 
 static void test_native_pointer(void)
@@ -748,7 +748,7 @@ static void test_native_pointer(void)
         tyc_pushnativeptr(T, &i);
 
         void* ptr;
-        assert(tyc_tonativeptr(T, -1, &ptr) == T_OK);
+        assert(tyc_tonativeptr(T, -1, &ptr) == TYC_OK);
         assert((*(int *) ptr) == 45);
         tyc_pop(T);
 
@@ -762,9 +762,9 @@ static void test_native_pointer(void)
         tyc_pushnativefunction(T, test_function);
 
         tyc_pushinteger(T, 12);
-        assert(tyc_call(T, 1) == T_OK);
+        assert(tyc_call(T, 1) == TYC_OK);
 
-        int x; assert(tyc_tointeger(T, -1, &x) == T_OK);
+        int x; assert(tyc_tointeger(T, -1, &x) == TYC_OK);
         assert(x == 17);
 
         tyc_destroy(T);

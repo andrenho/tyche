@@ -25,7 +25,7 @@ static void test_assembly(void)
             "    ret";
 
     Assembly* assembly = assembly_new();
-    assert(assemble(assembly_code, assembly) == T_OK);
+    assert(assemble(assembly_code, assembly) == TYC_OK);
 
     assert(assembly->consts_n == 2);
     assert(assembly->consts[0].type == TC_REAL);
@@ -65,7 +65,7 @@ static void test_labels(void)
             "    ret";
 
     Assembly* assembly = assembly_new();
-    assert(assemble(assembly_code, assembly) == T_OK);
+    assert(assemble(assembly_code, assembly) == TYC_OK);
 
     assert(assembly->functions_n == 1);
     assert(assembly->functions[0].n_instructions == 3);
@@ -79,7 +79,7 @@ static void test_labels(void)
 
     // adjust labels
 
-    assert(assembler_adjust_labels(assembly) == T_OK);
+    assert(assembler_adjust_labels(assembly) == TYC_OK);
 
     assert(assembly->functions_n == 1);
     assert(assembly->functions[0].n_instructions == 3);
@@ -131,7 +131,7 @@ static void test_bytecode_gen(void)
     };
 
     uint8_t* bytecode; size_t bytecode_sz;
-    assert(code_assemble(assembly_code, &bytecode, &bytecode_sz) == T_OK);
+    assert(code_assemble(assembly_code, &bytecode, &bytecode_sz) == TYC_OK);
 
     /*
     for (size_t i = 0; i < (bytecode_sz < sizeof bytecode_expected ? bytecode_sz : sizeof bytecode_expected); ++i) {
@@ -167,7 +167,7 @@ static void test_bytecode_parsing(void)
             "    ret";
 
     uint8_t* bytecode; size_t bytecode_sz;
-    assert(code_assemble(assembly_code, &bytecode, &bytecode_sz) == T_OK);
+    assert(code_assemble(assembly_code, &bytecode, &bytecode_sz) == TYC_OK);
 
     /*
     for (size_t i = 0; i < bytecode_sz; ++i) {
@@ -180,7 +180,7 @@ static void test_bytecode_parsing(void)
 
     Code* code = code_new();
 
-    assert(code_load_bytecode(code, bytecode, bytecode_sz) == T_OK);
+    assert(code_load_bytecode(code, bytecode, bytecode_sz) == TYC_OK);
 
     assert(code_n_consts(code) == 2);
     assert(code_const_type(code, 0) == TC_REAL);
@@ -229,10 +229,10 @@ static void test_bytecode_labels()
             "    ret";
 
     uint8_t* bytecode; size_t bytecode_sz;
-    assert(code_assemble(assembly_code, &bytecode, &bytecode_sz) == T_OK);
+    assert(code_assemble(assembly_code, &bytecode, &bytecode_sz) == TYC_OK);
 
     Code* code = code_new();
-    assert(code_load_bytecode(code, bytecode, bytecode_sz) == T_OK);
+    assert(code_load_bytecode(code, bytecode, bytecode_sz) == TYC_OK);
 
     Instruction inst = code_next_instruction(code, 0, 0);
     assert(inst.operator == TO_JMP);
