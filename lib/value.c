@@ -14,7 +14,7 @@ typedef enum {
 
 TYC_TYPE value_type(VALUE v)
 {
-    if (nanbox_is_null(v))
+    if (nanbox_is_empty(v))
         return TYC_NIL;
     if (nanbox_is_boolean(v))
         return TYC_BOOLEAN;
@@ -22,7 +22,7 @@ TYC_TYPE value_type(VALUE v)
         return TYC_INTEGER;
     if (nanbox_is_double(v))
         return TYC_REAL;
-    if (nanbox_is_pointer(v))
+    if (nanbox_is_pointer(v) || nanbox_is_null(v))
         return TYC_NATIVE_PTR;
     switch (v.as_bits.tag) {
         case TTT_STRING:    return TYC_STRING;
@@ -58,7 +58,7 @@ const char* type_name(TYC_TYPE t)
 
 bool type_is_collectable(TYC_TYPE t)
 {
-    return t == TYC_STRING || t == TYC_ARRAY || t == TYC_TABLE;
+    return t == TYC_STRING || t == TYC_ARRAY || t == TYC_TABLE || t == TYC_NATIVE_FN__;
 }
 
 bool value_boolean(VALUE v)
@@ -129,12 +129,14 @@ void* value_native_pointer(VALUE v)
         abort();
     }
 #endif
+    if (nanbox_is_null(v))
+        return NULL;
     return nanbox_to_pointer(v);
 }
 
 VALUE create_value_nil(void)
 {
-    return nanbox_null();
+    return nanbox_empty();
 }
 
 VALUE create_value_bool(bool b)
@@ -176,7 +178,10 @@ VALUE create_value_heap_key(TYC_TYPE type, HEAP_KEY key)
 
 VALUE create_value_native_pointer(void* ptr)
 {
-    return nanbox_from_pointer(ptr);
+    if (ptr)
+        return nanbox_from_pointer(ptr);
+    else
+        return nanbox_null();
 }
 
 bool value_is_false(VALUE v)
