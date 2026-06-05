@@ -19,11 +19,6 @@ extern "C" {
 #include <cstring>
 #include <vector>
 
-// priv.h declares these extern. If you link multiple test files into one
-// binary, centralize these (or mark them weak) to avoid duplicate symbols.
-__thread char last_err_msg[256] = {0};
-bool abort_on_errors = false;
-
 static_assert(sizeof(VALUE) == 8, "VALUE expected to be a 64-bit nanbox");
 
 // Raw bits of a canonical (non-NaN) VALUE, for comparison without operator==.
@@ -83,7 +78,7 @@ TEST(Array, AppendStoresInOrder) {
     for (int i = 0; i < 5; ++i) array_append(a, create_value_integer(i * 100));
     ASSERT_EQ(array_len(a), 5u);
     for (int i = 0; i < 5; ++i)
-        EXPECT_EQ(value_integer(array_get(a, i)), i * 100) << "pos " << i;
+        EXPECT_EQ(value_integer(array_get(a, (size_t) i)), i * 100) << "pos " << i;
     array_destroy(a);
 }
 
@@ -93,7 +88,7 @@ TEST(Array, AppendManyForcesGrowth) {
     for (int i = 0; i < N; ++i) array_append(a, create_value_integer(i));
     ASSERT_EQ(array_len(a), (size_t)N);
     for (int i = 0; i < N; ++i)
-        EXPECT_EQ(value_integer(array_get(a, i)), i) << "pos " << i;
+        EXPECT_EQ(value_integer(array_get(a, (size_t) i)), i) << "pos " << i;
     array_destroy(a);
 }
 
@@ -151,7 +146,7 @@ TEST(Array, SetRoundTripAllTypesAtEveryPosition) {
 // =========================================================================
 
 // Hypothesis: reading at or past the logical end yields nil (Lua-like).
-TEST(Array, DISABLED_GetOutOfRangeReturnsNil) {
+TEST(Array, GetOutOfRangeReturnsNil) {
     Array* a = array_new();
     array_append(a, create_value_integer(1));            // len 1
     EXPECT_EQ(value_type(array_get(a, 1)), TYC_NIL);     // one past end
@@ -164,7 +159,7 @@ TEST(Array, DISABLED_GetOutOfRangeReturnsNil) {
 }
 
 // Hypothesis: setting past the end grows the array, filling the gap with nil.
-TEST(Array, DISABLED_SetPastEndGrowsWithNilGap) {
+TEST(Array, SetPastEndGrowsWithNilGap) {
     Array* a = array_new();
     array_append(a, create_value_integer(0));   // len 1
     array_set(a, 3, create_value_integer(30));  // skips indices 1,2

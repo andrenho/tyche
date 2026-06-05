@@ -111,7 +111,7 @@ set(LIB_SRC
         lib/code.c
         lib/value.c
         lib/stack.c
-        #lib/array.c
+        lib/array.c
         #lib/table.c
         #lib/heap.c
         #lib/vm.c
@@ -166,6 +166,7 @@ add_executable(tyche-test
         test/tests-assembly.cc
         test/tests-values.cc
         test/tests-stack.cc
+        test/tests-array.cc
 )
 target_link_libraries(tyche-test PRIVATE tyche_static GTest::gtest_main m)
 add_dependencies(tyche-test gen_instructions)
