@@ -5,16 +5,10 @@ typedef struct {
     VALUE value;
 } TableKV;
 
-typedef struct {
-    TableKV kv;
-    size_t  extra_sz;
-    TableKV *extra_kv;
-} TableItem;
-
 struct Table {
     size_t      sz;
     size_t      in_use;
-    TableItem*  items;
+    TableKV*    items;
     Table*      super;
     TycheVM const* T;
 };
@@ -24,9 +18,9 @@ Table* table_new(TycheVM const* T)
     Table* t = xcalloc(1, sizeof(Table));
     t->sz = 8;
     t->in_use = 0;
-    t->items = xmalloc(t->sz * sizeof(TableItem));
+    t->items = xmalloc(t->sz * sizeof(TableKV));
     for (size_t i = 0; i < t->sz; ++i)
-        t->items[i] = (TableItem) { .kv.key = create_value_nil(), .extra_sz = 0, .extra_kv = NULL };
+        t->items[i].key = create_value_nil();
     t->T = T;
     t->super = NULL;
     return t;
@@ -34,8 +28,6 @@ Table* table_new(TycheVM const* T)
 
 void table_destroy(Table* t)
 {
-    for (size_t i = 0; i < t->sz; ++i)
-        free(t->items[i].extra_kv);
     free(t->items);
     free(t);
 }
@@ -50,6 +42,16 @@ size_t table_len(Table const* t)
 
 static void table_rehash(Table* t)
 {
+    // TODO
+}
+
+static uint32_t find_adjusted_key(Table* t, VALUE key, bool* existing_record)
+{
+    uint32_t hash = tyc_hash(t->T, key);
+    uint32_t idx = hash % t->sz;
+    uint32_t last = (idx == 0) ? t->sz - 1 : idx - 1;
+
+    // TODO...
 }
 
 void table_set(Table* t, VALUE key, VALUE value)
