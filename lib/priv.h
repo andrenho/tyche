@@ -95,6 +95,7 @@ TYCHE_REAL value_real(VALUE v);
 uint32_t   value_function_idx(VALUE v);
 HEAP_KEY   value_heap_key(VALUE v);
 bool       value_is_false(VALUE v);
+bool       value_is_nil(VALUE v);
 void*      value_native_pointer(VALUE v);
 
 VALUE create_value_nil(void);
@@ -147,13 +148,12 @@ void   array_append(Array* a, VALUE v);
 Table*     table_new(TycheVM const* T);
 void       table_destroy(Table* t);
 
-size_t     table_len(Table* t);
+size_t     table_len(Table const* t);
 TYC_RESULT table_get(Table const* t, VALUE key, VALUE* value);
 void       table_set(Table* t, VALUE key, VALUE value);
 void       table_del(Table* t, VALUE key);
 
 bool       table_has_key(Table const* t, VALUE key);
-size_t     table_size(Table const* t);
 
 bool       table_next(Table* t, VALUE key, VALUE* out_key, VALUE* out_value);
 void       table_setsuper(Table* t, Table* super);
@@ -223,8 +223,8 @@ Stack* tyc_stack(TycheVM* T);
 Heap*  tyc_heap(TycheVM* T);
 Code*  tyc_code(TycheVM* T);
 
-uint32_t tyc_hash(TycheVM* T, VALUE value);
-bool     tyc_eq(TycheVM* T, VALUE value_a, VALUE value_b);
+uint32_t tyc_hash(TycheVM const* T, VALUE value);
+bool     tyc_eq(TycheVM const* T, VALUE value_a, VALUE value_b);
 
 //
 // EXPRESSIONS

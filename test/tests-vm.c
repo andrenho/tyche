@@ -167,7 +167,7 @@ static void test_tables(void)
 
         table_del(t, create_value_integer(20));
         assert(table_get(t, create_value_integer(10), &v) == TYC_OK);
-        assert(table_get(t, create_value_integer(20), &v) == TYC_OK && value_type(v) == TYC_NIL);
+        assert(table_get(t, create_value_integer(20), &v) == TYC_OK && value_type(v) == TYC_INTEGER);
 
         table_destroy(t);
         heap_destroy(h);
@@ -400,9 +400,9 @@ static void test_heap(void)
 
         // table.Hello = ["World"]
         array_append(array, sv2);
-        assert(table_size(table) == 0);
+        assert(table_len(table) == 0);
         table_set(table, sv1, array_val);
-        assert(table_size(table) == 1);
+        assert(table_len(table) == 1);
 
         // initial situation: HEAP=4
         assert(heap_size(h) == 4);
@@ -413,7 +413,7 @@ static void test_heap(void)
         VALUE sv3 = create_value_heap_key(TYC_STRING, heap_add_string(h, "Hello", false));
         assert(value_heap_key(sv1) == value_heap_key(sv3));
         table_set(table, sv3, create_value_nil());
-        assert(table_size(table) == 0);
+        assert(table_len(table) == 0);
         heap_gc(h, &table_value, 1);
         assert(heap_size(h) == 1);
 

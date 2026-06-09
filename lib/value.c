@@ -183,3 +183,8 @@ bool value_is_false(VALUE v)
 {
     return value_type(v) == TYC_NIL || (value_type(v) == TYC_BOOLEAN && value_boolean(v) == false);
 }
+
+bool value_is_nil(VALUE v)
+{
+    return value_type(v) == TYC_NIL;
+}

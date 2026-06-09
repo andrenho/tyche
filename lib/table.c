@@ -1,27 +1,32 @@
 #include "priv.h"
 
-#include "khash.h"
-
 typedef struct {
     VALUE key;
     VALUE value;
-} TableValue;
+} TableKV;
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-KHASH_MAP_INIT_INT64(TABLE_INT, TableValue)
-#pragma GCC diagnostic pop
+typedef struct {
+    TableKV kv;
+    size_t  extra_sz;
+    TableKV *extra_kv;
+} TableItem;
 
 struct Table {
-    khash_t(TABLE_INT)* tbl_int;
-    Table*              super;
-    TycheVM const*      T;
+    size_t      sz;
+    size_t      in_use;
+    TableItem*  items;
+    Table*      super;
+    TycheVM const* T;
 };
 
 Table* table_new(TycheVM const* T)
 {
     Table* t = xcalloc(1, sizeof(Table));
-    t->tbl_int = kh_init(TABLE_INT);
+    t->sz = 8;
+    t->in_use = 0;
+    t->items = xmalloc(t->sz * sizeof(TableItem));
+    for (size_t i = 0; i < t->sz; ++i)
+        t->items[i] = (TableItem) { .kv.key = create_value_nil(), .extra_sz = 0, .extra_kv = NULL };
     t->T = T;
     t->super = NULL;
     return t;
@@ -29,127 +34,94 @@ Table* table_new(TycheVM const* T)
 
 void table_destroy(Table* t)
 {
-    kh_destroy(TABLE_INT, t->tbl_int);
+    for (size_t i = 0; i < t->sz; ++i)
+        free(t->items[i].extra_kv);
+    free(t->items);
     free(t);
 }
 
-size_t table_len(Table* t)
+size_t table_len(Table const* t)
 {
-    if (t->super == NULL)
-        return kh_size(t->tbl_int);
-
-    // if has supertable, also count the supertable fields which don't conflict with this table
-    size_t i = 0;
-    VALUE key = create_value_nil();
-    while (table_next(t, key, &key, NULL))
-        ++i;
-    return i;
+    size_t sz = t->in_use;
+    if (t->super)
+        sz += table_len(t->super);
+    return sz;
 }
 
-static TABLE_HASH value_hash(VALUE v)
+static void table_rehash(Table* t)
 {
-    return v.as_int64;
 }
 
 void table_set(Table* t, VALUE key, VALUE value)
 {
-    if (value_type(value) == TYC_NIL) {  // if value = nil, delete from table
-        table_del(t, key);
-        return;
+    if ((double) t->in_use / (double) t->sz > 0.7)
+        table_rehash(t);
+
+    uint32_t hash = tyc_hash(t->T, key);
+    uint32_t idx = hash % t->sz;
+
+    // is main slot available? use it
+    if (value_is_nil(t->items[idx].kv.key)) {
+        t->items[idx].kv = (TableKV) { key, value };
+        ++t->in_use;
+
+    // is the same key as the main slot?
+    } else if (tyc_eq(t->T, t->items[idx].kv.key, key)) {
+        t->items[idx].kv.value = value;
+
+    // is in the extra slots?
+    } else {
+        bool found = false;
+        for (size_t i = 0; i < t->items[idx].extra_sz; ++i) {
+            if (tyc_eq(t->T, t->items[idx].extra_kv[i].key, key)) {
+                t->items[idx].extra_kv[i].value = value;
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            ++t->items[idx].extra_sz;
+            t->items[idx].extra_kv = xrealloc(t->items[idx].extra_kv, t->items[idx].extra_sz * sizeof(TableKV));
+            ++t->in_use;
+        }
     }
-
-    TABLE_HASH hash = value_hash(key);
-
-    int ret;
-    khiter_t k = kh_put(TABLE_INT, t->tbl_int, hash, &ret);
-    if (ret < 0)
-        out_of_memory();
-    kh_value(t->tbl_int, k) = (TableValue) { key, value };
 }
 
 TYC_RESULT table_get(Table const* t, VALUE key, VALUE* value)
 {
-    TABLE_HASH hash = value_hash(key);
-    khiter_t k = kh_get(TABLE_INT, t->tbl_int, hash);
-    if (value) {
-        if (k == kh_end(t->tbl_int)) {                  // if not found,
-            if (t->super)                               //   look into the supertable
-                return table_get(t->super, key, value);
-            else
-                *value = create_value_nil();            //   no supertable, just return nil
-        } else {
-            *value = kh_value(t->tbl_int, k).value;     // return found record
+    uint32_t hash = tyc_hash(t->T, key);
+    uint32_t idx = hash % t->sz;
+
+    if (tyc_eq(t->T, t->items[idx].kv.key, key)) {
+        *value = t->items[idx].kv.value;
+        return TYC_OK;
+    }
+
+    for (size_t i = 0; i < t->items[idx].extra_sz; ++i) {
+        if (tyc_eq(t->T, t->items[idx].extra_kv[i].key, key)) {
+            *value = t->items[idx].extra_kv[i].value;
+            return TYC_OK;
         }
     }
 
+    *value = create_value_nil();
     return TYC_OK;
 }
 
 bool table_has_key(Table const* t, VALUE key)
 {
-    TABLE_HASH hash = value_hash(key);
-    khiter_t k = kh_get(TABLE_INT, t->tbl_int, hash);
-    return k != kh_end(t->tbl_int);
+    // TODO
+    return false;
 }
 
 void table_del(Table* t, VALUE key)
 {
-    TABLE_HASH hash = value_hash(key);
-    khiter_t k = kh_get(TABLE_INT, t->tbl_int, hash);
-    if (k == kh_end(t->tbl_int))
-        return;
-    kh_del(TABLE_INT, t->tbl_int, k);
-}
-
-static bool table_next_with_child(Table* t, Table* child, VALUE key, VALUE* out_key, VALUE* out_value)
-{
-    // if nil, start from the beginning, else find next
-    khint_t k;
-    if (value_type(key) == TYC_NIL) {
-        k = kh_begin(t->tbl_int);
-    } else {
-        TABLE_HASH hash = value_hash(key);
-        k = kh_get(TABLE_INT, t->tbl_int, hash);
-        ++k;
-    }
-
-skip_next:
-    // skip non-existing records
-    while (kh_size(t->tbl_int) > 0 && !kh_exist(t->tbl_int, k) && k < kh_end(t->tbl_int))
-        ++k;
-
-    // if not found, return nil, otherwise return the record
-    if (kh_size(t->tbl_int) == 0 || k >= kh_end(t->tbl_int)) {
-        if (t->super) {
-            return table_next_with_child(t->super, t, key, out_key, out_value);
-        } else {
-            if (out_key) *out_key = create_value_nil();
-            if (out_value) *out_value = create_value_nil();
-            return false;
-        }
-    } else {
-        // before returning, check if key exists in child
-        //   if it does, we should skip it, as it was already returned
-        if (child && table_has_key(child, kh_value(t->tbl_int, k).key)) {
-            ++k;
-            goto skip_next;
-        }
-
-        // return found records
-        if (out_key) *out_key = kh_value(t->tbl_int, k).key;
-        if (out_value) *out_value = kh_value(t->tbl_int, k).value;
-        return true;
-    }
 }
 
 bool table_next(Table* t, VALUE key, VALUE* out_key, VALUE* out_value)
 {
-    return table_next_with_child(t, NULL, key, out_key, out_value);
-}
-
-size_t table_size(Table const* t)
-{
-    return kh_size(t->tbl_int);
+    return false;
 }
 
 void table_setsuper(Table* t, Table* super)

@@ -797,7 +797,7 @@ static uint32_t mem_to_hash(void *ptr)
     return (uint32_t) ((p >> 32) ^ (p & 0xffffffff));
 }
 
-uint32_t tyc_hash(TycheVM* T, VALUE value)
+uint32_t tyc_hash(TycheVM const* T, VALUE value)
 {
     switch (value_type(value)) {
         case TYC_NIL:       return 0;
@@ -811,19 +811,19 @@ uint32_t tyc_hash(TycheVM* T, VALUE value)
         }
         case TYC_STRING: {
             const char* str;
-            if (heap_get_string(tyc_heap(T), value_heap_key(value), &str) != TYC_OK)
+            if (heap_get_string(T->heap, value_heap_key(value), &str) != TYC_OK)
                 abort();
             return kh_str_hash_func(str);
         }
         case TYC_ARRAY: {
             Array* a;
-            if (heap_get_array(tyc_heap(T), value_heap_key(value), &a) != TYC_OK)
+            if (heap_get_array(T->heap, value_heap_key(value), &a) != TYC_OK)
                 abort();
             return mem_to_hash(a);
         }
         case TYC_TABLE: {
             Table* a;
-            if (heap_get_table(tyc_heap(T), value_heap_key(value), &a) != TYC_OK)
+            if (heap_get_table(T->heap, value_heap_key(value), &a) != TYC_OK)
                 abort();
             return mem_to_hash(a);
         }
@@ -833,7 +833,7 @@ uint32_t tyc_hash(TycheVM* T, VALUE value)
             return mem_to_hash(value_native_pointer(value));
         case TYC_NATIVE_FN__: {
             TYCHE_CB* a = NULL;
-            if (heap_get_native_function(tyc_heap(T), value_heap_key(value), a) != TYC_OK)
+            if (heap_get_native_function(T->heap, value_heap_key(value), a) != TYC_OK)
                 abort();
             return mem_to_hash(a);
         }
@@ -844,7 +844,7 @@ uint32_t tyc_hash(TycheVM* T, VALUE value)
     return 0;
 }
 
-bool tyc_eq(TycheVM* T, VALUE value_a, VALUE value_b)
+bool tyc_eq(TycheVM const* T, VALUE value_a, VALUE value_b)
 {
     if (value_type(value_a) != value_type(value_b))
         return false;
@@ -856,17 +856,17 @@ bool tyc_eq(TycheVM* T, VALUE value_a, VALUE value_b)
         case TYC_REAL:      return fabs(value_real(value_a) - value_real(value_b)) < EPSILON;
         case TYC_STRING: {
             const char *s1, *s2;
-            if (heap_get_string(tyc_heap(T), value_heap_key(value_a), &s1) != TYC_OK)
+            if (heap_get_string(T->heap, value_heap_key(value_a), &s1) != TYC_OK)
                 return false;
-            if (heap_get_string(tyc_heap(T), value_heap_key(value_b), &s2) != TYC_OK)
+            if (heap_get_string(T->heap, value_heap_key(value_b), &s2) != TYC_OK)
                 return false;
             return strcmp(s1, s2) == 0;
         }
         case TYC_ARRAY: {
             Array *a, *b;
-            if (heap_get_array(tyc_heap(T), value_heap_key(value_a), &a) != TYC_OK)
+            if (heap_get_array(T->heap, value_heap_key(value_a), &a) != TYC_OK)
                 return false;
-            if (heap_get_array(tyc_heap(T), value_heap_key(value_b), &b) != TYC_OK)
+            if (heap_get_array(T->heap, value_heap_key(value_b), &b) != TYC_OK)
                 return false;
             if (array_len(a) != array_len(b))
                 return false;
@@ -878,9 +878,9 @@ bool tyc_eq(TycheVM* T, VALUE value_a, VALUE value_b)
         case TYC_TABLE: {
             // TODO - check overloaded __eq
             Table *a, *b;
-            if (heap_get_table(tyc_heap(T), value_heap_key(value_a), &a) != TYC_OK)
+            if (heap_get_table(T->heap, value_heap_key(value_a), &a) != TYC_OK)
                 return false;
-            if (heap_get_table(tyc_heap(T), value_heap_key(value_b), &b) != TYC_OK)
+            if (heap_get_table(T->heap, value_heap_key(value_b), &b) != TYC_OK)
                 return false;
             if (table_len(a) != table_len(b))
                 return false;
@@ -901,9 +901,9 @@ bool tyc_eq(TycheVM* T, VALUE value_a, VALUE value_b)
             return value_native_pointer(value_a) == value_native_pointer(value_b);
         case TYC_NATIVE_FN__: {
             TYCHE_CB a, b;
-            if (heap_get_native_function(tyc_heap(T), value_heap_key(value_a), &a) != TYC_OK)
+            if (heap_get_native_function(T->heap, value_heap_key(value_a), &a) != TYC_OK)
                 return false;
-            if (heap_get_native_function(tyc_heap(T), value_heap_key(value_b), &b) != TYC_OK)
+            if (heap_get_native_function(T->heap, value_heap_key(value_b), &b) != TYC_OK)
                 return false;
             return a == b;
         }
