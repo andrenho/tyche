@@ -7,8 +7,6 @@
 
 #define TRYX(x) if (((rr) = (x)) != TYC_OK) { return (rr); }
 
-#define EPSILON 0.000000000001
-
 static bool was_init = false;
 
 typedef TYC_RESULT(*EXPR_FN)(TycheVM* T, VALUE a, VALUE b, VALUE* r);
@@ -31,11 +29,15 @@ static TYC_RESULT default_unary_op(TycheVM* T, VALUE a, VALUE b, VALUE* r) {
 }
 
 #define OP(name) static TYC_RESULT name(TycheVM* T, VALUE a, VALUE b, VALUE* r)
+
+OP(expr_eq)      { *r = create_value_bool(tyc_eq(T, a, b)); return TYC_OK; }
+OP(expr_neq)     { *r = create_value_bool(!tyc_eq(T, a, b)); return TYC_OK; }
+
+OP(expr_hash)    { (void) b; *r = create_value_integer(!tyc_hash(T, a)); return TYC_OK; }
+
 OP(and_bool)     { (void) T; *r = create_value_bool(value_boolean(a) && value_boolean(b)); return TYC_OK; }
 OP(or_bool)      { (void) T; *r = create_value_bool(value_boolean(a) || value_boolean(b)); return TYC_OK; }
 OP(xor_bool)     { (void) T; *r = create_value_bool(value_boolean(a) ^ value_boolean(b)); return TYC_OK; }
-OP(eq_bool)      { (void) T; *r = create_value_bool(value_boolean(a) == value_boolean(b)); return TYC_OK; }
-OP(neq_bool)     { (void) T; *r = create_value_bool(value_boolean(a) != value_boolean(b)); return TYC_OK; }
 OP(not_bool)     { (void) T, (void) b; *r = create_value_bool(!value_boolean(a)); return TYC_OK; }
 
 OP(sum_int_int)  { (void) T; *r = create_value_integer(value_integer(a) + value_integer(b)); return TYC_OK; }
@@ -43,8 +45,6 @@ OP(sub_int_int)  { (void) T; *r = create_value_integer(value_integer(a) - value_
 OP(mul_int_int)  { (void) T; *r = create_value_integer(value_integer(a) * value_integer(b)); return TYC_OK; }
 OP(div_int_int)  { (void) T; *r = create_value_real((TYCHE_REAL) value_integer(a) / (TYCHE_REAL) value_integer(b)); return TYC_OK; }
 OP(idiv_int_int) { (void) T; *r = create_value_integer(value_integer(a) / value_integer(b)); return TYC_OK; }
-OP(eq_int_int)   { (void) T; *r = create_value_bool(value_integer(a)==value_integer(b)); return TYC_OK; }
-OP(neq_int_int)  { (void) T; *r = create_value_bool(value_integer(a)!=value_integer(b)); return TYC_OK; }
 OP(lt_int_int)   { (void) T; *r = create_value_bool(value_integer(a)<value_integer(b)); return TYC_OK; }
 OP(lte_int_int)  { (void) T; *r = create_value_bool(value_integer(a)<=value_integer(b)); return TYC_OK; }
 OP(gt_int_int)   { (void) T; *r = create_value_bool(value_integer(a)>value_integer(b)); return TYC_OK; }
@@ -64,8 +64,6 @@ OP(sub_real)  { (void) T; *r = create_value_real(value_real(a) - value_real(b));
 OP(mul_real)  { (void) T; *r = create_value_real(value_real(a) * value_real(b)); return TYC_OK; }
 OP(div_real)  { (void) T; *r = create_value_real(value_real(a) / value_real(b)); return TYC_OK; }
 OP(idiv_real) { (void) T; *r = create_value_integer((int32_t) (value_real(a) / value_real(b))); return TYC_OK; }
-OP(eq_real)   { (void) T; *r = create_value_bool(fabs(value_real(a) - value_real(b)) <= EPSILON); return TYC_OK; }
-OP(neq_real)  { (void) T; *r = create_value_bool(fabs(value_real(a) - value_real(b)) > EPSILON); return TYC_OK; }
 OP(lt_real)   { (void) T; *r = create_value_bool(value_real(a) < value_real(b)); return TYC_OK; }
 OP(lte_real)  { (void) T; *r = create_value_bool(value_real(a) <= value_real(b)); return TYC_OK; }
 OP(gt_real)   { (void) T; *r = create_value_bool(value_real(a) > value_real(b)); return TYC_OK; }
@@ -93,8 +91,6 @@ static void setup_real_expr(TYC_TYPE type_a, TYC_TYPE type_b)
     expr_fn[TX_MUL][type_a][type_b] = mul_real;
     expr_fn[TX_DIV][type_a][type_b] = div_real;
     expr_fn[TX_IDIV][type_a][type_b] = idiv_real;
-    expr_fn[TX_EQ][type_a][type_b] = eq_real;
-    expr_fn[TX_NEQ][type_a][type_b] = neq_real;
     expr_fn[TX_LT][type_a][type_b] = lt_real;
     expr_fn[TX_LTE][type_a][type_b] = lte_real;
     expr_fn[TX_GT][type_a][type_b] = gt_real;
@@ -113,12 +109,19 @@ void expr_init(void)
             for (TYC_TYPE k = 0; k < TYC_COUNT__; ++k)
                 expr_fn[i][j][k] = expr_is_binary(i) ? default_binary_op : default_unary_op;
 
+    // equality
+    for (TYC_TYPE j = 0; j < TYC_COUNT__; ++j) {
+        expr_fn[TX_HASH][j][TYC_NIL] = expr_hash;
+        for (TYC_TYPE k = 0; k < TYC_COUNT__; ++k) {
+            expr_fn[TX_EQ][j][k] = expr_eq;
+            expr_fn[TX_NEQ][j][k] = expr_neq;
+        }
+    }
+
     // boolean
     expr_fn[TX_AND][TYC_BOOLEAN][TYC_BOOLEAN] = and_bool;
     expr_fn[TX_OR][TYC_BOOLEAN][TYC_BOOLEAN] = or_bool;
     expr_fn[TX_XOR][TYC_BOOLEAN][TYC_BOOLEAN] = xor_bool;
-    expr_fn[TX_EQ][TYC_BOOLEAN][TYC_BOOLEAN] = eq_bool;
-    expr_fn[TX_NEQ][TYC_BOOLEAN][TYC_BOOLEAN] = neq_bool;
     expr_fn[TX_NOT][TYC_BOOLEAN][TYC_NIL] = not_bool;
 
     // integer
@@ -127,8 +130,6 @@ void expr_init(void)
     expr_fn[TX_MUL][TYC_INTEGER][TYC_INTEGER] = mul_int_int;
     expr_fn[TX_DIV][TYC_INTEGER][TYC_INTEGER] = div_int_int;
     expr_fn[TX_IDIV][TYC_INTEGER][TYC_INTEGER] = idiv_int_int;
-    expr_fn[TX_EQ][TYC_INTEGER][TYC_INTEGER] = eq_int_int;
-    expr_fn[TX_NEQ][TYC_INTEGER][TYC_INTEGER] = neq_int_int;
     expr_fn[TX_LT][TYC_INTEGER][TYC_INTEGER] = lt_int_int;
     expr_fn[TX_LTE][TYC_INTEGER][TYC_INTEGER] = lte_int_int;
     expr_fn[TX_GT][TYC_INTEGER][TYC_INTEGER] = gt_int_int;

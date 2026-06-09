@@ -14,6 +14,5 @@ At this point only the VM is available.
 
 ## Documentation
 
-* Bytecode format: [doc/BYTECODE](doc/BYTECODE)
-* VM opcodes: [doc/OPCODES](doc/OPCODES)
+* VM documentation: [doc/VM.md](doc/VM.md)
 * C interface: [lib/tyche.h](lib/tyche.h)

@@ -23,8 +23,8 @@ void assembly_destroy(Assembly* as)
 
     for (size_t i = 0; i < as->functions_n; ++i) {
         for (size_t j = 0; j < as->functions[i].n_instructions; ++j) {
-            if (as->functions[i].instructions[j].operator.type == OP_LABEL)
-                free(as->functions[i].instructions[j].operator.v.label);
+            if (as->functions[i].instructions[j].operation.type == OP_LABEL)
+                free(as->functions[i].instructions[j].operation.v.label);
             for (size_t k = 0; k < as->functions[i].instructions[j].n_labels; ++k)
                 free(as->functions[i].instructions[j].labels[k]);
             free(as->functions[i].instructions[j].labels);
@@ -84,7 +84,7 @@ void assembly_add_inst(Assembly* as, uint32_t f_id, TYC_INST inst)
 {
     assembly_add_instruction(as, f_id, (AssemblyInstruction) {
         .instruction = inst,
-        .operator = { .type = OP_NONE },
+        .operation = { .type = OP_NONE },
     });
 }
 
@@ -92,7 +92,7 @@ void assembly_add_inst_p(Assembly* as, uint32_t f_id, TYC_INST inst, int32_t par
 {
     assembly_add_instruction(as, f_id, (AssemblyInstruction) {
         .instruction = inst,
-        .operator = { .type = OP_INT, .v.i = par },
+        .operation = { .type = OP_INT, .v.i = par },
     });
 }
 
@@ -102,7 +102,7 @@ void assembly_add_inst_label(Assembly* as, uint32_t f_id, TYC_INST inst, const c
 {
     assembly_add_instruction(as, f_id, (AssemblyInstruction) {
         .instruction = inst,
-        .operator = { .type = OP_LABEL, .v.label = strdup(label) },
+        .operation = { .type = OP_LABEL, .v.label = strdup(label) },
     });
 }
 #pragma GCC diagnostic pop

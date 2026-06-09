@@ -36,17 +36,17 @@ static void test_assembly(void)
     assert(assembly->functions_n == 2);
     assert(assembly->functions[0].n_instructions == 4);
     assert(assembly->functions[0].instructions[0].instruction == TO_PUSHI);
-    assert(assembly->functions[0].instructions[0].operator.type == OP_INT);
-    assert(assembly->functions[0].instructions[0].operator.v.i == 2);
+    assert(assembly->functions[0].instructions[0].operation.type == OP_INT);
+    assert(assembly->functions[0].instructions[0].operation.v.i == 2);
     assert(assembly->functions[0].instructions[1].instruction == TO_PUSHI);
-    assert(assembly->functions[0].instructions[1].operator.type == OP_INT);
-    assert(assembly->functions[0].instructions[1].operator.v.i == -3);
+    assert(assembly->functions[0].instructions[1].operation.type == OP_INT);
+    assert(assembly->functions[0].instructions[1].operation.v.i == -3);
     assert(assembly->functions[0].instructions[2].instruction == TO_SUM);
     assert(assembly->functions[0].instructions[3].instruction == TO_RET);
 
     assert(assembly->functions[1].n_instructions == 2);
     assert(assembly->functions[1].instructions[0].instruction == TO_PUSHI);
-    assert(assembly->functions[1].instructions[0].operator.v.i == 5000);
+    assert(assembly->functions[1].instructions[0].operation.v.i == 5000);
     assert(assembly->functions[1].instructions[1].instruction == TO_RET);
 
     assembly_destroy(assembly);
@@ -70,8 +70,8 @@ static void test_labels(void)
     assert(assembly->functions_n == 1);
     assert(assembly->functions[0].n_instructions == 3);
     assert(assembly->functions[0].instructions[0].instruction == TO_JMP);
-    assert(assembly->functions[0].instructions[0].operator.type == OP_LABEL);
-    assert(strcmp(assembly->functions[0].instructions[0].operator.v.label, "@my_label") == 0);
+    assert(assembly->functions[0].instructions[0].operation.type == OP_LABEL);
+    assert(strcmp(assembly->functions[0].instructions[0].operation.v.label, "@my_label") == 0);
     assert(assembly->functions[0].instructions[1].instruction == TO_POP);
     assert(assembly->functions[0].instructions[2].n_labels == 1);
     assert(strcmp(assembly->functions[0].instructions[2].labels[0], "@my_label") == 0);
@@ -84,8 +84,8 @@ static void test_labels(void)
     assert(assembly->functions_n == 1);
     assert(assembly->functions[0].n_instructions == 3);
     assert(assembly->functions[0].instructions[0].instruction == TO_JMP);
-    assert(assembly->functions[0].instructions[0].operator.type == OP_INT);
-    assert(assembly->functions[0].instructions[0].operator.v.i == 4);
+    assert(assembly->functions[0].instructions[0].operation.type == OP_INT);
+    assert(assembly->functions[0].instructions[0].operation.v.i == 4);
 
     assembly_destroy(assembly);
 }
@@ -193,23 +193,23 @@ static void test_bytecode_parsing(void)
 
     uint32_t addr = 0;
     Instruction inst = code_next_instruction(code, 0, addr);
-    assert(inst.operator == TO_PUSHI);
+    assert(inst.operation == TO_PUSHI);
     assert(inst.operand == 2);
     assert(inst.sz == 2);
     addr += inst.sz;
 
     inst = code_next_instruction(code, 0, addr);
-    assert(inst.operator == TO_PUSHI);
+    assert(inst.operation == TO_PUSHI);
     assert(inst.operand == -3);
     addr += inst.sz;
 
     inst = code_next_instruction(code, 0, addr);
-    assert(inst.operator == TO_SUM);
+    assert(inst.operation == TO_SUM);
     assert(inst.operand == 0);
     addr += inst.sz;
 
     inst = code_next_instruction(code, 1, 0);
-    assert(inst.operator == TO_PUSHI + TO_16BIT);
+    assert(inst.operation == TO_PUSHI + TO_16BIT);
     assert(inst.operand == 5000);
     assert(inst.sz == 3);
 
@@ -235,7 +235,7 @@ static void test_bytecode_labels()
     assert(code_load_bytecode(code, bytecode, bytecode_sz) == TYC_OK);
 
     Instruction inst = code_next_instruction(code, 0, 0);
-    assert(inst.operator == TO_JMP);
+    assert(inst.operation == TO_JMP);
     assert(inst.operand == 4);
     assert(inst.sz == 3);
 

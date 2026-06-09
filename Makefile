@@ -51,7 +51,7 @@ endif
 RELEASE_CFLAGS=-O3 -flto=auto -march=native -mtune=native -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -fstack-protector-strong
 RELEASE_LDFLAGS=-flto=auto -s
 
-CFLAGS+=-std=c99 -D_GNU_SOURCE -fPIC -fvisibility=hidden -isystem lib/contrib -isystem src/contrib -MMD -MP \
+CFLAGS+=-std=c99 -D_GNU_SOURCE -fPIC -fvisibility=hidden -isystem lib/contrib -isystem src/contrib -isystem test/contrib -MMD -MP \
 	-DVERSION_MINOR=${VERSION_MINOR} -DVERSION_MAJOR=${VERSION_MAJOR} -Ilib
 LDFLAGS+=-lm
 
@@ -75,9 +75,10 @@ endif
 
 all: tyche libtyche.a libtyche.so.${VERSION}
 
-check: tyche-test-as tyche-test-vm
+check: tyche-test-as tyche-test-vm tyche-test-op
 	./tyche-test-as
 	./tyche-test-vm
+	./tyche-test-op
 
 clean:
 	find . -name '*.[od]' -delete
@@ -103,8 +104,8 @@ package: clean
 # custom instructions for code generation
 #
 
-lib/instructions/instructions.h: lib/instructions/gen-inst.lua
-	cd lib/instructions && ./gen-inst.lua
+lib/instructions/instructions.h: lib/instructions/gen-inst.sh
+	cd lib/instructions && ./gen-inst.sh
 
 #
 # executable files
@@ -121,13 +122,15 @@ tyche: src/tyche.o libtyche.a
 
 tyche-test-as: lib/instructions/instructions.h
 tyche-test-as: test/tests-as.o libtyche.a
-	$(CC) -o $@ $^ ${LDFLAGS} -I../lib
+	$(CC) -o $@ test/tests-as.o libtyche.a ${LDFLAGS} -I../lib
 
-tyche-test-vm: CFLAGS += `pkg-config --cflags lua`
-tyche-test-vm: LDFLAGS += `pkg-config --libs lua`
 tyche-test-vm: lib/instructions/instructions.h
 tyche-test-vm: test/tests-vm.o libtyche.a
-	$(CC) -o $@ $^ ${LDFLAGS} -I../lib
+	$(CC) -o $@ test/tests-vm.o libtyche.a ${LDFLAGS} -I../lib
+
+tyche-test-op: lib/instructions/instructions.h
+tyche-test-op: test/tests-op.o libtyche.a
+	$(CC) -o $@ test/tests-op.o libtyche.a ${LDFLAGS} -I../lib
 
 libtyche.a: ${LIB_SRC}
 	ar rcs $@ $^

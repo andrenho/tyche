@@ -14,15 +14,15 @@ KHASH_MAP_INIT_INT64(TABLE_INT, TableValue)
 
 struct Table {
     khash_t(TABLE_INT)* tbl_int;
-    Heap const*         heap;
     Table*              super;
+    TycheVM const*      T;
 };
 
-Table* table_new(Heap const* heap)
+Table* table_new(TycheVM const* T)
 {
     Table* t = xcalloc(1, sizeof(Table));
     t->tbl_int = kh_init(TABLE_INT);
-    t->heap = heap;
+    t->T = T;
     t->super = NULL;
     return t;
 }

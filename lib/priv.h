@@ -20,6 +20,8 @@
 extern __thread char last_err_msg[256];
 extern bool abort_on_errors;   // only on debug mode
 
+#define EPSILON 0.000000000001
+
 #ifdef DEBUG_ASSEMBLY
 #define ERROR(...) {                                            \
     snprintf(last_err_msg, sizeof last_err_msg, __VA_ARGS__);   \
@@ -64,7 +66,7 @@ typedef enum {
 } TYC_CONST_TYPE;
 
 typedef struct Instruction {
-    TYC_INST operator;
+    TYC_INST operation;
     int32_t  operand;
     uint8_t  sz;
 } Instruction;
@@ -142,7 +144,7 @@ void   array_append(Array* a, VALUE v);
 // HEAP TABLE
 //
 
-Table*     table_new(Heap const* heap);
+Table*     table_new(TycheVM const* T);
 void       table_destroy(Table* t);
 
 size_t     table_len(Table* t);
@@ -169,7 +171,7 @@ TYC_RESULT heap_get_string(Heap const* h, HEAP_KEY key, const char** value);
 HEAP_KEY   heap_add_array(Heap* h);
 TYC_RESULT heap_get_array(Heap const* h, HEAP_KEY key, Array** array);
 
-HEAP_KEY   heap_add_table(Heap* h);
+HEAP_KEY   heap_add_table(Heap* h, TycheVM const* T);
 TYC_RESULT heap_get_table(Heap const* h, HEAP_KEY key, Table** table);
 TYC_RESULT heap_set_supertable(Heap const* h, HEAP_KEY table, HEAP_KEY super);
 TYC_RESULT heap_remove_supertable(Heap const* h, HEAP_KEY table);
@@ -220,6 +222,9 @@ void           code_parse_instruction(Instruction inst, char* outbuf, size_t sz)
 Stack* tyc_stack(TycheVM* T);
 Heap*  tyc_heap(TycheVM* T);
 Code*  tyc_code(TycheVM* T);
+
+uint32_t tyc_hash(TycheVM* T, VALUE value);
+bool     tyc_eq(TycheVM* T, VALUE value_a, VALUE value_b);
 
 //
 // EXPRESSIONS

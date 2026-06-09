@@ -6,197 +6,11 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "lua.h"
-#include "lauxlib.h"
-#include "lualib.h"
-
 //
 // SUPPORT
 //
 
 #define EQ(a, b) (memcmp(a, b) == 0)
-
-static void check_expected_top(lua_State* L, TycheVM* T)
-{
-    // check stack size
-    lua_getfield(L, -1, "expected_stack_size");
-    if (!lua_isnil(L, -1))
-        assert(tyc_stack_size(T) == (size_t) lua_tointeger(L, -1));
-    lua_pop(L, 1);
-
-    // check stack top
-    lua_getfield(L, -1, "expected_stack_top");
-    if (lua_isinteger(L, -1)) {
-        TYC_TYPE type; assert(tyc_type(T, -1, &type) == TYC_OK); assert(type == TYC_INTEGER);
-        int32_t v; assert(tyc_tointeger(T, -1, &v) == TYC_OK); assert(v == lua_tointeger(L, -1));
-    } else if (lua_isnumber(L, -1)) {
-        TYC_TYPE type; assert(tyc_type(T, -1, &type) == TYC_OK); assert(type == TYC_REAL);
-        double v; assert(tyc_toreal(T, -1, &v) == TYC_OK); assert(fabs(v - lua_tonumber(L, -1)) < 0.0001);
-    } else if (lua_isstring(L, -1)) {
-        TYC_TYPE type; assert(tyc_type(T, -1, &type) == TYC_OK); assert(type == TYC_STRING);
-        const char* str; assert(tyc_tostring(T, -1, &str) == TYC_OK); assert(strcmp(str, lua_tostring(L, -1)) == 0);
-    } else if (lua_isboolean(L, -1)) {
-        TYC_TYPE type; assert(tyc_type(T, -1, &type) == TYC_OK); assert(type == TYC_BOOLEAN);
-        bool v; assert(tyc_toboolean(T, -1, &v) == TYC_OK); assert(v == lua_toboolean(L, -1));
-    } else if (!lua_isnil(L, -1)) {
-        abort();
-    }
-    lua_pop(L, 1);
-
-    // check heap size
-    lua_getfield(L, -1, "expected_heap_size");
-    if (!lua_isnil(L, -1))
-        assert(heap_size(tyc_heap(T)) == (size_t) lua_tointeger(L, -1));
-    lua_pop(L, 1);
-}
-
-static void run_assembly_test_code(lua_State* L, bool debug, bool decompile, bool debug_bytecode)
-{
-    TycheVM* T = tyc_new();
-    tyc_debug_to_console(T, debug);
-
-    // load code
-    uint8_t* bytecode; size_t bytecode_sz;
-    lua_getfield(L, -1, "code");
-    assert(code_assemble(lua_tostring(L, -1), &bytecode, &bytecode_sz) == TYC_OK);
-    lua_pop(L, 1);
-
-    // run code
-    assert(tyc_load_bytecode(T, bytecode, bytecode_sz) == TYC_OK);
-    if (debug_bytecode)
-        tyc_print_bytecode(T);
-    if (decompile)
-        tyc_assembly_decompile(T);
-    assert(tyc_call(T, 0) == TYC_OK);
-
-    // assert
-    check_expected_top(L, T);
-
-    // cleanup
-    free(bytecode);
-    tyc_destroy(T);
-}
-
-static void run_assembly_test_template(lua_State* L, bool debug, bool decompile, bool debug_bytecode)
-{
-    lua_getfield(L, -1, "template");
-    char* template = strdup(lua_tostring(L, -1));
-    lua_pop(L, 1);
-
-    lua_getfield(L, -1, "scenarios");
-    assert(!lua_isnil(L, -1));
-
-    long n_scenarios = luaL_len(L, -1);
-    for (long i = 0; i < n_scenarios; ++i) {
-        lua_geti(L, -1, (int)i + 1);
-
-        lua_getfield(L, -1, "name");
-        printf("     .. %s\n", lua_tostring(L, -1));
-        lua_pop(L, 1);
-
-        // format code
-        luaL_dostring(L, "return string.format");
-        assert(lua_isfunction(L, -1));
-        lua_pushstring(L, template);
-
-        lua_getfield(L, -3, "parameters");
-        assert(!lua_isnil(L, -1));
-        int n_params = (int) luaL_len(L, -1);
-        for (int j = 0; j < n_params; ++j)
-            lua_geti(L, -(j + 1), j + 1);
-        lua_remove(L, -(n_params + 1));
-
-        lua_call(L, n_params + 1, 1);
-        char* formatted_code = strdup(lua_tostring(L, -1));
-        lua_pop(L, 1);
-
-        // run code
-        TycheVM* T = tyc_new();
-        tyc_debug_to_console(T, debug);
-        uint8_t* bytecode; size_t bytecode_sz;
-        assert(code_assemble(formatted_code, &bytecode, &bytecode_sz) == TYC_OK);
-        assert(tyc_load_bytecode(T, bytecode, bytecode_sz) == TYC_OK);
-        if (debug_bytecode)
-            tyc_print_bytecode(T);
-        if (decompile)
-            tyc_assembly_decompile(T);
-        assert(tyc_call(T, 0) == TYC_OK);
-
-        // assert
-        check_expected_top(L, T);
-
-        // cleanup
-        free(bytecode);
-        tyc_destroy(T);
-        free(formatted_code);
-        lua_pop(L, 1);
-    }
-
-    lua_pop(L, 1);
-    free(template);
-}
-
-static void run_assembly_test(lua_State* L)
-{
-    // print test name
-    lua_getfield(L, -1, "name");
-    printf("   - %s\n", lua_tostring(L, -1));
-    lua_pop(L, 1);
-
-    // debug?
-    lua_getfield(L, -1, "debug");
-    bool debug = lua_isboolean(L, -1) && lua_toboolean(L, -1);
-    lua_pop(L, 1);
-
-    // decompile?
-    lua_getfield(L, -1, "decompile");
-    bool decompile = lua_isboolean(L, -1) && lua_toboolean(L, -1);
-    lua_pop(L, 1);
-
-    // decompile?
-    lua_getfield(L, -1, "debug_bytecode");
-    bool debug_bytecode = lua_isboolean(L, -1) && lua_toboolean(L, -1);
-    lua_pop(L, 1);
-
-    // has code?
-    lua_getfield(L, -1, "code");
-    if (!lua_isnil(L, -1)) {
-        lua_pop(L, 1);
-        run_assembly_test_code(L, debug, decompile, debug_bytecode);
-        return;
-    } else {
-        lua_pop(L, 1);
-    }
-
-    // has template
-    lua_getfield(L, -1, "template");
-    if (!lua_isnil(L, -1)) {
-        lua_pop(L, 1);
-        run_assembly_test_template(L, debug, decompile, debug_bytecode);
-    } else {
-        lua_pop(L, 1);
-    }
-}
-
-static void run_assembly_tests(void)
-{
-    lua_State* L = luaL_newstate();
-    luaL_openlibs(L);
-
-    int r = luaL_loadfile(L, "./test/code-tests.lua");
-    assert(r == LUA_OK);
-    lua_call(L, 0, 1);
-    assert(lua_istable(L, -1));
-
-    size_t len = (size_t) luaL_len(L, -1);
-    for (size_t i = 0; i < len; ++i) {
-        lua_geti(L, -1, (int)i + 1);
-        run_assembly_test(L);
-        lua_pop(L, 1);
-    }
-
-    lua_close(L);
-}
 
 
 //
@@ -342,7 +156,7 @@ static void test_tables(void)
         printf("## Table - integer index\n");
 
         Heap* h = heap_new();
-        Table* t = table_new(h);
+        Table* t = table_new(NULL);
 
         table_set(t, create_value_integer(10), create_value_integer(100));
         table_set(t, create_value_integer(20), create_value_integer(200));
@@ -363,7 +177,7 @@ static void test_tables(void)
         printf("## Table - string index\n");
 
         Heap* h = heap_new();
-        Table* t = table_new(h);
+        Table* t = table_new(NULL);
 
         VALUE key1 = create_value_heap_key(TYC_STRING, heap_add_string(h, "key1", false));
         VALUE key2 = create_value_heap_key(TYC_STRING, heap_add_string(h, "key2", false));
@@ -541,7 +355,7 @@ static void test_heap(void)
         printf("## Heap - array GC\n");
 
         Heap* h = heap_new();
-        HEAP_KEY key = heap_add_table(h);
+        HEAP_KEY key = heap_add_table(h, NULL);
         VALUE table_value = create_value_heap_key(TYC_TABLE, key);
 
         HEAP_KEY s1 = heap_add_string(h, "Hello", false);
@@ -567,7 +381,7 @@ static void test_heap(void)
         Heap* h = heap_new();
 
         // table
-        HEAP_KEY table_key = heap_add_table(h);
+        HEAP_KEY table_key = heap_add_table(h, NULL);
         VALUE table_value = create_value_heap_key(TYC_TABLE, table_key);
         Table* table;
         assert(heap_get_table(h, table_key, &table) == TYC_OK);
@@ -620,11 +434,11 @@ static void test_supertables(void)
 
         // create table and supertable
         Table* super;
-        HEAP_KEY super_heap_key = heap_add_table(h);
+        HEAP_KEY super_heap_key = heap_add_table(h, NULL);
         heap_get_table(h, super_heap_key, &super);
 
         Table* table;
-        HEAP_KEY table_heap_key = heap_add_table(h);
+        HEAP_KEY table_heap_key = heap_add_table(h, NULL);
         heap_get_table(h, table_heap_key, &table);
         VALUE table_value = create_value_heap_key(TYC_TABLE, table_heap_key);
 
@@ -723,11 +537,6 @@ static void test_vm(void)
         assert(strcmp(result, "Hello") == 0);
         tyc_destroy(T);
     }
-
-    {
-        printf("## Assembly tests\n");
-        run_assembly_tests();
-    }
 }
 
 static TYC_RESULT test_function(TycheVM* T)
@@ -771,6 +580,39 @@ static void test_native_pointer(void)
     }
 }
 
+static void test_hashes()
+{
+    printf("## Hashes\n");
+
+    TycheVM* T = tyc_new();
+    printf("  - Nil: 0x%x\n", tyc_hash(T, create_value_nil()));
+    printf("  - True: 0x%x\n", tyc_hash(T, create_value_bool(true)));
+    printf("  - False: 0x%x\n", tyc_hash(T, create_value_bool(false)));
+    printf("  - Integer: 0x%x\n", tyc_hash(T, create_value_integer(567)));
+    printf("  - Real: 0x%x\n", tyc_hash(T, create_value_real(3.14)));
+
+    HEAP_KEY k = heap_add_string(tyc_heap(T), "Hello world", false);
+    uint32_t h1 = tyc_hash(T, create_value_heap_key(TYC_STRING, k));
+    HEAP_KEY k2 = heap_add_string(tyc_heap(T), "Hello world", false);
+    uint32_t h2 = tyc_hash(T, create_value_heap_key(TYC_STRING, k2));
+    printf("  - String: 0x%x, 0x%x\n", h1, h2);
+    assert(h1 == h2);
+
+    k = heap_add_array(tyc_heap(T));
+    printf("  - Array: 0x%x, 0x%x\n",
+        tyc_hash(T, create_value_heap_key(TYC_ARRAY, k)),
+        tyc_hash(T, create_value_heap_key(TYC_ARRAY, k))
+    );
+
+    k = heap_add_array(tyc_heap(T));
+    printf("  - 2nd array: 0x%x, 0x%x\n", tyc_hash(T, create_value_heap_key(TYC_ARRAY, k)));
+
+    k = heap_add_table(tyc_heap(T), T);
+    printf("  - Table: 0x%x\n", tyc_hash(T, create_value_heap_key(TYC_TABLE, k)));
+
+    tyc_destroy(T);
+}
+
 //
 // MAIN
 //
@@ -786,4 +628,5 @@ int main(void)
     test_supertables();
     test_vm();
     test_native_pointer();
+    test_hashes();
 }

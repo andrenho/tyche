@@ -192,12 +192,12 @@ TYC_RESULT heap_get_array(Heap const* h, HEAP_KEY key, Array** array)
     return TYC_OK;
 }
 
-HEAP_KEY heap_add_table(Heap* h)
+HEAP_KEY heap_add_table(Heap* h, TycheVM const* T)
 {
     HEAP_KEY key;
     *heap_add_item(h, &key) = (HeapValue) {
         .type = TH_TABLE,
-        .value = { .t = { .table = table_new(h), .supertable = HEAP_VALUE_NIL }, },
+        .value = { .t = { .table = table_new(T), .supertable = HEAP_VALUE_NIL }, },
     };
     return key;
 }
@@ -367,7 +367,7 @@ void heap_debug(Heap* h)
     printf("HEAP:\n");
     for (khiter_t k = kh_begin(h->items); k != kh_end(h->items); ++k) {
         if (kh_exist(h->items, k)) {
-            printf("%08X: ", kh_key(h->items, k));
+            printf("%08lX: ", kh_key(h->items, k));
             HeapValue value = kh_value(h->items, k);
             switch (value.type) {
                 case TH_STRING:
@@ -392,8 +392,10 @@ void heap_debug(Heap* h)
                     break;
                 }
                 case TH_NATIVE_FN:
-                    printf("Function pointer (%p)\n", value.value.native_fn);
+                    printf("Function pointer (%p)\n", (void *) (uintptr_t) value.value.native_fn);
                     break;
+                default:
+                    __builtin_unreachable();
             }
         }
     }

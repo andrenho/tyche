@@ -184,7 +184,7 @@ Instruction code_next_instruction(Code const* code, uint32_t function_id, uint32
     }
 
     return (Instruction) {
-        .operator = (TYC_INST) opcode,
+        .operation = (TYC_INST) opcode,
         .operand = operand,
         .sz = sz,
     };
@@ -230,9 +230,9 @@ void code_decompile(Code const* code)
 
 void code_parse_instruction(Instruction inst, char* outbuf, size_t sz)
 {
-    int n = snprintf(outbuf, sz, "%s", instruction_name(inst.operator));
+    int n = snprintf(outbuf, sz, "%s", instruction_name(inst.operation));
 
-    if (inst.operator >= OP_8BIT_OPERAND)
+    if (inst.operation >= OP_8BIT_OPERAND)
         snprintf(&outbuf[n], sz - (size_t) n, "%2d", inst.operand);
     else
         snprintf(&outbuf[n], sz - (size_t) n, "  ");

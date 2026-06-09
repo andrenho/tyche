@@ -106,23 +106,23 @@ TYC_RESULT bytecode_gen(Assembly const* as, uint8_t** bytecode, size_t* bytecode
         add_32(&bin, 0);   // placeholder for next function addr
         for (size_t j = 0; j < as->functions[i].n_instructions; ++j) {
             AssemblyInstruction* inst = &as->functions[i].instructions[j];
-            if (inst->operator.type == OP_LABEL)
-                ERROR("Label '%s' was left over in assembly. This is a tyche bug.", inst->operator.v.label)
-            if (inst->operator.type == OP_NONE) {
+            if (inst->operation.type == OP_LABEL)
+                ERROR("Label '%s' was left over in assembly. This is a tyche bug.", inst->operation.v.label)
+            if (inst->operation.type == OP_NONE) {
                 add_8(&bin, inst->instruction);
-            } else if (inst->operator.type == OP_INT) {
+            } else if (inst->operation.type == OP_INT) {
                 if (is_16bit_instruction(inst->instruction)) {
                     add_8(&bin, inst->instruction);
-                    add_16(&bin, (uint16_t) (inst->operator.v.i));
-                } else if (inst->operator.v.i >= -128 && inst->operator.v.i <= 127) {
+                    add_16(&bin, (uint16_t) (inst->operation.v.i));
+                } else if (inst->operation.v.i >= -128 && inst->operation.v.i <= 127) {
                     add_8(&bin, inst->instruction);
-                    add_8(&bin, (uint8_t) inst->operator.v.i);
-                } else if (inst->operator.v.i >= -32768 && inst->operator.v.i <= 32767) {
+                    add_8(&bin, (uint8_t) inst->operation.v.i);
+                } else if (inst->operation.v.i >= -32768 && inst->operation.v.i <= 32767) {
                     add_8(&bin, (uint8_t) (inst->instruction + TO_16BIT));
-                    add_16(&bin, (uint16_t) (inst->operator.v.i));
+                    add_16(&bin, (uint16_t) (inst->operation.v.i));
                 } else {
                     add_8(&bin, (uint8_t) (inst->instruction + TO_32BIT));
-                    add_32(&bin, (uint32_t) (inst->operator.v.i));
+                    add_32(&bin, (uint32_t) (inst->operation.v.i));
                 }
             }
         }

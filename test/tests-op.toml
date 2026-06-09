@@ -1,0 +1,859 @@
+#
+# Direct (non-templated) tests. Each test is keyed by its name.
+#
+
+["VM: basic"]
+code = """
+.assembly
+.func 0
+    pushi   2
+    pushi   3
+    sum
+    ret
+"""
+debug = true
+expected_stack_size = 1
+expected_stack_top = 5
+
+["VM: real values"]
+code = """
+.assembly
+.const
+    0: 3.14
+.func 0
+    pushc   0
+    ret
+"""
+expected_heap_size = 1   # only the global table
+expected_stack_top = 3.14
+
+["VM: mix integer and real (1)"]
+code = """
+.assembly
+.const
+    0: 3.14
+.func 0
+    pushc   0
+    pushi   3
+    sum
+    ret
+"""
+expected_stack_top = 6.14
+
+["VM: mix integer and real (2)"]
+code = """
+.assembly
+.const
+    0: 3.14
+.func 0
+    pushi   3
+    pushc   0
+    sum
+    ret
+"""
+expected_stack_top = 6.14
+
+["VM: local variables"]
+code = """
+.assembly
+.func 0
+    pushv 2         ; local a, b
+    pushi 3         ; a = 3
+    set   0
+    pushi 4         ; b = 4
+    set   1
+    dupv  0         ; return a
+    ret
+"""
+expected_stack_size = 1
+expected_stack_top = 3
+
+["VM: functions"]
+code = """
+.assembly
+.func 0
+    pushf   1
+    pushi   2
+    pushi   3
+    call    2
+    ret
+.func 1
+    dupv    0
+    dupv    1
+    sub
+    ret
+"""
+expected_stack_size = 1
+expected_stack_top = -1
+
+["VM: jumps (jmp + bnz)"]
+code = """
+.assembly
+.func 0
+    jmp     @x1         ; 0
+    pushi   5           ; 3
+@x1:
+    pushi   1           ; 5
+    bnz     @x2         ; 7
+    pushi   1           ; 10
+    bz      @x3         ; 12
+@x2:
+    pushi   6           ; 15
+    ret                 ; 17
+@x3:
+    pushi   7           ; 18
+    ret                 ; 20
+"""
+expected_stack_top = 6
+
+["VM: jumps (bz)"]
+code = """
+.assembly
+.func 0
+    jmp     @x1
+    pushi   5
+@x1:
+    pushz
+    bnz     @x2
+    pushz
+    bz      @x3
+@x2:
+    pushi   6
+    ret
+@x3:
+    pushi   7
+    ret
+"""
+expected_stack_top = 7
+
+["VM: arrays"]
+code = """
+.assembly
+.func 0
+    newa
+    pushi   10
+    seti    0
+    pushi   20
+    seti    1
+    pushi   30
+    seti    2
+    geti    1
+    ret
+"""
+expected_stack_top = 20
+expected_heap_size = 2
+
+["VM: arrays GC"]
+code = """
+.assembly
+.func 0
+    pushn
+    newa
+    pushi   10
+    seti    0
+    pop
+    gc
+    ret
+"""
+expected_heap_size = 1
+
+["VM: string from const"]
+code = """
+.assembly
+.const
+    0: "Hello"
+.func 0
+    pushc   0
+    ret
+"""
+expected_stack_top = "Hello"
+
+["VM: concatenate strings (GC won't delete)"]
+code = """
+.assembly
+.const
+    0: "Hello "
+    1: "world"
+.func 0
+    pushc   0
+    pushc   1
+    sum
+    gc
+    ret
+"""
+expected_stack_top = "Hello world"
+expected_heap_size = 4
+
+["VM: GC strings (GC will delete)"]
+code = """
+.assembly
+.const
+    0: "Hello "
+    1: "world"
+.func 0
+    pushi   50
+    pushc   0
+    pushc   1
+    sum
+    pop
+    gc
+    ret
+"""
+expected_stack_top = 50
+expected_heap_size = 3
+
+["VM: array GC items (1st level) - no items removed"]
+code = """
+.assembly
+.const
+    0: "Hello "
+    1: "world"
+.func 0
+    pushn
+    newa
+    pushc   0
+    pushc   1
+    sum
+    seti    0
+    gc
+    pop
+    ret
+"""
+expected_heap_size = 5
+
+["VM: array GC items (1st level) - all items removed"]
+code = """
+.assembly
+.const
+    0: "Hello "
+    1: "world"
+.func 0
+    pushn
+    newa
+    pushc   0
+    pushc   1
+    sum
+    seti    0
+    pop
+    gc
+    ret
+"""
+expected_heap_size = 3
+
+["VM: array GC items (2nd level) - no items removed"]
+code = """
+.assembly
+.const
+    0: "Hello "
+    1: "world"
+.func 0
+    pushn
+    newa
+    newa
+    pushc   0
+    pushc   1
+    sum
+    seti    0
+    seti    0
+    gc
+    pop
+    ret
+"""
+expected_heap_size = 6
+
+["VM: array GC items (2nd level) - all items removed"]
+code = """
+.assembly
+.const
+    0: "Hello "
+    1: "world"
+.func 0
+    pushn
+    newa
+    newa
+    pushc   0
+    pushc   1
+    sum
+    seti    0
+    seti    0
+    pop
+    gc
+    ret
+"""
+expected_heap_size = 3
+
+["VM: iterate over arrays"]
+code = """
+.assembly
+.func 0
+    pushi   0           ; sum = 0
+
+    newa                ; create array: [10, 20, 30]
+    pushi   10
+    appnd
+    pushi   20
+    appnd
+    pushi   30
+    appnd
+
+    pushn
+@startofloop:
+    next                ; for i, v in array
+    bnil    @endofloop
+
+    dupv    0           ; push 'sum'
+    sum
+    set     0           ; sum += v, only key is left
+    jmp     @startofloop
+
+@endofloop:
+    pop                 ; remove last nil
+    dupv    0
+    ret
+"""
+expected_stack_top = 60
+
+["VM: tables"]
+code = """
+.assembly
+.const
+    0: "k1"
+    1: "k2"
+.func 0
+    newt                ; table = { "k1": 10, "k2": 20 }
+    pushc   0
+    pushi   10
+    setkv
+    pushc   1
+    pushi   20
+    setkv
+
+    pushc   1
+    getkv
+    ret
+"""
+expected_stack_top = 20
+
+["VM: iterate over tables"]
+code = """
+.assembly
+.const
+    0: "k1"
+    1: "k2"
+.func 0
+    pushi   0           ; sum = 0
+
+    newt                ; table = { "k1": 10, "k2": 20 }
+    pushc   0
+    pushi   10
+    setkv
+    pushc   1
+    pushi   20
+    setkv
+
+    pushn
+@startofloop:
+    next                ; for i, v in array
+    bnil    @endofloop
+
+    dupv    0           ; push 'sum'
+    sum
+    set     0           ; sum += v, only key is left
+    jmp     @startofloop
+
+@endofloop:
+    pop                 ; remove last nil
+    dupv    0
+    ret
+"""
+expected_stack_top = 30
+
+["Globals"]
+code = """
+.assembly
+.const
+    0: "Hello"
+.func 0
+    glbl
+    pushc   0
+    pushi   20
+    setkv
+    pop
+    glbl
+    pushc   0
+    getkv
+    ret
+"""
+expected_stack_top = 20
+
+["Supertables"]
+code = """
+.assembly
+.const
+    0: "f"
+.func 0
+    newt        ; child table
+    newt        ; super table
+    pushc   0   ;   "f"
+    pushf   1   ;   function 1
+    setkv       ; super = { "f": func1 }
+    sptb        ; child <== super
+    pushc   0   ;   "f"
+    getkv       ; child.f
+    call    0   ; child.f()
+    ret
+.func 1
+    pushi   30
+    ret
+"""
+expected_stack_top = 30
+
+["VM: integer expressions"]
+template = """
+.assembly
+.func 0
+    pushi   %
+    pushi   %
+    %
+    ret
+"""
+scenarios = [
+    { name = "Sum",                    parameters = [2, 5, "sum"],    expected_stack_top = 7 },
+    { name = "Subtraction",            parameters = [2, 5, "sub"],    expected_stack_top = -3 },
+    { name = "Multiplication",         parameters = [2, -5, "mul"],   expected_stack_top = -10 },
+    { name = "Integer division",       parameters = [20, 3, "idiv"],  expected_stack_top = 6 },
+    { name = "Division",               parameters = [21, 4, "div"],   expected_stack_top = 5.25 },
+    { name = "Equality",               parameters = [5, 5, "eq"],     expected_stack_top = true },
+    { name = "Inequality",             parameters = [5, 5, "neq"],    expected_stack_top = false },
+    { name = "Less than",              parameters = [4, 5, "lt"],     expected_stack_top = true },
+    { name = "Less than",              parameters = [5, 5, "lt"],     expected_stack_top = false },
+    { name = "Less than or equal",     parameters = [4, 5, "lte"],    expected_stack_top = true },
+    { name = "Less than or equal",     parameters = [5, 5, "lte"],    expected_stack_top = true },
+    { name = "Greater than",           parameters = [5, 5, "gt"],     expected_stack_top = false },
+    { name = "Greater than or equal",  parameters = [5, 5, "gte"],    expected_stack_top = true },
+    { name = "Logical AND",            parameters = [20, 5, "and"],   expected_stack_top = 4 },
+    { name = "Logical OR",             parameters = [20, 5, "or"],    expected_stack_top = 21 },
+    { name = "Logical XOR",            parameters = [20, 5, "xor"],   expected_stack_top = 17 },
+    { name = "Power",                  parameters = [2, 5, "pow"],    expected_stack_top = 32 },
+    { name = "Shift left",             parameters = [2, 5, "shl"],    expected_stack_top = 64 },
+    { name = "Shift right",            parameters = [20, 3, "shr"],   expected_stack_top = 2 },
+    { name = "Modulo",                 parameters = [20, 3, "mod"],   expected_stack_top = 2 },
+]
+
+["VM: integer unary expressions"]
+template = """
+.assembly
+.func 0
+    pushi   %
+    %
+    ret
+"""
+scenarios = [
+    { name = "Not",     parameters = [23, "not"],   expected_stack_top = -24 },
+    { name = "Neg (1)", parameters = [23, "neg"],   expected_stack_top = -23 },
+    { name = "Neg (2)", parameters = [-23, "neg"],  expected_stack_top = 23 },
+]
+
+["VM: real unary expressions"]
+template = """
+.assembly
+.const
+    0: %
+.func 0
+    pushc   0
+    %
+    ret
+"""
+scenarios = [
+    { name = "Neg (1)", parameters = [23.3, "neg"],   expected_stack_top = -23.3 },
+    { name = "Neg (2)", parameters = [-23.3, "neg"],  expected_stack_top = 23.3 },
+]
+
+["VM: real expressions"]
+template = """
+.assembly
+.const
+    0: %
+    1: %
+.func 0
+    pushc   0
+    pushc   1
+    %
+    ret
+"""
+scenarios = [
+    { name = "Sum",                   parameters = [2.3, 5.3, "sum"],    expected_stack_top = 7.6 },
+    { name = "Subtraction",           parameters = [2.3, 5.6, "sub"],    expected_stack_top = -3.3 },
+    { name = "Multiplication",        parameters = [2.3, 5.3, "mul"],    expected_stack_top = 12.19 },
+    { name = "Integer division",      parameters = [20.3, 3.3, "idiv"],  expected_stack_top = 6 },
+    { name = "Integer division",      parameters = [20.4, 2.5, "div"],   expected_stack_top = 8.16 },
+    { name = "Equality",              parameters = [5.3, 5.3, "eq"],     expected_stack_top = true },
+    { name = "Inequality",            parameters = [5.3, 5.3, "neq"],    expected_stack_top = false },
+    { name = "Less than",             parameters = [4.3, 5.3, "lt"],     expected_stack_top = true },
+    { name = "Less than",             parameters = [5.3, 5.3, "lt"],     expected_stack_top = false },
+    { name = "Less than or equal",    parameters = [4.3, 5.3, "lte"],    expected_stack_top = true },
+    { name = "Less than or equal",    parameters = [5.3, 5.3, "lte"],    expected_stack_top = true },
+    { name = "Greater than",          parameters = [5.3, 5.3, "gt"],     expected_stack_top = false },
+    { name = "Greater than or equal", parameters = [5.3, 5.3, "gte"],    expected_stack_top = true },
+    { name = "Power",                 parameters = [2.3, 5.3, "pow"],    expected_stack_top = 82.6337631255 },
+]
+
+["VM: boolean expressions"]
+template = """
+.assembly
+.func 0
+    push%
+    push%
+    %
+    ret
+"""
+scenarios = [
+    { name = "And",        parameters = ["t", "z", "and"],  expected_stack_top = false },
+    { name = "Or",         parameters = ["t", "z", "or"],   expected_stack_top = true },
+    { name = "Xor",        parameters = ["t", "z", "xor"],  expected_stack_top = true },
+    { name = "Equality",   parameters = ["t", "z", "eq"],   expected_stack_top = false },
+    { name = "Inequality", parameters = ["t", "z", "neq"],  expected_stack_top = true },
+]
+
+["VM: unary boolean expressions"]
+template = """
+.assembly
+.func 0
+    push%
+    %
+    ret
+"""
+scenarios = [
+    { name = "Not (1)", parameters = ["t", "not"],  expected_stack_top = false },
+    { name = "Not (2)", parameters = ["z", "not"],  expected_stack_top = true },
+]
+
+["VM: nil equality"]
+code = """
+.assembly
+.func 0
+    pushn
+    pushn
+    eq
+    ret
+"""
+expected_stack_top = true
+
+["VM: integer equality"]
+code = """
+.assembly
+.func 0
+    pushi 567
+    pushi 567
+    eq
+    ret
+"""
+expected_stack_top = true
+
+["VM: real equality"]
+code = """
+.assembly
+.const
+    0: 56.78
+    1: 56.78
+.func 0
+    pushc 0
+    pushc 1
+    eq
+    ret
+"""
+expected_stack_top = true
+
+["VM: string equality"]
+code = """
+.assembly
+.const
+    0: "Hello"
+    1: "Hello"
+.func 0
+    pushc 0
+    pushc 1
+    eq
+    ret
+"""
+expected_stack_top = true
+
+["VM: string inequality"]
+code = """
+.assembly
+.const
+    0: "Hello"
+    1: "Hellow"
+.func 0
+    pushc 0
+    pushc 1
+    neq
+    ret
+"""
+expected_stack_top = true
+
+["VM: function equality"]
+code = """
+.assembly
+.func 0
+    pushf 0
+    pushf 0
+    eq
+    ret
+"""
+expected_stack_top = true
+
+["VM: array equality"]
+code = """
+.assembly
+.const
+    0: "Hello"
+.func 0
+    newa        ; []
+    pushc 0
+    seti  0     ; ["Hello"]
+    pushi 42
+    seti  1     ; ["Hello", 42]
+    newa        ; ["Hello", 42] []
+    pushc 0
+    seti  0     ; ["Hello", 42] ["Hello"]
+    pushi 42
+    seti  1     ; ["Hello", 42] ["Hello", 42]
+    eq
+    ret
+"""
+expected_stack_top = true
+
+["VM: array inequality"]
+code = """
+.assembly
+.const
+    0: "Hello"
+.func 0
+    newa        ; []
+    pushc 0
+    seti  0     ; ["Hello"]
+    pushi 42
+    seti  1     ; ["Hello", 42]
+    newa        ; ["Hello", 42] []
+    pushc 0
+    seti  0     ; ["Hello", 42] ["Hello"]
+    pushi 42
+    seti  1     ; ["Hello", 42] ["Hello", 42]
+    pushi 0
+    seti  2     ; ["Hello", 42] ["Hello", 42, 0]
+    neq
+    ret
+"""
+expected_stack_top = true
+
+["VM: table equality"]
+code = """
+.assembly
+.const
+    0: "Hello"
+    1: "a"
+    2: "b"
+.func 0
+    newt        ; {}
+    pushc 1
+    pushc 0
+    setkv       ; { a: "Hello" }
+    pushc 2
+    pushi 42
+    setkv       ; { a: "Hello", b: 42 }
+    newt        ; { a: "Hello", b: 42 } {}
+    pushc 1
+    pushc 0
+    setkv       ; { a: "Hello", b: 42 } { a: "Hello" }
+    pushc 2
+    pushi 42
+    setkv       ; { a: "Hello", b: 42 } { a: "Hello", b: 42 }
+    eq
+    ret
+"""
+expected_stack_top = true
+
+["VM: len (string)"]
+code = """
+.assembly
+.const
+    0: "Hello"
+.func 0
+    pushc   0
+    len
+    ret
+"""
+expected_stack_top = 5
+
+["VM: len (array)"]
+code = """
+.assembly
+.func 0
+    newa
+    pushi   10
+    seti    0
+    pushi   20
+    seti    1
+    len
+    ret
+"""
+expected_stack_top = 2
+
+["VM: len (table)"]
+code = """
+.assembly
+.func 0
+    newt
+    pushi   10
+    pushi   20
+    setkv
+    pushi   20
+    pushi   30
+    setkv
+    len
+    ret
+"""
+expected_stack_top = 2
+
+["VM: type"]
+code = """
+.assembly
+.func 0
+    newt
+    type
+    ret
+"""
+expected_stack_top = 6
+
+["VM: error handling within the same function"]
+code = """
+.assembly
+.func 0
+    pushe   @catch
+    pushi   10
+    thrw
+    pushi   20
+    ret
+@catch:
+    pushi   30
+    ret
+"""
+expected_stack_top = 30
+
+["VM: error handling within the same function, exception value"]
+code = """
+.assembly
+.func 0
+    pushe   @catch
+    pushi   10
+    thrw
+    pushi   20
+    ret
+@catch:
+    ret
+"""
+expected_stack_top = 10
+
+["VM: error handling across functions"]
+code = """
+.assembly
+.func 0
+    pushe   @catch
+    pushf   1
+    call    0
+    pushi   20
+    ret
+@catch:
+    ret
+
+.func 1
+    pushi   10
+    thrw
+    pushi   40
+    ret
+"""
+expected_stack_top = 10
+
+["VM: multilevel error handling (1)"]
+code = """
+.assembly
+.func 0
+    pushe   @catch1
+    pushf   1
+    call    0
+    pushi   20
+    ret
+@catch1:
+    ret
+
+.func 1
+    pushe   @catch2
+    pushi   30
+    thrw
+    ret
+@catch2:
+    ret
+"""
+expected_stack_top = 20
+
+["VM: multilevel error handling (2)"]
+code = """
+.assembly
+.func 0
+    pushe   @catch1
+    pushf   1
+    call    0
+    pushi   20
+    thrw
+    pushi   40
+    ret
+@catch1:
+    ret
+
+.func 1
+    pushe   @catch2
+    pushi   30
+    jmp     @skip_catch2
+@catch2:
+    ret
+@skip_catch2:
+    pope
+    ret
+"""
+expected_stack_top = 20
+
+# uncomment to test toplevel error - this will exit the program
+# ["VM: toplevel error"]
+# code = """
+# .assembly
+# .const
+#     0: "error"
+#     1: "Error message"
+# .func 0
+#     newt
+#     pushc   0
+#     pushc   1
+#     setkv
+#     thrw
+#     ret
+# """
+# debug = true
+# expected_stack_top = 20
+
+["VM: error handling on expression"]
+code = """
+.assembly
+.func 0
+    pushe   @catch
+    newt
+    newt
+    idiv
+    pushi   20
+    ret
+@catch:
+    pushi   30
+    ret
+"""
+expected_stack_top = 30
+

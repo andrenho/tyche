@@ -64,14 +64,18 @@ Decisions:
   - [x] Assembler in C
   - [x] Main application
   - [ ] Improvements
-    - [ ] Rename "operator" (because of C++)
-    - [ ] Implement hash for VM (new opcode, new expression, no hash for array)
+    - [x] Rename "operator" (because of C++)
+    - [x] Move away from Lua
+    - [x] Equality for multiple types
+    - [x] Implement hash for VM
+    - [x] Test for hash and equality
     - [ ] Table
       - [ ] Pass hash callback (?)
       - [ ] Store multiple values for the same hash
     - [ ] Operator overload (new opcode)
     - [ ] Null native pointer
-    - [ ] Convert tests to Google Test and C++
+    - [ ] Test tyc_global
+    - [ ] Array equality
 - [ ] Prepare for release
   - [x] Documentation and webpage
   - [ ] Review public function names

@@ -1,8 +1,11 @@
 #include "priv.h"
 
+#include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#include "khash.h"
 
 typedef struct Location {
     uint32_t function_id;
@@ -71,7 +74,7 @@ TycheVM* tyc_new(void)
             .cap = 4,
             .sz = 0,
     };
-    T->global_table = create_value_heap_key(TYC_TABLE, heap_add_table(T->heap));
+    T->global_table = create_value_heap_key(TYC_TABLE, heap_add_table(T->heap, T));
     T->debug = false;
 
     expr_init();
@@ -425,7 +428,7 @@ TYC_RESULT tyc_newarray(TycheVM* T)
 
 TYC_RESULT tyc_newtable(TycheVM* T)
 {
-    return stack_push(T->stack, create_value_heap_key(TYC_TABLE, heap_add_table(T->heap)));
+    return stack_push(T->stack, create_value_heap_key(TYC_TABLE, heap_add_table(T->heap, T)));
 }
 
 TYC_RESULT tyc_dup(TycheVM* T, int idx)
@@ -767,7 +770,7 @@ TYC_RESULT tyc_throw(TycheVM* T, const char* message)
     TYC_RESULT r;
     Table *t;
 
-    HEAP_KEY k_table = heap_add_table(T->heap);
+    HEAP_KEY k_table = heap_add_table(T->heap, T);
     VALUE v_table = create_value_heap_key(TYC_TABLE, k_table);
     VALUE v_error = create_value_heap_key(TYC_STRING, heap_add_string(T->heap, "error", false));
     VALUE v_message = create_value_heap_key(TYC_STRING, heap_add_string(T->heap, message, false));
@@ -782,6 +785,132 @@ TYC_RESULT tyc_throw(TycheVM* T, const char* message)
     TRY(tyc_throw_raw(T))
 
     return TYC_OK;
+}
+
+//
+// HASHING
+//
+
+static uint32_t mem_to_hash(void *ptr)
+{
+    uintptr_t p = (uintptr_t) ptr;
+    return (uint32_t) ((p >> 32) ^ (p & 0xffffffff));
+}
+
+uint32_t tyc_hash(TycheVM* T, VALUE value)
+{
+    switch (value_type(value)) {
+        case TYC_NIL:       return 0;
+        case TYC_BOOLEAN:   return value_boolean(value) ? 1 : 2;
+        case TYC_INTEGER:   return (uint32_t) value_integer(value);
+        case TYC_REAL: {
+            uint32_t r1;
+            TYCHE_REAL r2 = value_real(value);
+            memcpy(&r1, &r2, 4);
+            return r1;
+        }
+        case TYC_STRING: {
+            const char* str;
+            if (heap_get_string(tyc_heap(T), value_heap_key(value), &str) != TYC_OK)
+                abort();
+            return kh_str_hash_func(str);
+        }
+        case TYC_ARRAY: {
+            Array* a;
+            if (heap_get_array(tyc_heap(T), value_heap_key(value), &a) != TYC_OK)
+                abort();
+            return mem_to_hash(a);
+        }
+        case TYC_TABLE: {
+            Table* a;
+            if (heap_get_table(tyc_heap(T), value_heap_key(value), &a) != TYC_OK)
+                abort();
+            return mem_to_hash(a);
+        }
+        case TYC_FUNCTION:
+            return value_function_idx(value);
+        case TYC_NATIVE_PTR:
+            return mem_to_hash(value_native_pointer(value));
+        case TYC_NATIVE_FN__: {
+            TYCHE_CB* a = NULL;
+            if (heap_get_native_function(tyc_heap(T), value_heap_key(value), a) != TYC_OK)
+                abort();
+            return mem_to_hash(a);
+        }
+        case TYC_COUNT__:
+        default:
+            __builtin_unreachable();
+    }
+    return 0;
+}
+
+bool tyc_eq(TycheVM* T, VALUE value_a, VALUE value_b)
+{
+    if (value_type(value_a) != value_type(value_b))
+        return false;
+
+    switch (value_type(value_a)) {
+        case TYC_NIL:       return true;
+        case TYC_BOOLEAN:   return value_boolean(value_a) == value_boolean(value_b);
+        case TYC_INTEGER:   return value_integer(value_a) == value_integer(value_b);
+        case TYC_REAL:      return fabs(value_real(value_a) - value_real(value_b)) < EPSILON;
+        case TYC_STRING: {
+            const char *s1, *s2;
+            if (heap_get_string(tyc_heap(T), value_heap_key(value_a), &s1) != TYC_OK)
+                return false;
+            if (heap_get_string(tyc_heap(T), value_heap_key(value_b), &s2) != TYC_OK)
+                return false;
+            return strcmp(s1, s2) == 0;
+        }
+        case TYC_ARRAY: {
+            Array *a, *b;
+            if (heap_get_array(tyc_heap(T), value_heap_key(value_a), &a) != TYC_OK)
+                return false;
+            if (heap_get_array(tyc_heap(T), value_heap_key(value_b), &b) != TYC_OK)
+                return false;
+            if (array_len(a) != array_len(b))
+                return false;
+            for (size_t i = 0; i < array_len(a); ++i)
+                if (!tyc_eq(T, array_get(a, i), array_get(b, i)))
+                    return false;
+            return true;
+        }
+        case TYC_TABLE: {
+            // TODO - check overloaded __eq
+            Table *a, *b;
+            if (heap_get_table(tyc_heap(T), value_heap_key(value_a), &a) != TYC_OK)
+                return false;
+            if (heap_get_table(tyc_heap(T), value_heap_key(value_b), &b) != TYC_OK)
+                return false;
+            if (table_len(a) != table_len(b))
+                return false;
+
+            VALUE key = create_value_nil(), value_ax, value_bx;
+            while (table_next(a, key, &key, &value_ax)) {
+                if (table_get(b, key, &value_bx) != TYC_OK)
+                    return false;
+                if (!tyc_eq(T, value_ax, value_bx))
+                    return false;
+            }
+
+            return true;
+        }
+        case TYC_FUNCTION:
+            return value_function_idx(value_a) == value_function_idx(value_b);
+        case TYC_NATIVE_PTR:
+            return value_native_pointer(value_a) == value_native_pointer(value_b);
+        case TYC_NATIVE_FN__: {
+            TYCHE_CB a, b;
+            if (heap_get_native_function(tyc_heap(T), value_heap_key(value_a), &a) != TYC_OK)
+                return false;
+            if (heap_get_native_function(tyc_heap(T), value_heap_key(value_b), &b) != TYC_OK)
+                return false;
+            return a == b;
+        }
+        case TYC_COUNT__:
+        default:
+            __builtin_unreachable();
+    }
 }
 
 //
@@ -802,7 +931,7 @@ static TYC_RESULT step(TycheVM* T)
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch"
-    switch (inst.operator) {
+    switch (inst.operation) {
 
         //
         // stack manipulation
@@ -991,6 +1120,7 @@ static TYC_RESULT step(TycheVM* T)
         case TO_MOD:  TRY_RUNTIME(tyc_expr(T, TX_MOD));  break;
         case TO_NOT:  TRY_RUNTIME(tyc_expr(T, TX_NOT));  break;
         case TO_NEG:  TRY_RUNTIME(tyc_expr(T, TX_NEG));  break;
+        case TO_HASH: TRY_RUNTIME(tyc_expr(T, TX_HASH));  break;
 
         case TO_LEN:
             TRY(tyc_len(T, -1));
@@ -1077,7 +1207,7 @@ static TYC_RESULT step(TycheVM* T)
 
         case TO_UNKNOWN:
         default:
-            ERROR("Invalid opcode 0x%x", inst.operator)
+            ERROR("Invalid opcode 0x%x", inst.operation)
     }
 #pragma GCC diagnostic pop
 
