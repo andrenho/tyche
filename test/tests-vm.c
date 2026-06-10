@@ -219,6 +219,11 @@ static void test_tables(void)
         table_destroy(t);
         tyc_destroy(T);
     }
+
+    {
+        printf("## Table - next\n");
+        abort();
+    }
 }
 
 static void test_heap(void)
@@ -399,10 +404,11 @@ static void test_heap(void)
     {
         printf("## Heap - table containing array containing string GC\n");
 
-        Heap* h = heap_new();
+        TycheVM* T = tyc_new();
+        Heap* h = tyc_heap(T);
 
         // table
-        HEAP_KEY table_key = heap_add_table(h, NULL);
+        HEAP_KEY table_key = heap_add_table(h, T);
         VALUE table_value = create_value_heap_key(TYC_TABLE, table_key);
         Table* table;
         assert(heap_get_table(h, table_key, &table) == TYC_OK);
@@ -425,21 +431,23 @@ static void test_heap(void)
         table_set(table, sv1, array_val);
         assert(table_len(table) == 1);
 
-        // initial situation: HEAP=4
-        assert(heap_size(h) == 4);
-        heap_gc(h, &table_value, 1);
-        assert(heap_size(h) == 4);
+        // initial situation: HEAP=4 + global
+        assert(heap_size(h) == 5);
+        stack_push(tyc_stack(T), table_value);
+        tyc_gc(T);
+        assert(heap_size(h) == 5);
 
-        // remove table key, HEAP=1 now because only the empty table is left
+        // remove table key, HEAP=1 + global now because only the empty table is left
         VALUE sv3 = create_value_heap_key(TYC_STRING, heap_add_string(h, "Hello", false));
         assert(value_heap_key(sv1) == value_heap_key(sv3));
         table_set(table, sv3, create_value_nil());
         assert(table_len(table) == 0);
-        heap_gc(h, &table_value, 1);
-        assert(heap_size(h) == 1);
+        tyc_gc(T);
+        assert(heap_size(h) == 2);
 
         // now the table is removed, and nothing is left
-        heap_gc(h, NULL, 0);
+        stack_pop(tyc_stack(T), NULL);
+        tyc_gc(T);
         assert(heap_size(h) == 0);
 
         heap_destroy(h);
