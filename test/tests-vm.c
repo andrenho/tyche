@@ -261,7 +261,7 @@ static void test_heap(void)
     }
 
     {
-        printf("## Heap - string dedup GC\n");
+        printf("## Heap - string dedup GC (1)\n");
 
         Stack* s = stack_new();
         Heap* h = heap_new();
@@ -301,7 +301,7 @@ static void test_heap(void)
     }
 
     {
-        printf("## Heap - string dedup GC\n");
+        printf("## Heap - string dedup GC (2)\n");
 
         Stack* s = stack_new();
         Heap* h = heap_new();
@@ -372,10 +372,11 @@ static void test_heap(void)
     }
 
     {
-        printf("## Heap - array GC\n");
+        printf("## Heap - table GC\n");
 
-        Heap* h = heap_new();
-        HEAP_KEY key = heap_add_table(h, NULL);
+        TycheVM* T = tyc_new();
+        Heap* h = tyc_heap(T);
+        HEAP_KEY key = heap_add_table(h, T);
         VALUE table_value = create_value_heap_key(TYC_TABLE, key);
 
         HEAP_KEY s1 = heap_add_string(h, "Hello", false);
@@ -388,11 +389,11 @@ static void test_heap(void)
 
         table_set(table, sv1, sv2);
 
-        assert(heap_size(h) == 3);
-        heap_gc(h, &table_value, 1);
-        assert(heap_size(h) == 3);
+        assert(heap_size(h) == 4);
+        tyc_gc(T);
+        assert(heap_size(h) == 1);
 
-        heap_destroy(h);
+        tyc_destroy(T);
     }
 
     {
