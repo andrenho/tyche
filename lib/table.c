@@ -160,6 +160,7 @@ void table_del(Table* t, VALUE key)
 
 bool table_next(Table* t, VALUE key, VALUE* out_key, VALUE* out_value)
 {
+    // TODO
     return false;
 }
 
