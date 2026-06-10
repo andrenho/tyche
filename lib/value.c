@@ -14,15 +14,17 @@ typedef enum {
 
 TYC_TYPE value_type(VALUE v)
 {
-    if (nanbox_is_null(v))
+    if (nanbox_is_empty(v))
         return TYC_NIL;
+    if (nanbox_is_deleted(v))
+        return TYC_TOMBSTONE__;
     if (nanbox_is_boolean(v))
         return TYC_BOOLEAN;
     if (nanbox_is_int(v))
         return TYC_INTEGER;
     if (nanbox_is_double(v))
         return TYC_REAL;
-    if (nanbox_is_pointer(v))
+    if (nanbox_is_pointer(v) || nanbox_is_null(v))
         return TYC_NATIVE_PTR;
     switch (v.as_bits.tag) {
         case TTT_STRING:    return TYC_STRING;
@@ -40,16 +42,17 @@ TYC_TYPE value_type(VALUE v)
 const char* type_name(TYC_TYPE t)
 {
     switch (t) {
-        case TYC_NIL:        return "nil";
-        case TYC_BOOLEAN:    return "boolean";
-        case TYC_INTEGER:    return "integer";
-        case TYC_REAL:       return "real";
-        case TYC_STRING:     return "string";
-        case TYC_ARRAY:      return "array";
-        case TYC_TABLE:      return "table";
-        case TYC_FUNCTION:   return "function";
-        case TYC_NATIVE_PTR: return "native pointer";
+        case TYC_NIL:          return "nil";
+        case TYC_BOOLEAN:      return "boolean";
+        case TYC_INTEGER:      return "integer";
+        case TYC_REAL:         return "real";
+        case TYC_STRING:       return "string";
+        case TYC_ARRAY:        return "array";
+        case TYC_TABLE:        return "table";
+        case TYC_FUNCTION:     return "function";
+        case TYC_NATIVE_PTR:   return "native pointer";
         case TYC_NATIVE_FN__:  return "native function";
+        case TYC_TOMBSTONE__:  return "tombstone";
         case TYC_COUNT__:
         default:
             return "invalid type";
@@ -129,12 +132,14 @@ void* value_native_pointer(VALUE v)
         abort();
     }
 #endif
+    if (nanbox_is_null(v))
+        return NULL;
     return nanbox_to_pointer(v);
 }
 
 VALUE create_value_nil(void)
 {
-    return nanbox_null();
+    return nanbox_empty();
 }
 
 VALUE create_value_bool(bool b)
@@ -176,7 +181,14 @@ VALUE create_value_heap_key(TYC_TYPE type, HEAP_KEY key)
 
 VALUE create_value_native_pointer(void* ptr)
 {
+    if (ptr == NULL)
+        return nanbox_null();
     return nanbox_from_pointer(ptr);
+}
+
+VALUE create_value_tombstone()
+{
+    return nanbox_deleted();
 }
 
 bool value_is_false(VALUE v)
@@ -187,4 +199,9 @@ bool value_is_false(VALUE v)
 bool value_is_nil(VALUE v)
 {
     return value_type(v) == TYC_NIL;
+}
+
+bool value_is_tombstone(VALUE v)
+{
+    return value_type(v) == TYC_TOMBSTONE__;
 }

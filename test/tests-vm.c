@@ -159,15 +159,34 @@ static void test_tables(void)
         Table* t = table_new(NULL);
 
         table_set(t, create_value_integer(10), create_value_integer(100));
-        table_set(t, create_value_integer(20), create_value_integer(200));
+        table_set(t, create_value_integer(18), create_value_integer(200));
 
         VALUE v;
-        assert(table_get(t, create_value_integer(10), &v) == TYC_OK); assert(value_integer(v) == 100);
-        assert(table_get(t, create_value_integer(20), &v) == TYC_OK); assert(value_integer(v) == 200);
+        assert(table_get(t, create_value_integer(10), &v)); assert(value_integer(v) == 100);
+        assert(table_get(t, create_value_integer(18), &v)); assert(value_integer(v) == 200);
 
-        table_del(t, create_value_integer(20));
-        assert(table_get(t, create_value_integer(10), &v) == TYC_OK);
-        assert(table_get(t, create_value_integer(20), &v) == TYC_OK && value_type(v) == TYC_INTEGER);
+        table_del(t, create_value_integer(18));
+        assert(table_get(t, create_value_integer(10), &v) && value_type(v) == TYC_INTEGER);
+        assert(!table_get(t, create_value_integer(18), &v));
+
+        table_destroy(t);
+        heap_destroy(h);
+    }
+
+    {
+        printf("## Table - heavier usage\n");
+
+        Heap* h = heap_new();
+        Table* t = table_new(NULL);
+        for (size_t i = 0; i < 100; i += 2)
+            table_set(t, create_value_integer(i), create_value_integer(i * 10));
+
+        VALUE v;
+        for (size_t i = 0; i < 100; i += 2) {
+            assert(table_get(t, create_value_integer(i), &v));
+            assert(value_type(v) == TYC_INTEGER);
+            assert(value_integer(v) == i * 10);
+        }
 
         table_destroy(t);
         heap_destroy(h);

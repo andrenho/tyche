@@ -96,6 +96,7 @@ uint32_t   value_function_idx(VALUE v);
 HEAP_KEY   value_heap_key(VALUE v);
 bool       value_is_false(VALUE v);
 bool       value_is_nil(VALUE v);
+bool       value_is_tombstone(VALUE v);
 void*      value_native_pointer(VALUE v);
 
 VALUE create_value_nil(void);
@@ -105,6 +106,7 @@ VALUE create_value_real(TYCHE_REAL f);
 VALUE create_value_function_idx(uint32_t idx);
 VALUE create_value_heap_key(TYC_TYPE type, HEAP_KEY key);
 VALUE create_value_native_pointer(void* ptr);
+VALUE create_value_tombstone();
 
 //
 // STACK
@@ -145,18 +147,20 @@ void   array_append(Array* a, VALUE v);
 // HEAP TABLE
 //
 
-Table*     table_new(TycheVM const* T);
-void       table_destroy(Table* t);
+Table*  table_new(TycheVM const* T);
+void    table_destroy(Table* t);
 
-size_t     table_len(Table const* t);
-TYC_RESULT table_get(Table const* t, VALUE key, VALUE* value);
-void       table_set(Table* t, VALUE key, VALUE value);
-void       table_del(Table* t, VALUE key);
+size_t  table_len(Table const* t);
+bool    table_get(Table const* t, VALUE key, VALUE* value);
+void    table_set(Table* t, VALUE key, VALUE value);
+void    table_del(Table* t, VALUE key);
 
-bool       table_has_key(Table const* t, VALUE key);
+bool    table_has_key(Table const* t, VALUE key);
 
-bool       table_next(Table* t, VALUE key, VALUE* out_key, VALUE* out_value);
-void       table_setsuper(Table* t, Table* super);
+bool    table_next(Table* t, VALUE key, VALUE* out_key, VALUE* out_value);
+void    table_setsuper(Table* t, Table* super);
+
+void    table_debug_internals(Table* t, TycheVM* T);
 
 //
 // HEAP
@@ -225,6 +229,7 @@ Code*  tyc_code(TycheVM* T);
 
 uint32_t tyc_hash(TycheVM const* T, VALUE value);
 bool     tyc_eq(TycheVM const* T, VALUE value_a, VALUE value_b);
+void     tyc_debug_value(TycheVM* T, VALUE a);
 
 //
 // EXPRESSIONS

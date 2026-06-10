@@ -45,15 +45,6 @@ static void table_rehash(Table* t)
     // TODO
 }
 
-static uint32_t find_adjusted_key(Table* t, VALUE key, bool* existing_record)
-{
-    uint32_t hash = tyc_hash(t->T, key);
-    uint32_t idx = hash % t->sz;
-    uint32_t last = (idx == 0) ? t->sz - 1 : idx - 1;
-
-    // TODO...
-}
-
 void table_set(Table* t, VALUE key, VALUE value)
 {
     if ((double) t->in_use / (double) t->sz > 0.7)
@@ -62,63 +53,92 @@ void table_set(Table* t, VALUE key, VALUE value)
     uint32_t hash = tyc_hash(t->T, key);
     uint32_t idx = hash % t->sz;
 
-    // is main slot available? use it
-    if (value_is_nil(t->items[idx].kv.key)) {
-        t->items[idx].kv = (TableKV) { key, value };
-        ++t->in_use;
-
-    // is the same key as the main slot?
-    } else if (tyc_eq(t->T, t->items[idx].kv.key, key)) {
-        t->items[idx].kv.value = value;
-
-    // is in the extra slots?
-    } else {
-        bool found = false;
-        for (size_t i = 0; i < t->items[idx].extra_sz; ++i) {
-            if (tyc_eq(t->T, t->items[idx].extra_kv[i].key, key)) {
-                t->items[idx].extra_kv[i].value = value;
-                found = true;
-                break;
-            }
-        }
-
-        if (!found) {
-            ++t->items[idx].extra_sz;
-            t->items[idx].extra_kv = xrealloc(t->items[idx].extra_kv, t->items[idx].extra_sz * sizeof(TableKV));
+    // loop from index to end
+    for (size_t i = idx; i < t->sz; ++i) {
+        if (value_is_nil(t->items[i].key)) {
+            t->items[i] = (TableKV) { key, value };
             ++t->in_use;
+            return;
         }
     }
+
+    // loop from 0 to index
+    if (idx > 0) {
+        for (size_t i = 0; i < (idx-1); ++i) {
+            if (value_is_nil(t->items[i].key)) {
+                t->items[i] = (TableKV) { key, value };
+                ++t->in_use;
+                return;
+            }
+        }
+    }
+
+    __builtin_unreachable();
 }
 
-TYC_RESULT table_get(Table const* t, VALUE key, VALUE* value)
+bool table_get(Table const* t, VALUE key, VALUE* value)
 {
     uint32_t hash = tyc_hash(t->T, key);
     uint32_t idx = hash % t->sz;
 
-    if (tyc_eq(t->T, t->items[idx].kv.key, key)) {
-        *value = t->items[idx].kv.value;
-        return TYC_OK;
-    }
-
-    for (size_t i = 0; i < t->items[idx].extra_sz; ++i) {
-        if (tyc_eq(t->T, t->items[idx].extra_kv[i].key, key)) {
-            *value = t->items[idx].extra_kv[i].value;
-            return TYC_OK;
+    // loop from index to end
+    for (size_t i = idx; i < t->sz; ++i) {
+        if (!value_is_nil(t->items[i].key) && !value_is_tombstone(t->items[i].key) && tyc_eq(t->T, t->items[i].key, key)) {
+            if (value) *value = t->items[i].value;
+            return true;
+        } else if (value_is_nil(t->items[i].key)) {
+            if (value) *value = create_value_nil();
+            return false;
         }
     }
 
-    *value = create_value_nil();
-    return TYC_OK;
+    // loop from 0 to index
+    if (idx > 0) {
+        for (size_t i = 0; i < (idx-1); ++i) {
+            if (!value_is_nil(t->items[i].key) && !value_is_tombstone(t->items[i].key) && tyc_eq(t->T, t->items[i].key, key)) {
+                if (value) *value = t->items[i].value;
+                return true;
+            } else if (value_is_nil(t->items[i].key)) {
+                if (value) *value = create_value_nil();
+                return false;
+            }
+        }
+    }
+
+    __builtin_unreachable();
 }
 
 bool table_has_key(Table const* t, VALUE key)
 {
-    // TODO
-    return false;
+    return table_get(t, key, NULL);
 }
 
 void table_del(Table* t, VALUE key)
 {
+    uint32_t hash = tyc_hash(t->T, key);
+    uint32_t idx = hash % t->sz;
+
+    // loop from index to end
+    for (size_t i = idx; i < t->sz; ++i) {
+        if (!value_is_nil(t->items[i].key) && !value_is_tombstone(t->items[i].key) && tyc_eq(t->T, t->items[i].key, key)) {
+            t->items[i].key = create_value_tombstone();
+            --t->in_use;
+            return;
+        }
+    }
+
+    // loop from 0 to index
+    if (idx > 0) {
+        for (size_t i = 0; i < (idx-1); ++i) {
+            if (!value_is_nil(t->items[i].key) && !value_is_tombstone(t->items[i].key) && tyc_eq(t->T, t->items[i].key, key)) {
+                t->items[i].key = create_value_tombstone();
+                --t->in_use;
+                return;
+            }
+        }
+    }
+
+    __builtin_unreachable();
 }
 
 bool table_next(Table* t, VALUE key, VALUE* out_key, VALUE* out_value)
@@ -136,5 +156,19 @@ void table_setsuper(Table* t, Table* super)
             if (value_type(value) != TYC_FUNCTION)
                 table_set(t, key, value);
         }
+    }
+}
+
+void table_debug_internals(Table* t, TycheVM* T)
+{
+    for (size_t i = 0; i < t->sz; ++i) {
+        printf("[%zu] -> [", i);
+        tyc_debug_value(T, t->items[i].key);
+        printf("]");
+        if (!value_is_nil(t->items[i].key)) {
+            printf(" = ");
+            tyc_debug_value(T, t->items[i].value);
+        }
+        printf("\n");
     }
 }
