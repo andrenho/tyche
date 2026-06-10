@@ -42,7 +42,24 @@ size_t table_len(Table const* t)
 
 static void table_rehash(Table* t)
 {
-    // TODO
+    // copy items to a temporary table
+    TableKV* items = xmalloc(t->in_use * sizeof(TableKV));
+    size_t n_real_items = 0;
+    for (size_t i = 0; i < t->sz; ++i)
+        if (!value_is_nil(t->items[i].key) && !value_is_tombstone(t->items[i].key))
+            items[n_real_items++] = t->items[i];
+
+    // clear and resize table
+    free(t->items);
+    t->sz *= 2;
+    t->in_use = 0;
+    t->items = xmalloc(t->sz * sizeof(TableKV));
+    for (size_t i = 0; i < t->sz; ++i)
+        t->items[i].key = create_value_nil();
+
+    // recreate table
+    for (size_t i = 0; i < n_real_items; ++i)
+        table_set(t, items[i].key, items[i].value);
 }
 
 void table_set(Table* t, VALUE key, VALUE value)
