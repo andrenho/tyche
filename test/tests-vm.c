@@ -195,8 +195,9 @@ static void test_tables(void)
     {
         printf("## Table - string index\n");
 
-        Heap* h = heap_new();
-        Table* t = table_new(NULL);
+        TycheVM* T = tyc_new();
+        Heap* h = tyc_heap(T);
+        Table* t = table_new(T);
 
         VALUE key1 = create_value_heap_key(TYC_STRING, heap_add_string(h, "key1", false));
         VALUE key2 = create_value_heap_key(TYC_STRING, heap_add_string(h, "key2", false));
@@ -208,15 +209,15 @@ static void test_tables(void)
         VALUE key2b = create_value_heap_key(TYC_STRING, heap_add_string(h, "key2", false));
 
         VALUE v;
-        assert(table_get(t, key1b, &v) == TYC_OK); assert(value_integer(v) == 100);
-        assert(table_get(t, key2b, &v) == TYC_OK); assert(value_integer(v) == 200);
+        assert(table_get(t, key1b, &v)); assert(value_integer(v) == 100);
+        assert(table_get(t, key2b, &v)); assert(value_integer(v) == 200);
 
         table_del(t, key2b);
-        assert(table_get(t, key1b, &v) == TYC_OK);
+        assert(table_get(t, key1b, &v));
         table_get(t, key2b, &v); assert(value_type(v) == TYC_NIL);
 
         table_destroy(t);
-        heap_destroy(h);
+        tyc_destroy(T);
     }
 }
 
