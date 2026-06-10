@@ -160,7 +160,11 @@ void table_del(Table* t, VALUE key)
 
 bool table_next(Table* t, VALUE key, VALUE* out_key, VALUE* out_value)
 {
+    uint32_t hash = tyc_hash(t->T, key);
+    uint32_t idx = hash % t->sz;
+
     // TODO
+
     return false;
 }
 
