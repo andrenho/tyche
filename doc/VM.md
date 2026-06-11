@@ -43,12 +43,14 @@ Reals, arrays and nils can't be used as keys.
 
 ## Supertables
 
-A table can be linked to a supertable, which works similar to inheritance. The rules are:
+A table can be linked to a supertable, which works similar to inheritance. 
 
-1) On the moment a table is linked to a supertable (at runtime), all supertable's keys and values are shallow copied to \
-   the child table (except for functions/overloads).
-2) When a field is accessed in the table, and that field is not found in the table, the corresponding field
-   in the supertable is used, if found AND it's a function. This also includes operator_ overloading.
+The rules are:
+
+1) If a field is read from the child table and its value is nil, the field is read from the supertable.
+2) If a field is written on the child table, it sets the field in the child table. Subsequent reads will read from
+   the child table.
+3) If a previously set field in the child table is set to nil, behaviour will revert back to reading from the supertable.
 
 A supertable can also have its own supertable, creating a chain of supertables.
 
@@ -83,7 +85,6 @@ my_object.doSomething();             // result: Child class, my default value is
 
 * If a supertable function is updated, and that function is missing in the child, this will cause a change of
   behaviour in the child.
-* Data is not propagated after the child is linked with the parent.
 
 ## Operator overloading
 
