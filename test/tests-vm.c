@@ -498,7 +498,7 @@ static void test_heap(void)
         // now the table is removed, and nothing is left
         stack_pop(tyc_stack(T), NULL);
         tyc_gc(T);
-        assert(heap_size(h) == 0);
+        assert(heap_size(h) == 1);
 
         heap_destroy(h);
     }

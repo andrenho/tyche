@@ -64,6 +64,11 @@ static void table_rehash(Table* t)
 
 void table_set(Table* t, VALUE key, VALUE value)
 {
+    if (value_is_nil(value)) {
+        table_del(t, key);
+        return;
+    }
+
     if ((double) t->in_use / (double) t->sz > 0.7)
         table_rehash(t);
 
