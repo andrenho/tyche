@@ -155,8 +155,8 @@ static void test_tables(void)
     {
         printf("## Table - integer index\n");
 
-        Heap* h = heap_new();
-        Table* t = table_new(NULL);
+        TycheVM* T = tyc_new();
+        Table* t = table_new(T);
 
         table_set(t, create_value_integer(10), create_value_integer(100));
         table_set(t, create_value_integer(18), create_value_integer(200));
@@ -170,14 +170,14 @@ static void test_tables(void)
         assert(!table_get(t, create_value_integer(18), &v));
 
         table_destroy(t);
-        heap_destroy(h);
+        tyc_destroy(T);
     }
 
     {
         printf("## Table - heavier usage\n");
 
-        Heap* h = heap_new();
-        Table* t = table_new(NULL);
+        TycheVM* T = tyc_new();
+        Table* t = table_new(T);
         for (size_t i = 0; i < 100; i += 2)
             table_set(t, create_value_integer(i), create_value_integer(i * 10));
 
@@ -189,7 +189,7 @@ static void test_tables(void)
         }
 
         table_destroy(t);
-        heap_destroy(h);
+        tyc_destroy(T);
     }
 
     {
@@ -223,8 +223,8 @@ static void test_tables(void)
     {
         printf("## Table - next\n");
 
-        Heap* h = heap_new();
-        Table* t = table_new(NULL);
+        TycheVM* T = tyc_new();
+        Table* t = table_new(T);
         int count[10];
 
         for (size_t i = 0; i < 10; ++i) {
@@ -242,7 +242,7 @@ static void test_tables(void)
             assert(count[i] == 1);
 
         table_destroy(t);
-        heap_destroy(h);
+        tyc_destroy(T);
     }
 }
 

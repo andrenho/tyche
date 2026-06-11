@@ -160,12 +160,26 @@ void table_del(Table* t, VALUE key)
 
 bool table_next(Table* t, VALUE key, VALUE* out_key, VALUE* out_value)
 {
-    uint32_t hash = tyc_hash(t->T, key);
-    uint32_t idx = hash % t->sz;
+    uint32_t idx;
+    if (value_is_nil(key)) {
+        for (idx = 0; idx < t->sz; ++idx) {
+            if (!value_is_nil(t->items[idx].key) && (!value_is_tombstone(t->items[idx].key)))
+                goto found;
+        }
+        return false;  // not found
+    } else {
+        uint32_t hash = tyc_hash(t->T, key);
 
-    // TODO
+        for (idx = hash % t->sz; idx < t->sz; ++idx)
+            if (tyc_eq(t->T, key, t->items[idx].key))
+                goto found;
+        return false;  // not found
+    }
 
-    return false;
+found:
+    *out_key = t->items[idx].key;
+    *out_value = t->items[idx].value;
+    return true;
 }
 
 void table_setsuper(Table* t, Table* super)

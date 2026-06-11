@@ -802,6 +802,7 @@ static uint32_t mem_to_hash(void *ptr)
 
 uint32_t tyc_hash(TycheVM const* T, VALUE value)
 {
+    assert(T);
     switch (value_type(value)) {
         case TYC_NIL:       return 0;
         case TYC_BOOLEAN:   return value_boolean(value) ? 1 : 2;
@@ -850,6 +851,7 @@ uint32_t tyc_hash(TycheVM const* T, VALUE value)
 
 bool tyc_eq(TycheVM const* T, VALUE value_a, VALUE value_b)
 {
+    assert(T);
     if (value_type(value_a) != value_type(value_b))
         return false;
 
