@@ -60,6 +60,8 @@ static void table_rehash(Table* t)
     // recreate table
     for (size_t i = 0; i < n_real_items; ++i)
         table_set(t, items[i].key, items[i].value);
+
+    free(items);
 }
 
 void table_set(Table* t, VALUE key, VALUE value)

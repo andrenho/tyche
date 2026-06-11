@@ -500,7 +500,7 @@ static void test_heap(void)
         tyc_gc(T);
         assert(heap_size(h) == 1);
 
-        heap_destroy(h);
+        tyc_destroy(T);
     }
 }
 
