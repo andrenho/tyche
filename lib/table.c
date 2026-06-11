@@ -170,8 +170,8 @@ bool table_next(Table* t, VALUE key, VALUE* out_key, VALUE* out_value)
     } else {
         uint32_t hash = tyc_hash(t->T, key);
 
-        for (idx = hash % t->sz; idx < t->sz; ++idx)
-            if (tyc_eq(t->T, key, t->items[idx].key))
+        for (idx = hash % t->sz + 1; idx < t->sz; ++idx)
+            if (!value_is_nil(t->items[idx].key) && (!value_is_tombstone(t->items[idx].key)))
                 goto found;
         return false;  // not found
     }

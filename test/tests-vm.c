@@ -234,12 +234,42 @@ static void test_tables(void)
 
         VALUE k = create_value_nil(), v;
         while (table_next(t, k, &k, &v)) {
-            assert(value_integer(k) == value_integer(v) * 10);
+            assert(value_integer(k) == value_integer(v) / 10);
             ++count[value_integer(k)];
         }
 
         for (size_t i = 0; i < 10; ++i)
             assert(count[i] == 1);
+
+        table_destroy(t);
+        tyc_destroy(T);
+    }
+
+    {
+        printf("## Table - next - with deletion\n");
+
+        TycheVM* T = tyc_new();
+        Table* t = table_new(T);
+        int count[10];
+
+        for (size_t i = 0; i < 10; ++i) {
+            table_set(t, create_value_integer(i), create_value_integer(i * 10));
+            count[i] = 0;
+        }
+
+        table_del(t, create_value_integer(6));
+
+        VALUE k = create_value_nil(), v;
+        while (table_next(t, k, &k, &v)) {
+            assert(value_integer(k) == value_integer(v) / 10);
+            ++count[value_integer(k)];
+        }
+
+        for (size_t i = 0; i < 10; ++i)
+            if (i == 6)
+                assert(count[i] == 0);
+            else
+                assert(count[i] == 1);
 
         table_destroy(t);
         tyc_destroy(T);
