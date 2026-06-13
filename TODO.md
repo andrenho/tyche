@@ -72,7 +72,6 @@ Decisions:
     - [ ] Table
       - [ ] Pass hash callback (?)
       - [ ] Store multiple values for the same hash
-    - [ ] Operator overload (new opcode)
     - [ ] Null native pointer
     - [ ] Test tyc_global
     - [x] Array equality
@@ -99,6 +98,7 @@ Decisions:
 
 - [ ] Closure/upvalues
 - [ ] Table, array equality
+- [ ] Operator overload (new opcode)
 - [ ] "+" for tables, array
 - [ ] % for printf (?)
 - [ ] << instead of appnd
