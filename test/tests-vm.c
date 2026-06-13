@@ -509,15 +509,16 @@ static void test_supertables(void)
     {
         printf("## Supertable\n");
 
-        Heap* h = heap_new();
+        TycheVM* T = tyc_new();
+        Heap* h = tyc_heap(T);
 
         // create table and supertable
         Table* super;
-        HEAP_KEY super_heap_key = heap_add_table(h, NULL);
+        HEAP_KEY super_heap_key = heap_add_table(h, T);
         heap_get_table(h, super_heap_key, &super);
 
         Table* table;
-        HEAP_KEY table_heap_key = heap_add_table(h, NULL);
+        HEAP_KEY table_heap_key = heap_add_table(h, T);
         heap_get_table(h, table_heap_key, &table);
         VALUE table_value = create_value_heap_key(TYC_TABLE, table_heap_key);
 
@@ -528,25 +529,27 @@ static void test_supertables(void)
         VALUE f99 = create_value_heap_key(TYC_STRING, heap_add_string(h, "f99", false));
 
         // add fields to supertable
+        // Super = { va: 20, vb: 30, f1: f(1), f99: f(99) }
         table_set(super, va, create_value_integer(20));
         table_set(super, vb, create_value_integer(30));
         table_set(super, f1, create_value_function_idx(1));
         table_set(super, f99, create_value_function_idx(99));
 
         // set table supertable
+        // Table = { va: 40 } <- Super
         heap_set_supertable(h, table_heap_key, super_heap_key);
         table_set(table, va, create_value_integer(40));
 
         // check table fields
         VALUE a;
-        assert(table_get(table, va, &a) == TYC_OK); assert(value_integer(a) == 40);
-        assert(table_get(table, vb, &a) == TYC_OK); assert(value_integer(a) == 30);
-        assert(table_get(table, f1, &a) == TYC_OK); assert(value_function_idx(a) == 1);
+        assert(table_get(table, va, &a)); assert(value_integer(a) == 40);
+        assert(table_get(table, vb, &a)); assert(value_integer(a) == 30);
+        assert(table_get(table, f1, &a)); assert(value_function_idx(a) == 1);
 
         // overload function in table
         table_set(table, f1, create_value_function_idx(2));
-        assert(table_get(table, f1, &a) == TYC_OK); assert(value_function_idx(a) == 2);
-        assert(table_get(super, f1, &a) == TYC_OK); assert(value_function_idx(a) == 1);
+        assert(table_get(table, f1, &a)); assert(value_function_idx(a) == 2);
+        assert(table_get(super, f1, &a)); assert(value_function_idx(a) == 1);
 
         // test iteration
         bool found_va = false, found_vb = false, found_f1 = false, found_f99 = false;
@@ -577,7 +580,7 @@ static void test_supertables(void)
 
         // restore overloaded function
         table_set(table, f1, create_value_nil());
-        assert(table_get(table, f1, &a) == TYC_OK); assert(value_function_idx(a) == 1);
+        assert(table_get(table, f1, &a)); assert(value_function_idx(a) == 1);
 
         // test gc
         assert(heap_size(h) == 6);

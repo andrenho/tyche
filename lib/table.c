@@ -100,32 +100,54 @@ void table_set(Table* t, VALUE key, VALUE value)
     __builtin_unreachable();
 }
 
+static bool table_get_record(Table const* t, size_t i, VALUE key, VALUE* value, bool* record_found)
+{
+    *record_found = false;
+
+    // check if record matches the key
+    if (!value_is_nil(t->items[i].key) && !value_is_tombstone(t->items[i].key) && tyc_eq(t->T, t->items[i].key, key)) {
+        if (value) *value = t->items[i].value;
+        *record_found = true;
+        return true;
+    }
+
+    // if key is null, this ends our search
+    if (value_is_nil(t->items[i].key)) {
+
+        // key not found, let's search in the supertable first
+        if (t->super && table_get(t->super, key, value)) {
+            *record_found = true;
+            return true;
+        }
+
+        // not found in supertable, return nil
+        if (value) *value = create_value_nil();
+        return true;
+    }
+
+    // if records has a key, but it's not the correct key, or it's a tombstone, we continue our search
+    return false;
+}
+
 bool table_get(Table const* t, VALUE key, VALUE* value)
 {
     uint32_t hash = tyc_hash(t->T, key);
     uint32_t idx = hash % t->sz;
 
     // loop from index to end
+    bool record_found;
     for (size_t i = idx; i < t->sz; ++i) {
-        if (!value_is_nil(t->items[i].key) && !value_is_tombstone(t->items[i].key) && tyc_eq(t->T, t->items[i].key, key)) {
-            if (value) *value = t->items[i].value;
-            return true;
-        } else if (value_is_nil(t->items[i].key)) {
-            if (value) *value = create_value_nil();
-            return false;
-        }
+        bool stop = table_get_record(t, i, key, value, &record_found);
+        if (stop)
+            return record_found;
     }
 
     // loop from 0 to index
     if (idx > 0) {
         for (size_t i = 0; i < (idx-1); ++i) {
-            if (!value_is_nil(t->items[i].key) && !value_is_tombstone(t->items[i].key) && tyc_eq(t->T, t->items[i].key, key)) {
-                if (value) *value = t->items[i].value;
-                return true;
-            } else if (value_is_nil(t->items[i].key)) {
-                if (value) *value = create_value_nil();
-                return false;
-            }
+            bool stop = table_get_record(t, i, key, value, &record_found);
+            if (stop)
+                return record_found;
         }
     }
 
@@ -192,14 +214,6 @@ found:
 void table_setsuper(Table* t, Table* super)
 {
     t->super = super;
-
-    if (super != NULL) {
-        VALUE key = create_value_nil(), value;
-        while (table_next(t->super, key, &key, &value)) {
-            if (value_type(value) != TYC_FUNCTION)
-                table_set(t, key, value);
-        }
-    }
 }
 
 void table_debug_internals(Table* t, TycheVM* T)
