@@ -189,22 +189,31 @@ void table_del(Table* t, VALUE key)
 
 bool table_next(Table* t, VALUE key, VALUE* out_key, VALUE* out_value)
 {
+    // receives a key, and looks for the next key-pair in the table
+    //   it only works from start to end, it'll not circle back
+
     uint32_t idx;
+
+    // received key is nil - it'll look for the first record
     if (value_is_nil(key)) {
         for (idx = 0; idx < t->sz; ++idx) {
             if (!value_is_nil(t->items[idx].key) && (!value_is_tombstone(t->items[idx].key)))
                 goto found;
         }
         return false;  // not found
-    } else {
-        uint32_t hash = tyc_hash(t->T, key);
-
-        for (idx = hash % t->sz + 1; idx < t->sz; ++idx)
-            if (!value_is_nil(t->items[idx].key) && (!value_is_tombstone(t->items[idx].key)))
-                goto found;
-        return false;  // not found
     }
 
+    // received key is not nil - it'll look for the next record
+    uint32_t hash = tyc_hash(t->T, key);
+
+    for (idx = hash % t->sz + 1; idx < t->sz; ++idx)
+        if (!value_is_nil(t->items[idx].key) && (!value_is_tombstone(t->items[idx].key)))
+            goto found;
+
+    // record was NOT found
+    return false;
+
+    // record was found, return the key/value pair
 found:
     *out_key = t->items[idx].key;
     *out_value = t->items[idx].value;
