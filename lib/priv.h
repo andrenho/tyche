@@ -157,7 +157,7 @@ void    table_del(Table* t, VALUE key);
 
 bool    table_has_key(Table const* t, VALUE key);
 
-bool    table_next(Table* t, VALUE key, VALUE* out_key, VALUE* out_value);
+bool    table_next(Table const* t, VALUE key, VALUE* out_key, VALUE* out_value);
 void    table_setsuper(Table* t, Table* super);
 
 void    table_debug_internals(Table* t, TycheVM* T);

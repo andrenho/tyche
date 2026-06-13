@@ -187,8 +187,10 @@ void table_del(Table* t, VALUE key)
     __builtin_unreachable();
 }
 
-bool table_next(Table* t, VALUE key, VALUE* out_key, VALUE* out_value)
+bool table_next_with_child(Table const* t, VALUE key, VALUE* out_key, VALUE* out_value, Table const* child)
 {
+    // TODO - check if key was already returned on the child
+
     // receives a key, and looks for the next key-pair in the table
     //   it only works from start to end, it'll not circle back
 
@@ -207,7 +209,7 @@ bool table_next(Table* t, VALUE key, VALUE* out_key, VALUE* out_value)
     uint32_t hash = tyc_hash(t->T, key);
 
     for (idx = hash % t->sz + 1; idx < t->sz; ++idx)
-        if (!value_is_nil(t->items[idx].key) && (!value_is_tombstone(t->items[idx].key)))
+        if (!value_is_nil(t->items[idx].key) && !value_is_tombstone(t->items[idx].key))
             goto found;
 
     // record was NOT found
@@ -218,6 +220,15 @@ found:
     *out_key = t->items[idx].key;
     *out_value = t->items[idx].value;
     return true;
+}
+
+bool table_next(Table const* t, VALUE key, VALUE* out_key, VALUE* out_value)
+{
+    bool found = table_next_with_child(t, key, out_key, out_value, NULL);
+    if (t->super && !found) {
+        found = table_next_with_child(t->super, key, out_key, out_value, t);
+    }
+    return found;
 }
 
 void table_setsuper(Table* t, Table* super)
