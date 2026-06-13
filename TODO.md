@@ -75,7 +75,11 @@ Decisions:
     - [ ] Operator overload (new opcode)
     - [ ] Null native pointer
     - [ ] Test tyc_global
-    - [ ] Array equality
+    - [x] Array equality
+    - [ ] Table loop detection (ex. `A <- B <- A` and `A: { B: A }`)
+      - [ ] table_get, table_set, table_del
+      - [ ] table_next
+      - [ ] GC
 - [ ] Prepare for release
   - [x] Documentation and webpage
   - [ ] Review public function names
