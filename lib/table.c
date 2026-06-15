@@ -187,7 +187,7 @@ void table_del(Table* t, VALUE key)
     __builtin_unreachable();
 }
 
-bool table_next_with_child(Table const* t, VALUE key, VALUE* out_key, VALUE* out_value, Table const* child)
+bool table_next(Table const* t, VALUE key, VALUE* out_key, VALUE* out_value)
 {
     // TODO - check if key was already returned on the child
 
@@ -220,15 +220,6 @@ found:
     *out_key = t->items[idx].key;
     *out_value = t->items[idx].value;
     return true;
-}
-
-bool table_next(Table const* t, VALUE key, VALUE* out_key, VALUE* out_value)
-{
-    bool found = table_next_with_child(t, key, out_key, out_value, NULL);
-    if (t->super && !found) {
-        found = table_next_with_child(t->super, key, out_key, out_value, t);
-    }
-    return found;
 }
 
 void table_setsuper(Table* t, Table* super)

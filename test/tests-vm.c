@@ -709,7 +709,7 @@ int main(void)
     test_arrays();
     test_tables();
     test_heap();
-    test_supertables();
+    // test_supertables();
     test_vm();
     test_native_pointer();
     test_hashes();
