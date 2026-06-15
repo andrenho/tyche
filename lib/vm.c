@@ -111,7 +111,7 @@ void tyc_debug_to_console(TycheVM* T, bool activate)
     T->debug = activate;
 }
 
-void tyc_debug_value(TycheVM* T, VALUE a)
+void tyc_debug_value(TycheVM const* T, VALUE a)
 {
     switch (value_type(a)) {
         case TYC_NIL:

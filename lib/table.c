@@ -35,8 +35,8 @@ void table_destroy(Table* t)
 size_t table_len(Table const* t)
 {
     size_t sz = t->in_use;
-    if (t->super)
-        sz += table_len(t->super);
+    /* if (t->super)
+        sz += table_len(t->super); */
     return sz;
 }
 
@@ -189,37 +189,36 @@ void table_del(Table* t, VALUE key)
 
 bool table_next(Table const* t, VALUE key, VALUE* out_key, VALUE* out_value)
 {
-    // TODO - check if key was already returned on the child
+    uint32_t start;
 
-    // receives a key, and looks for the next key-pair in the table
-    //   it only works from start to end, it'll not circle back
-
-    uint32_t idx;
-
-    // received key is nil - it'll look for the first record
     if (value_is_nil(key)) {
-        for (idx = 0; idx < t->sz; ++idx) {
-            if (!value_is_nil(t->items[idx].key) && (!value_is_tombstone(t->items[idx].key)))
-                goto found;
+        start = 0;  // begin scan from the first slot
+    } else {
+        // find the actual slot where this key lives
+        uint32_t hash = tyc_hash(t->T, key);
+        uint32_t idx  = hash % t->sz;
+
+        for (;;) {
+            if (value_is_nil(t->items[idx].key))
+                return false;  // key not found at all — bad caller
+            if (tyc_eq(t->T, key, t->items[idx].key))
+                break;         // found the current key's slot
+            idx = (idx + 1) % t->sz;
         }
-        return false;  // not found
+
+        start = idx + 1;  // resume scan from the slot after it
     }
 
-    // received key is not nil - it'll look for the next record
-    uint32_t hash = tyc_hash(t->T, key);
+    // linear scan from 'start' to find the next live entry
+    for (uint32_t i = start; i < t->sz; ++i) {
+        if (!value_is_nil(t->items[i].key) && !value_is_tombstone(t->items[i].key)) {
+            *out_key   = t->items[i].key;
+            *out_value = t->items[i].value;
+            return true;
+        }
+    }
 
-    for (idx = (hash % t->sz) + 1; idx < t->sz; ++idx)
-        if (!value_is_nil(t->items[idx].key) && !value_is_tombstone(t->items[idx].key))
-            goto found;
-
-    // record was NOT found
-    return false;
-
-    // record was found, return the key/value pair
-found:
-    *out_key = t->items[idx].key;
-    *out_value = t->items[idx].value;
-    return true;
+    return false;  // no more entries
 }
 
 void table_setsuper(Table* t, Table* super)
@@ -227,15 +226,15 @@ void table_setsuper(Table* t, Table* super)
     t->super = super;
 }
 
-void table_debug_internals(Table* t, TycheVM* T)
+void table_debug_internals(Table const* t)
 {
     for (size_t i = 0; i < t->sz; ++i) {
         printf("[%zu] -> [", i);
-        tyc_debug_value(T, t->items[i].key);
+        tyc_debug_value(t->T, t->items[i].key);
         printf("]");
         if (!value_is_nil(t->items[i].key)) {
             printf(" = ");
-            tyc_debug_value(T, t->items[i].value);
+            tyc_debug_value(t->T, t->items[i].value);
         }
         printf("\n");
     }

@@ -569,15 +569,22 @@ static void test_supertables(void)
         assert(f1s == 1);
         assert(others == 0);
 
+        // test supertable iteration
+        key = create_value_nil();
+        while (table_next(super, key, &key, &value))
+            ;
+
         // restore overloaded function
         table_set(table, f1, create_value_nil());
         assert(table_get(table, f1, &a)); assert(value_function_idx(a) == 1);
 
         // test gc
         assert(heap_size(h) == 7);
-        heap_gc(h, &table_value, 1);
+        stack_push(tyc_stack(T), create_value_heap_key(TYC_TABLE, table_heap_key));
+        tyc_gc(T);
         assert(heap_size(h) == 7);
-        heap_gc(h, NULL, 0);
+        stack_pop(tyc_stack(T), NULL);
+        tyc_gc(T);
         assert(heap_size(h) == 1);
 
         tyc_destroy(T);

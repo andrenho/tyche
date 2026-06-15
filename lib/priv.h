@@ -160,7 +160,7 @@ bool    table_has_key(Table const* t, VALUE key);
 bool    table_next(Table const* t, VALUE key, VALUE* out_key, VALUE* out_value);
 void    table_setsuper(Table* t, Table* super);
 
-void    table_debug_internals(Table* t, TycheVM* T);
+void    table_debug_internals(Table const* t);
 
 //
 // HEAP
@@ -229,7 +229,7 @@ Code*  tyc_code(TycheVM* T);
 
 uint32_t tyc_hash(TycheVM const* T, VALUE value);
 bool     tyc_eq(TycheVM const* T, VALUE value_a, VALUE value_b);
-void     tyc_debug_value(TycheVM* T, VALUE a);
+void     tyc_debug_value(TycheVM const* T, VALUE a);
 
 //
 // EXPRESSIONS
