@@ -552,33 +552,22 @@ static void test_supertables(void)
         assert(table_get(super, f1, &a)); assert(value_function_idx(a) == 1);
 
         // test iteration
-        /*
-        bool found_va = false, found_vb = false, found_f1 = false, found_f99 = false;
+        int vas = 0, f1s = 0, others = 0;
         VALUE key = create_value_nil(), value;
         while (table_next(table, key, &key, &value)) {
-            // const char* str; heap_get_string(h, value_heap_key(key), &str); printf("- %s\n", str);
             if (value_heap_key(key) == value_heap_key(va)) {
-                found_va = true;
+                ++vas;
                 assert(value_integer(value) == 40);
-            }
-            if (value_heap_key(key) == value_heap_key(vb)) {
-                found_vb = true;
-                assert(value_integer(value) == 30);
-            }
-            if (value_heap_key(key) == value_heap_key(f1)) {
-                found_f1 = true;
+            } else if (value_heap_key(key) == value_heap_key(f1)) {
+                ++f1s;
                 assert(value_function_idx(value) == 2);
-            }
-            if (value_heap_key(key) == value_heap_key(f99)) {
-                found_f99 = true;
-                assert(value_function_idx(value) == 99);
+            } else {
+                ++others;
             }
         }
-        assert(found_va);
-        assert(found_vb);
-        assert(found_f1);
-        assert(found_f99);
-        */
+        assert(vas == 1);
+        assert(f1s == 1);
+        assert(others == 0);
 
         // restore overloaded function
         table_set(table, f1, create_value_nil());
@@ -709,7 +698,7 @@ int main(void)
     test_arrays();
     test_tables();
     test_heap();
-    // test_supertables();
+    test_supertables();
     test_vm();
     test_native_pointer();
     test_hashes();

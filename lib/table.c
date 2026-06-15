@@ -208,7 +208,7 @@ bool table_next(Table const* t, VALUE key, VALUE* out_key, VALUE* out_value)
     // received key is not nil - it'll look for the next record
     uint32_t hash = tyc_hash(t->T, key);
 
-    for (idx = hash % t->sz + 1; idx < t->sz; ++idx)
+    for (idx = (hash % t->sz) + 1; idx < t->sz; ++idx)
         if (!value_is_nil(t->items[idx].key) && !value_is_tombstone(t->items[idx].key))
             goto found;
 

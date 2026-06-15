@@ -253,7 +253,7 @@ Column legend:
 |------|------|------|------|-------------|---------|----------------------------------------------------------------------------|
 | `16` |      |      |      | `getkv`     | `-1 +1` | Get table's value based on key (pull 1 value, push 1 value)                |
 | `17` |      |      |      | `setkv`     | `-2`    | Set table's key and value (pull 2 values from stack)                       |
-| `1c` |      |      |      | `setop`     | `-2`    | Overload table's operator_                                                  |
+| `1c` |      |      |      | `setop`     | `-2`    | Overload table's operator                                                  |
 |      | `a8` | `c8` | `e8` | `geti`      | `+1`    | Get array's value at position n (push on stack)                            |
 |      | `a9` | `c9` | `e9` | `seti`      | `-1`    | Set array's value at position n                                            |
 | `18` |      |      |      | `appnd`     | `-1`    | Add value to the end of array                                              |
