@@ -69,9 +69,8 @@ Decisions:
     - [x] Equality for multiple types
     - [x] Implement hash for VM
     - [x] Test for hash and equality
-    - [ ] Table
-      - [ ] Pass hash callback (?)
-      - [ ] Store multiple values for the same hash
+    - [x] Table
+      - [x] Store multiple values for the same hash
     - [ ] Null native pointer
     - [ ] Test tyc_global
     - [x] Array equality

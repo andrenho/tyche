@@ -594,7 +594,7 @@ TYC_RESULT tyc_getkv(TycheVM* T, int index)
     TRY(stack_at(T->stack, index, &v_table))
     TRY(heap_get_table(T->heap, value_heap_key(v_table), &table))
     TRY(stack_pop(T->stack, &v_key))
-    TRY(table_get(table, v_key, &output))
+    table_get(table, v_key, &output);
     TRY(stack_push(T->stack, output))
 
     return TYC_OK;
@@ -893,7 +893,7 @@ bool tyc_eq(TycheVM const* T, VALUE value_a, VALUE value_b)
 
             VALUE key = create_value_nil(), value_ax, value_bx;
             while (table_next(a, key, &key, &value_ax)) {
-                if (table_get(b, key, &value_bx) != TYC_OK)
+                if (!table_get(b, key, &value_bx))
                     return false;
                 if (!tyc_eq(T, value_ax, value_bx))
                     return false;
