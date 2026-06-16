@@ -75,7 +75,7 @@ void table_set(Table* t, VALUE key, VALUE value)
         table_rehash(t);
 
     uint32_t hash = tyc_hash(t->T, key);
-    uint32_t idx = hash % t->sz;
+    uint32_t idx = hash % (uint32_t) t->sz;
 
     // loop from index to end
     for (size_t i = idx; i < t->sz; ++i) {
@@ -132,7 +132,7 @@ static bool table_get_record(Table const* t, size_t i, VALUE key, VALUE* value, 
 bool table_get(Table const* t, VALUE key, VALUE* value)
 {
     uint32_t hash = tyc_hash(t->T, key);
-    uint32_t idx = hash % t->sz;
+    uint32_t idx = hash % (uint32_t) t->sz;
 
     // loop from index to end
     bool record_found;
@@ -162,7 +162,7 @@ bool table_has_key(Table const* t, VALUE key)
 void table_del(Table* t, VALUE key)
 {
     uint32_t hash = tyc_hash(t->T, key);
-    uint32_t idx = hash % t->sz;
+    uint32_t idx = hash % (uint32_t) t->sz;
 
     // loop from index to end
     for (size_t i = idx; i < t->sz; ++i) {
@@ -196,14 +196,14 @@ bool table_next(Table const* t, VALUE key, VALUE* out_key, VALUE* out_value)
     } else {
         // find the actual slot where this key lives
         uint32_t hash = tyc_hash(t->T, key);
-        uint32_t idx  = hash % t->sz;
+        uint32_t idx = hash % (uint32_t) t->sz;
 
         for (;;) {
             if (value_is_nil(t->items[idx].key))
                 return false;  // key not found at all — bad caller
             if (tyc_eq(t->T, key, t->items[idx].key))
                 break;         // found the current key's slot
-            idx = (idx + 1) % t->sz;
+            idx = (idx + 1) % (uint32_t) t->sz;
         }
 
         start = idx + 1;  // resume scan from the slot after it

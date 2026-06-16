@@ -25,6 +25,10 @@ static void test_values(void)
     assert(fabs(value_real(create_value_real(42.4)) - 42.4) < 0.00001);
     assert(value_function_idx(create_value_function_idx(42)) == 42);
     assert(value_heap_key(create_value_heap_key(TYC_STRING, 42)) == 42);
+
+    int val = 42;
+    assert(*(int *) value_native_pointer(create_value_native_pointer(&val)) == 42);
+    assert(value_native_pointer(create_value_native_pointer(NULL)) == NULL);
 }
 
 static void test_stack(void)
@@ -178,11 +182,11 @@ static void test_tables(void)
 
         TycheVM* T = tyc_new();
         Table* t = table_new(T);
-        for (size_t i = 0; i < 100; i += 2)
+        for (int32_t i = 0; i < 100; i += 2)
             table_set(t, create_value_integer(i), create_value_integer(i * 10));
 
         VALUE v;
-        for (size_t i = 0; i < 100; i += 2) {
+        for (int32_t i = 0; i < 100; i += 2) {
             assert(table_get(t, create_value_integer(i), &v));
             assert(value_type(v) == TYC_INTEGER);
             assert(value_integer(v) == i * 10);
@@ -227,7 +231,7 @@ static void test_tables(void)
         Table* t = table_new(T);
         int count[10];
 
-        for (size_t i = 0; i < 10; ++i) {
+        for (int32_t i = 0; i < 10; ++i) {
             table_set(t, create_value_integer(i), create_value_integer(i * 10));
             count[i] = 0;
         }
@@ -252,7 +256,7 @@ static void test_tables(void)
         Table* t = table_new(T);
         int count[10];
 
-        for (size_t i = 0; i < 10; ++i) {
+        for (int32_t i = 0; i < 10; ++i) {
             table_set(t, create_value_integer(i), create_value_integer(i * 10));
             count[i] = 0;
         }
@@ -432,7 +436,7 @@ static void test_heap(void)
         TycheVM* T = tyc_new();
         Heap* h = tyc_heap(T);
         HEAP_KEY key = heap_add_table(h, T);
-        VALUE table_value = create_value_heap_key(TYC_TABLE, key);
+        create_value_heap_key(TYC_TABLE, key);
 
         HEAP_KEY s1 = heap_add_string(h, "Hello", false);
         HEAP_KEY s2 = heap_add_string(h, "World", false);
@@ -520,7 +524,7 @@ static void test_supertables(void)
         Table* table;
         HEAP_KEY table_heap_key = heap_add_table(h, T);
         heap_get_table(h, table_heap_key, &table);
-        VALUE table_value = create_value_heap_key(TYC_TABLE, table_heap_key);
+        create_value_heap_key(TYC_TABLE, table_heap_key);
 
         // field names
         VALUE va = create_value_heap_key(TYC_STRING, heap_add_string(h, "va", false));
@@ -685,7 +689,7 @@ static void test_hashes()
     );
 
     k = heap_add_array(tyc_heap(T));
-    printf("  - 2nd array: 0x%x, 0x%x\n", tyc_hash(T, create_value_heap_key(TYC_ARRAY, k)));
+    printf("  - 2nd array: 0x%x\n", tyc_hash(T, create_value_heap_key(TYC_ARRAY, k)));
 
     k = heap_add_table(tyc_heap(T), T);
     printf("  - Table: 0x%x\n", tyc_hash(T, create_value_heap_key(TYC_TABLE, k)));

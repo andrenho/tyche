@@ -105,7 +105,7 @@ VALUE create_value_real(TYCHE_REAL f);
 VALUE create_value_function_idx(uint32_t idx);
 VALUE create_value_heap_key(TYC_TYPE type, HEAP_KEY key);
 VALUE create_value_native_pointer(void* ptr);
-VALUE create_value_tombstone();
+VALUE create_value_tombstone(void);
 
 //
 // STACK

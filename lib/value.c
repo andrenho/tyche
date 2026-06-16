@@ -186,7 +186,7 @@ VALUE create_value_native_pointer(void* ptr)
     return nanbox_from_pointer(ptr);
 }
 
-VALUE create_value_tombstone()
+VALUE create_value_tombstone(void)
 {
     return nanbox_deleted();
 }

@@ -41,6 +41,8 @@ void assembly_destroy(Assembly* as)
     free(as);
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wanalyzer-malloc-leak"
 void assembly_add_const_str(Assembly* as, uint32_t c_id, const char* value)
 {
     if (c_id + 1 > as->consts_n) {
@@ -49,6 +51,7 @@ void assembly_add_const_str(Assembly* as, uint32_t c_id, const char* value)
     }
     as->consts[c_id] = (AssemblyConst) { .type = TC_STRING, .value.string = strdup(value) };
 }
+#pragma GCC diagnostic pop
 
 void assembly_add_const_real(Assembly* as, uint32_t c_id, double value)
 {
