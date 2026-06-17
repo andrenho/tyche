@@ -332,6 +332,7 @@ code = """
     getkv
     ret
 """
+debug=true
 expected_stack_top = 20
 
 ["VM: iterate over tables"]

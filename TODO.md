@@ -69,13 +69,15 @@ Decisions:
     - [x] Equality for multiple types
     - [x] Implement hash for VM
     - [x] Test for hash and equality
-    - [ ] Table
-      - [ ] Pass hash callback (?)
-      - [ ] Store multiple values for the same hash
-    - [ ] Operator overload (new opcode)
-    - [ ] Null native pointer
+    - [x] Table
+      - [x] Store multiple values for the same hash
+    - [x] Null native pointer
     - [ ] Test tyc_global
-    - [ ] Array equality
+    - [x] Array equality
+    - [ ] Table loop detection (ex. `A <- B <- A` and `A: { B: A }`)
+      - [ ] table_get, table_set, table_del
+      - [ ] table_next
+      - [ ] GC
 - [ ] Prepare for release
   - [x] Documentation and webpage
   - [ ] Review public function names
@@ -95,6 +97,7 @@ Decisions:
 
 - [ ] Closure/upvalues
 - [ ] Table, array equality
+- [ ] Operator overload (new opcode)
 - [ ] "+" for tables, array
 - [ ] % for printf (?)
 - [ ] << instead of appnd

@@ -64,7 +64,7 @@ static char* transform_code(const char* template, toml_array_t* pars)
     char* r = CALLOC(1, strlen(template) + 100);
     const char* pt = template;
     char* pr = r;
-    size_t i = 0;
+    int i = 0;
 
     while (*pt) {
         if (*pt == '%') {
@@ -96,7 +96,7 @@ static void run_test_template(toml_table_t* item, const char* template, bool deb
     if ((a = toml_table_array(item, "scenarios")), !a)
         abort();
 
-    for (size_t i = 0; i < toml_array_len(a); ++i) {
+    for (int i = 0; i < toml_array_len(a); ++i) {
         toml_table_t* scenario = toml_array_table(a, i);
 
         toml_value_t t;
@@ -137,7 +137,6 @@ static void run_assembly_test(const char* key, toml_table_t* item)
         free(t.u.s);
     }
 
-    const char* template = NULL;
     if ((t = toml_table_string(item, "template")), t.ok) {
         run_test_template(item, t.u.s, debug, decompile, debug_bytecode);
         free(t.u.s);
@@ -154,8 +153,8 @@ int main()
     fseek(f, 0, SEEK_END);
     long size = ftell(f);
     rewind(f);
-    char* buf = CALLOC(1, size+1);
-    (void) fread(buf, size, 1, f);
+    char* buf = CALLOC(1, (size_t) size+1);
+    (void) fread(buf, (size_t) size, 1, f);
     fclose(f);
 
     char errbuf[200];

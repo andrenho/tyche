@@ -111,11 +111,14 @@ void tyc_debug_to_console(TycheVM* T, bool activate)
     T->debug = activate;
 }
 
-static void debug_value(TycheVM* T, VALUE a)
+void tyc_debug_value(TycheVM const* T, VALUE a)
 {
     switch (value_type(a)) {
         case TYC_NIL:
             printf("<nil>");
+            break;
+        case TYC_TOMBSTONE__:
+            printf("<deleted>");
             break;
         case TYC_BOOLEAN:
             if (value_boolean(a)) printf("<true>"); else printf("<false>");
@@ -139,7 +142,7 @@ static void debug_value(TycheVM* T, VALUE a)
             if (heap_get_array(T->heap, value_heap_key(a), &array) == TYC_OK) {
                 printf("[");
                 for (size_t i = 0; i < array_len(array); ++i) {
-                    debug_value(T, array_get(array, i));
+                    tyc_debug_value(T, array_get(array, i));
                     if (i < array_len(array) - 1)
                         printf(", ");
                 }
@@ -156,9 +159,9 @@ static void debug_value(TycheVM* T, VALUE a)
                 VALUE key = create_value_nil();
                 VALUE value;
                 while (table_next(table, key, &key, &value)) {
-                    debug_value(T, key);
+                    tyc_debug_value(T, key);
                     printf(":");
-                    debug_value(T, value);
+                    tyc_debug_value(T, value);
                     printf(", ");
                 }
                 printf("}");
@@ -209,7 +212,7 @@ static void debug_stack(TycheVM* T)
     for (size_t i = 0; i < stack_size(T->stack); ++i) {
         VALUE a;
         stack_at(T->stack, (int32_t) i, &a);
-        debug_value(T, a);
+        tyc_debug_value(T, a);
         printf(" ");
     }
     printf("\n");
@@ -591,7 +594,7 @@ TYC_RESULT tyc_getkv(TycheVM* T, int index)
     TRY(stack_at(T->stack, index, &v_table))
     TRY(heap_get_table(T->heap, value_heap_key(v_table), &table))
     TRY(stack_pop(T->stack, &v_key))
-    TRY(table_get(table, v_key, &output))
+    table_get(table, v_key, &output);
     TRY(stack_push(T->stack, output))
 
     return TYC_OK;
@@ -751,7 +754,7 @@ static TYC_RESULT tyc_throw_raw(TycheVM* T)
     if (T->error_stack.sz == 0) {  // error at toplevel
         VALUE a = create_value_nil();
         stack_peek(T->stack, &a);
-        printf("\ntyche error: "); debug_value(T, a); printf("\n");
+        printf("\ntyche error: "); tyc_debug_value(T, a); printf("\n");
         exit(EXIT_FAILURE);
     }
 
@@ -797,8 +800,9 @@ static uint32_t mem_to_hash(void *ptr)
     return (uint32_t) ((p >> 32) ^ (p & 0xffffffff));
 }
 
-uint32_t tyc_hash(TycheVM* T, VALUE value)
+uint32_t tyc_hash(TycheVM const* T, VALUE value)
 {
+    assert(T);
     switch (value_type(value)) {
         case TYC_NIL:       return 0;
         case TYC_BOOLEAN:   return value_boolean(value) ? 1 : 2;
@@ -811,19 +815,19 @@ uint32_t tyc_hash(TycheVM* T, VALUE value)
         }
         case TYC_STRING: {
             const char* str;
-            if (heap_get_string(tyc_heap(T), value_heap_key(value), &str) != TYC_OK)
+            if (heap_get_string(T->heap, value_heap_key(value), &str) != TYC_OK)
                 abort();
             return kh_str_hash_func(str);
         }
         case TYC_ARRAY: {
             Array* a;
-            if (heap_get_array(tyc_heap(T), value_heap_key(value), &a) != TYC_OK)
+            if (heap_get_array(T->heap, value_heap_key(value), &a) != TYC_OK)
                 abort();
             return mem_to_hash(a);
         }
         case TYC_TABLE: {
             Table* a;
-            if (heap_get_table(tyc_heap(T), value_heap_key(value), &a) != TYC_OK)
+            if (heap_get_table(T->heap, value_heap_key(value), &a) != TYC_OK)
                 abort();
             return mem_to_hash(a);
         }
@@ -833,19 +837,21 @@ uint32_t tyc_hash(TycheVM* T, VALUE value)
             return mem_to_hash(value_native_pointer(value));
         case TYC_NATIVE_FN__: {
             TYCHE_CB* a = NULL;
-            if (heap_get_native_function(tyc_heap(T), value_heap_key(value), a) != TYC_OK)
+            if (heap_get_native_function(T->heap, value_heap_key(value), a) != TYC_OK)
                 abort();
             return mem_to_hash(a);
         }
         case TYC_COUNT__:
+        case TYC_TOMBSTONE__:
         default:
             __builtin_unreachable();
     }
     return 0;
 }
 
-bool tyc_eq(TycheVM* T, VALUE value_a, VALUE value_b)
+bool tyc_eq(TycheVM const* T, VALUE value_a, VALUE value_b)
 {
+    assert(T);
     if (value_type(value_a) != value_type(value_b))
         return false;
 
@@ -856,17 +862,17 @@ bool tyc_eq(TycheVM* T, VALUE value_a, VALUE value_b)
         case TYC_REAL:      return fabs(value_real(value_a) - value_real(value_b)) < EPSILON;
         case TYC_STRING: {
             const char *s1, *s2;
-            if (heap_get_string(tyc_heap(T), value_heap_key(value_a), &s1) != TYC_OK)
+            if (heap_get_string(T->heap, value_heap_key(value_a), &s1) != TYC_OK)
                 return false;
-            if (heap_get_string(tyc_heap(T), value_heap_key(value_b), &s2) != TYC_OK)
+            if (heap_get_string(T->heap, value_heap_key(value_b), &s2) != TYC_OK)
                 return false;
             return strcmp(s1, s2) == 0;
         }
         case TYC_ARRAY: {
             Array *a, *b;
-            if (heap_get_array(tyc_heap(T), value_heap_key(value_a), &a) != TYC_OK)
+            if (heap_get_array(T->heap, value_heap_key(value_a), &a) != TYC_OK)
                 return false;
-            if (heap_get_array(tyc_heap(T), value_heap_key(value_b), &b) != TYC_OK)
+            if (heap_get_array(T->heap, value_heap_key(value_b), &b) != TYC_OK)
                 return false;
             if (array_len(a) != array_len(b))
                 return false;
@@ -878,16 +884,16 @@ bool tyc_eq(TycheVM* T, VALUE value_a, VALUE value_b)
         case TYC_TABLE: {
             // TODO - check overloaded __eq
             Table *a, *b;
-            if (heap_get_table(tyc_heap(T), value_heap_key(value_a), &a) != TYC_OK)
+            if (heap_get_table(T->heap, value_heap_key(value_a), &a) != TYC_OK)
                 return false;
-            if (heap_get_table(tyc_heap(T), value_heap_key(value_b), &b) != TYC_OK)
+            if (heap_get_table(T->heap, value_heap_key(value_b), &b) != TYC_OK)
                 return false;
             if (table_len(a) != table_len(b))
                 return false;
 
             VALUE key = create_value_nil(), value_ax, value_bx;
             while (table_next(a, key, &key, &value_ax)) {
-                if (table_get(b, key, &value_bx) != TYC_OK)
+                if (!table_get(b, key, &value_bx))
                     return false;
                 if (!tyc_eq(T, value_ax, value_bx))
                     return false;
@@ -901,12 +907,13 @@ bool tyc_eq(TycheVM* T, VALUE value_a, VALUE value_b)
             return value_native_pointer(value_a) == value_native_pointer(value_b);
         case TYC_NATIVE_FN__: {
             TYCHE_CB a, b;
-            if (heap_get_native_function(tyc_heap(T), value_heap_key(value_a), &a) != TYC_OK)
+            if (heap_get_native_function(T->heap, value_heap_key(value_a), &a) != TYC_OK)
                 return false;
-            if (heap_get_native_function(tyc_heap(T), value_heap_key(value_b), &b) != TYC_OK)
+            if (heap_get_native_function(T->heap, value_heap_key(value_b), &b) != TYC_OK)
                 return false;
             return a == b;
         }
+        case TYC_TOMBSTONE__:
         case TYC_COUNT__:
         default:
             __builtin_unreachable();

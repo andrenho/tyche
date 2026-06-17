@@ -17,7 +17,8 @@ typedef enum {
     TYC_NATIVE_PTR   = 8,
 
     // internal types
-    TYC_NATIVE_FN__  = 9,
+    TYC_NATIVE_FN__  = 9,   // function to C pointer
+    TYC_TOMBSTONE__  = 10,  // indicate a delete record on a table
     TYC_COUNT__
 } TYC_TYPE;
 
