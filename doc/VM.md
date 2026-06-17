@@ -22,15 +22,17 @@ separately as it doesn't fit in a nanbox)_
 Nil, boolean, integer, real, functions and native pointers live inside a nanbox. Arrays, tables, strings and native
 functions live in the heap.
 
+Native functions and pointers can only be loaded into the VM via the API.
+
 Tables
 ------
 
-Tables are hashmaps that can use different types of values as keys. The most common key type is `string`.
+Tables are hashmaps that can use different types of values as keys, except `nil`. The most common key type is `string`.
 
-Table keys are resolved in two steps
+Table keys are resolved in two steps:
 
 1) Calculate hash value of the key value _(see below)_
-2) Run the equality operator_ (which can be overloaded for tables)
+2) Run the equality operator (which can be overloaded for tables)
 
 ## Hash value of keys
 
@@ -52,7 +54,7 @@ The rules are:
    the child table.
 3) If a previously set field in the child table is set to nil, behaviour will revert back to reading from the supertable.
 
-A supertable can also have its own supertable, creating a chain of supertables.
+A supertable can also have its own supertable, creating a chain of supertables. 
 
 This is useful for creating Object Orientation, for example:
 
@@ -81,6 +83,8 @@ my_object := ChildClass.new();
 my_object.doSomething();             // result: Child class, my default value is 4
 ```
 
+Creating a supertable cycle is undefined behaviour and might cause an endless loop.
+
 ### Supertable updates
 
 * If a supertable function is updated, and that function is missing in the child, this will cause a change of
@@ -90,22 +94,24 @@ my_object.doSomething();             // result: Child class, my default value is
 
 The following special fields can be used to do operation overloading on tables:
 
-__sum   +
-__sub   -
-__mul   *
-__div   /
-__idiv  |/
-__mod   %
-__eq    ==  (automatic: neq)
-__lt    <   (automatic: lte, gt, gte)
-__and   &
-__or    |
-__xor   ~
-__pow   ^
-__shl   <<
-__shr   >>
-__len   len
-__hash  hash
+sum   +
+sub   -
+mul   *
+div   /
+idiv  |/
+mod   %
+eq    ==  (automatic: neq)
+lt    <   (automatic: lte, gt, gte)
+and   &
+or    |
+xor   ~
+pow   ^
+shl   <<
+shr   >>
+not   !
+neg   -
+len   #
+hash  $
 
 These are special keys which do not share the same space as regular keys.
 
@@ -113,7 +119,7 @@ Memory
 ------
 
 Every value is stored in a [nanbox](https://github.com/philihp/nanbox), and takes up 64 bits (8 bytes). For strings,
-tables, arrays and native pointer, the value is a reference index to the actual value in the heap.
+tables, arrays and native function pointers, the value is a reference index to the actual value in the heap.
 
 ## Stack
 
@@ -143,14 +149,16 @@ Every time the number of allocations hits a ceiling, the GC (garbage collector) 
 a mark & sweep GC that will receive (1) the global and (2) values in the stack, and will clean up anything that is not
 part of these inputs.
 
+GC will auto-detect cycles in tables and arrays to avoid endless loops.
+
 Strings are magic in the way that the same string always resolve to the same record in heap. This means resolving
-strings is faster, and strings are never duplicated in the heap. Static strings are also placed on heap when used,
-but never removed.
+strings is faster, and strings are never duplicated in the heap. Constant strings are also placed on heap when first used,
+and never removed.
 
 ## Global
 
-There's a single global table that serves as global, this global table can be loaded and changed at any point of the 
-runtime.
+There's a single global table that serves as global, this global table can be loaded and have its fields update at any
+point of the runtime.
 
 Expressions
 -----------
@@ -158,8 +166,18 @@ Expressions
 When calling expressions, two values are popped from the stack (one for unary expression) and the result is pushed
 back.
 
-If incompatible types are used for expression, an exception is thrown. The expression follow their counterparts in C.
+If incompatible types are used for expression, an exception is thrown. The expression follow their counterparts in C
+for numbers and reals, including its undefined behaviours.
 
+Integer and real types are automatically converted.
+
+Other defined expressions are:
+ * equality/inequality for all types
+ * hash for all types
+ * logical operations for booleans
+ * string concatenation with `sum`
+
+Operation overloading allows users to overload any expressions for tables.
 
 Error management
 ----------------
@@ -171,6 +189,8 @@ TycheVM supports exceptions via an error-handler stack.
 `pushe [pc]` pushes a handler, recording the resume PC and the current frame depth. `pope` removes it (normal try exit).
 `thrw` raises an error: if no handler is set, the top stack value is printed and the VM exits; otherwise the frame 
 stack is unwound to the recorded depth and execution jumps to the handler.
+
+If a function returns, the exception handler is restored to what it was when the function was entered.
 
 There's no support for `finally` blocks at this time.
 
@@ -247,19 +267,27 @@ Column legend:
 | `10` |      |      |      | `ret`           | `-1`      | Leave a function (return value in stack)                                                 |
 | `11` |      |      |      | `retn`          | `0`       | Leave a function (return nil)                                                            |
 
+When a function is called, the function and its parameters are consumed from the stack.
+
 ## Table and array operations
 
-| NP   | I8   | I16  | I32  | Instruction | Stack   | Description                                                                |
-|------|------|------|------|-------------|---------|----------------------------------------------------------------------------|
-| `16` |      |      |      | `getkv`     | `-1 +1` | Get table's value based on key (pull 1 value, push 1 value)                |
-| `17` |      |      |      | `setkv`     | `-2`    | Set table's key and value (pull 2 values from stack)                       |
-| `1c` |      |      |      | `setop`     | `-2`    | Overload table's operator                                                  |
-|      | `a8` | `c8` | `e8` | `geti`      | `+1`    | Get array's value at position n (push on stack)                            |
-|      | `a9` | `c9` | `e9` | `seti`      | `-1`    | Set array's value at position n                                            |
-| `18` |      |      |      | `appnd`     | `-1`    | Add value to the end of array                                              |
-| `19` |      |      |      | `next`      | `+1`    | Push the next pair into the stack (for loops), pushes nil as key when over |
-| `1a` |      |      |      | `sptb`      | `-1`    | Set table supertable                                                       |
-| `1b` |      |      |      | `supr`      | `+1`    | Fetch supertable                                                           |
+All table and array operation take the array/table that is below the parameters in the stack. For example, `setkv` takes
+two parameters from the stack, so the parameter at position -3 is the array/table. It does not get taken off the stack.
+
+| NP   | I8   | I16  | I32  | Instruction | Stack   | Description                                                 |
+|------|------|------|------|-------------|---------|-------------------------------------------------------------|
+| `16` |      |      |      | `getkv`     | `-1 +1` | Get table's value based on key (pull 1 value, push 1 value) |
+| `17` |      |      |      | `setkv`     | `-2`    | Set table's key and value (pull 2 values from stack)        |
+|      | `a8` | `c8` | `e8` | `geti`      | `+1`    | Get array's value at position n (push on stack)             |
+|      | `a9` | `c9` | `e9` | `seti`      | `-1`    | Set array's value at position n                             |
+| `18` |      |      |      | `appnd`     | `-1`    | Add value to the end of array                               |
+| `19` |      |      |      | `next`      | `+1`    | See below                                                   |
+| `1a` |      |      |      | `sptb`      | `-1`    | Set table supertable                                        |
+| `1b` |      |      |      | `supr`      | `+1`    | Fetch supertable                                            |
+
+`next` is used for loops. It'll receive the key as parameter (nil in the first iteration), and it'll output:
+  1. Both key and value if a record is found
+  2. Only `nil` if the loop is at the end.
 
 ## Logical/arithmetic
 
@@ -289,11 +317,10 @@ Column legend:
 
 ## Other value operations
 
-| NP   | Instruction | Stack   | Description                                 |
-|------|-------------|---------|---------------------------------------------|
-| `40` | `len`       | `-1 +1` | Get table, array or string size             |
-| `41` | `type`      | `-1 +1` | Get type from value at the top of the stack |
-| `42` | `ver`       | `+1`    | Return VM version                           |
+| NP   | Instruction | Stack   | Description                                            |
+|------|-------------|---------|--------------------------------------------------------|
+| `40` | `len`       | `-1 +1` | Get table, array or string size                        |
+| `41` | `type`      | `-1 +1` | Get type from value at the top of the stack, as string |
 
 ## External code
 
@@ -314,7 +341,9 @@ The destination is always a 16-bit field.
 | `cf` | `bnil [pc]` | `0`   | Branch if nil            |
 | `cc` | `jmp [pc]`  | `0`   | Unconditional jump       |
 
-> Jumps can only happen within the same function.
+Jumps can only happen within the same function. The value analyzed is not taken off the stack.
+
+Branches based on non-boolean non-nil types are not acceptable.
 
 ## Memory management
 
@@ -328,7 +357,7 @@ The destination is always a 16-bit field.
 |------|------|--------------|-------|--------------------|
 |      | `cd` | `pushe [pc]` | `0`   | Push error handler |
 | `5a` |      | `pope`       | `0`   | Pop error handler  |
-| `5b` |      | `thrw`       | `-1`  | Throw              |
+| `5b` |      | `thrw`       | `+1`  | Throw              |
 
 
 Reference - Bytecode format
@@ -338,30 +367,40 @@ Reference - Bytecode format
 The bytecode file is composed of the following sections:
 
  * HEADER: 8-byte header
-   [0:3]: Magic
+   [0:3]: Magic (0xa7d6e9b1)
    [4:5]: Bytecode version
    [6:7]: Reserved for future use
 
  * CONSTANTS
-   [0:3]: Code start address
+   [0:3]: Code start address (absolute)
    [4:7]: Number of constants
    Each constant:
      [0]: Type (0 = string, 1 = real)
      if string:
        [...]:  string (NULL terminated)
      if real
-       [1..8]: real
+       [1:8]: real
 
  * CODE
    [0:3]: Debug start address (or zero)
    [4:7]: Number of functions
    Each function:
-     [0:3] Address of next function (include this on last too)
+     [0:3] Address of next function (absolute)
      [...] Code
        [0] : Opcode
        [between 1 and 4] : Operand
-
+       
 The max file size is 2 Gb.
 
 The values are always little-endian.
 ```
+
+Execution environment
+---------------------
+
+The VM uses basic C++, and it'll be made available in the following forms:
+
+  * as a C++ library (which also includes a C wrapper)
+  * as a PC executable
+  * as a library for microcontrollers, such as ESP32 or Pico Pi
+  * as a WASM module
