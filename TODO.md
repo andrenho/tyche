@@ -83,6 +83,9 @@ Decisions:
 # Version 1
 
 - [ ] Compiler
+  - [ ] Lexer
+  - [ ] Parser (basic)
+  - [ ] 
 - [ ] REPL
 - [ ] Debugging information
 - [ ] Stack trace in case of errors
