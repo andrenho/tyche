@@ -78,7 +78,6 @@ Decisions:
 - [ ] Prepare for release
   - [x] Documentation and webpage
   - [x] Review public function names
-  - [ ] Generate wasm (?)
   - [ ] Actions
 
 # Version 1
@@ -88,7 +87,7 @@ Decisions:
 - [ ] Debugging information
 - [ ] Stack trace in case of errors
 - [ ] Debugger
-- [ ] REPL
+- [ ] Generate wasm (?)
 
 # Version 2
 
