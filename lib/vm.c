@@ -111,8 +111,13 @@ void tyc_debug_to_console(TycheVM* T, bool activate)
     T->debug = activate;
 }
 
-void tyc_debug_value(TycheVM const* T, VALUE a)
+static void tyc_debug_value_lvl(TycheVM const* T, VALUE a, int lvl)
 {
+    if (lvl == 3) {
+        printf("...");
+        return;
+    }
+
     switch (value_type(a)) {
         case TYC_NIL:
             printf("<nil>");
@@ -142,7 +147,7 @@ void tyc_debug_value(TycheVM const* T, VALUE a)
             if (heap_get_array(T->heap, value_heap_key(a), &array) == TYC_OK) {
                 printf("[");
                 for (size_t i = 0; i < array_len(array); ++i) {
-                    tyc_debug_value(T, array_get(array, i));
+                    tyc_debug_value_lvl(T, array_get(array, i), lvl + 1);
                     if (i < array_len(array) - 1)
                         printf(", ");
                 }
@@ -159,9 +164,9 @@ void tyc_debug_value(TycheVM const* T, VALUE a)
                 VALUE key = create_value_nil();
                 VALUE value;
                 while (table_next(table, key, &key, &value)) {
-                    tyc_debug_value(T, key);
+                    tyc_debug_value_lvl(T, key, lvl + 1);
                     printf(":");
-                    tyc_debug_value(T, value);
+                    tyc_debug_value_lvl(T, value, lvl + 1);
                     printf(", ");
                 }
                 printf("}");
@@ -190,6 +195,10 @@ void tyc_debug_value(TycheVM const* T, VALUE a)
     }
 }
 
+void tyc_debug_value(TycheVM const* T, VALUE a)
+{
+    tyc_debug_value_lvl(T, a, 0);
+}
 
 static void debug_instruction(TycheVM* T, Location* loc, Instruction inst)
 {

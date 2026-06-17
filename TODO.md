@@ -80,9 +80,8 @@ Decisions:
       - [ ] GC
 - [ ] Prepare for release
   - [x] Documentation and webpage
-  - [ ] Review public function names
+  - [ ] Generate wasm (?)
   - [ ] Actions
-  - [ ] Code review
 
 # Version 1
 

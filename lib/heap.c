@@ -267,44 +267,75 @@ size_t heap_size(Heap const* h)
 // GC
 //
 
+static void mark(Heap* h, VALUE a, khash_t(MARK)* marked);
+
+static void mark_array(Heap* h, VALUE a, khash_t(MARK)* marked)
+{
+    // get array
+    Array* array;
+    if (heap_get_array(h, value_heap_key(a), &array) != TYC_OK)
+        abort();
+
+    // TODO - look for cycles
+
+    // mark each one of the array items
+    size_t len = array_len(array);
+    for (size_t i = 0; i < len; ++i) {
+        VALUE item = array_get(array, i);
+        mark(h, item, marked);
+    }
+}
+
+static void mark_table(Heap* h, VALUE a, khash_t(MARK)* marked)
+{
+    // mark supertable
+    HeapValue* htable;
+    if (heap_get_item(h, value_heap_key(a), &htable) != TYC_OK)
+        abort();
+    HEAP_KEY supertable = htable->value.t.supertable;
+    if (supertable != HEAP_VALUE_NIL)
+        mark(h, create_value_heap_key(TYC_TABLE, supertable), marked);
+
+    // TODO - look for cycles
+
+    // mark items
+    Table* table;
+    if (heap_get_table(h, value_heap_key(a), &table) != TYC_OK)
+        abort();
+    VALUE key = create_value_nil(), value;
+    while (table_next(table, key, &key, &value)) {
+        mark(h, key, marked);
+        mark(h, value, marked);
+    }
+}
+
+static bool already_marked(VALUE a, khash_t(MARK)* marked)
+{
+    return kh_get(MARK, marked, value_heap_key(a)) != kh_end(marked);
+}
+
 static void mark(Heap* h, VALUE a, khash_t(MARK)* marked)
 {
-    if (type_is_collectable(value_type(a))) {
-        int ret;
-        uint32_t key = value_heap_key(a);
-        khiter_t k = kh_put(MARK, marked, key, &ret);
-        if (ret < 0)
-            out_of_memory();
-        kh_value(marked, k) = true;
-    }
+    if (!type_is_collectable(value_type(a)))
+        return;
 
-    if (value_type(a) == TYC_ARRAY) {
-        Array* array;
-        if (heap_get_array(h, value_heap_key(a), &array) != TYC_OK)
-            abort();
-        size_t len = array_len(array);
-        for (size_t i = 0; i < len; ++i) {
-            VALUE item = array_get(array, i);
-            mark(h, item, marked);
-        }
-    } else if (value_type(a) == TYC_TABLE) {
-        // mark supertable
-        HeapValue* htable;
-        if (heap_get_item(h, value_heap_key(a), &htable) != TYC_OK)
-            abort();
-        HEAP_KEY supertable = htable->value.t.supertable;
-        if (supertable != HEAP_VALUE_NIL)
-            mark(h, create_value_heap_key(TYC_TABLE, supertable), marked);
+    // should we dig into items?
+    bool dig_into_items = (value_type(a) == TYC_ARRAY || value_type(a) == TYC_TABLE) && !already_marked(a, marked);
 
-        // mark items
-        Table* table;
-        if (heap_get_table(h, value_heap_key(a), &table) != TYC_OK)
-            abort();
-        VALUE key = create_value_nil(), value;
-        while (table_next(table, key, &key, &value)) {
-            mark(h, key, marked);
-            mark(h, value, marked);
-        }
+    // mark item
+    int ret;
+    uint32_t key = value_heap_key(a);
+    khiter_t k = kh_put(MARK, marked, key, &ret);
+    if (ret < 0)
+        out_of_memory();
+    kh_value(marked, k) = true;
+
+    // dig into containers to also mark the items
+    if (dig_into_items) {
+        if (value_type(a) == TYC_ARRAY)
+            mark_array(h, a, marked);
+        else if (value_type(a) == TYC_TABLE)
+            mark_table(h, a, marked);
     }
 }
 
