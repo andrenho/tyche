@@ -455,6 +455,33 @@ static void test_heap(void)
         tyc_destroy(T);
     }
 
+    /*
+    {
+        printf("## Heap - table GC with cycle detection\n");
+
+        TycheVM* T = tyc_new();
+        Heap* h = tyc_heap(T);
+        HEAP_KEY key = heap_add_table(h, T);
+        VALUE table_heap = create_value_heap_key(TYC_TABLE, key);
+
+        Table* table;
+        assert(heap_get_table(h, key, &table) == TYC_OK);
+
+        table_set(table, create_value_integer(1), table_heap);
+        table_debug_internals(table);
+        stack_push(tyc_stack(T), table_heap);
+
+        assert(heap_size(h) == 2);
+        tyc_gc(T);
+        assert(heap_size(h) == 2);
+
+        stack_pop(tyc_stack(T), NULL);
+        assert(heap_size(h) == 1);
+
+        tyc_destroy(T);
+    }
+     */
+
     {
         printf("## Heap - table containing array containing string GC\n");
 

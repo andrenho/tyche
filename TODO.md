@@ -78,8 +78,8 @@ Decisions:
 - [ ] Prepare for release
   - [x] Documentation and webpage
   - [x] Review public function names
+  - [ ] Generate wasm (?)
   - [ ] Actions
-  - [ ] Code review
 
 # Version 1
 
