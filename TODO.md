@@ -71,7 +71,7 @@ Decisions:
     - [x] Test for hash and equality
     - [x] Table
       - [x] Store multiple values for the same hash
-    - [ ] Null native pointer
+    - [x] Null native pointer
     - [ ] Test tyc_global
     - [x] Array equality
     - [ ] Table loop detection (ex. `A <- B <- A` and `A: { B: A }`)
