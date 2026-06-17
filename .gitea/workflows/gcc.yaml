@@ -1,0 +1,18 @@
+name: Build (gcc)
+on:
+  push:
+    branches: [master, actions]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: catthehacker/ubuntu:act-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run tests
+        run: |
+          make    
+          make check
+          ls -lh libtyche.so.0.1 tyche
