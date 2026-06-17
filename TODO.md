@@ -82,10 +82,28 @@ Decisions:
 
 # Version 1
 
+https://github.com/andrenho-try-new-things/tyche/blob/master/lib/compiler/parser.cc
+
 - [ ] Compiler
   - [ ] Lexer
   - [ ] Parser (basic)
-  - [ ] 
+  - [ ] Expressions (return)
+    - [ ] Basic values (nil, boolean, integer, real)
+    - [ ] Pratt
+    - [ ] String
+    - [ ] Array
+    - [ ] Table
+      - [ ] ...
+    - [ ] Function call
+      - [ ] Function call with parameters
+  - [ ] Statements
+    - [ ] EOF
+    - [ ] Return
+    - [ ] Assignment
+      - [ ] Variable reading
+    - [ ] if/else
+    - [ ] for/while
+  - [ ] Error management
 - [ ] REPL
 - [ ] Debugging information
 - [ ] Stack trace in case of errors
