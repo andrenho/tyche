@@ -74,13 +74,10 @@ Decisions:
     - [x] Null native pointer
     - [ ] Test tyc_global
     - [x] Array equality
-    - [ ] Table loop detection (ex. `A <- B <- A` and `A: { B: A }`)
-      - [ ] table_get, table_set, table_del
-      - [ ] table_next
-      - [ ] GC
+    - [x] Table loop detection (ex. `A <- B <- A` and `A: { B: A }`)
 - [ ] Prepare for release
   - [x] Documentation and webpage
-  - [ ] Review public function names
+  - [x] Review public function names
   - [ ] Actions
   - [ ] Code review
 
