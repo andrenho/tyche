@@ -75,10 +75,11 @@ endif
 
 all: tyche libtyche.a libtyche.so.${VERSION}
 
-check: tyche-test-as tyche-test-vm tyche-test-op
+check: tyche-test-as tyche-test-vm tyche-test-op tyche-test-compiler
 	./tyche-test-as
 	./tyche-test-vm
 	./tyche-test-op
+	./tyche-test-compiler
 
 clean:
 	find . -name '*.[od]' -delete
@@ -113,7 +114,8 @@ lib/instructions/instructions.h: lib/instructions/gen-inst.sh
 
 LIB_SRC=lib/value.o lib/stack.o lib/array.o lib/table.o lib/heap.o lib/vm.o lib/expr.o \
  	lib/code.o lib/utils.o lib/assembler/assembly.o lib/assembler/assembler.o lib/assembler/adj_labels.o \
- 	lib/assembler/bytecode.o lib/instructions/instructions.o
+ 	lib/assembler/bytecode.o lib/instructions/instructions.o \
+ 	lib/compiler/lexer.o
 
 $(LIB_SRC:.o=.c) test/tests-as.c test/tests-vm.c: lib/instructions/instructions.h
 
@@ -131,6 +133,10 @@ tyche-test-vm: test/tests-vm.o libtyche.a
 tyche-test-op: lib/instructions/instructions.h
 tyche-test-op: test/tests-op.o libtyche.a
 	$(CC) -o $@ test/tests-op.o libtyche.a ${LDFLAGS} -I../lib
+
+tyche-test-compiler: lib/instructions/instructions.h
+tyche-test-compiler: test/tests-compiler.o libtyche.a
+	$(CC) -o $@ test/tests-compiler.o libtyche.a ${LDFLAGS} -I../lib
 
 libtyche.a: ${LIB_SRC}
 	ar rcs $@ $^
