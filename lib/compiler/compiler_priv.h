@@ -5,6 +5,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "../assembler/assembler_priv.h"
+
+//
+// LEXER
+//
+
 typedef struct {
     size_t start;
     size_t end;
@@ -35,5 +41,16 @@ void   lexer_pos(Lexer const* L, int* column, int* line);
 
 bool   token_is(Lexer const* L, Token t, const char* cmp);
 char*  token_extract(Lexer const* L, Token t);  // returned string needs to be freed
+
+//
+// PARSER
+//
+
+typedef struct Parser Parser;
+
+Parser* parser_init(const char* code);  // don't free code during parsing
+void    parser_destroy(Parser* P);
+
+bool    parser_compile(Parser* P, uint8_t** bytecode_out, size_t* bytecode_sz_out, char* err, size_t err_sz);
 
 #endif //TYCHE_COMPILER_PRIV_H

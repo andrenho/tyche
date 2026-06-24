@@ -1,0 +1,5 @@
+["Basic expression: integer"]
+code = "return 42;"
+decompile = true
+debug = true
+expected = 42

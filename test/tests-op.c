@@ -145,7 +145,7 @@ static void run_assembly_test(const char* key, toml_table_t* item)
 
 int main()
 {
-    FILE* f = fopen("./test/tests-op.toml", "r");
+    FILE* f = fopen("./test/test-code/vm.toml", "r");
     if (!f) {
         fprintf(stderr, "Can't read TOML file.\n");
         exit(EXIT_FAILURE);
