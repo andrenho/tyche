@@ -98,12 +98,13 @@ static void assert_result(toml_table_t* item, TycheVM* T)
 
 static void compile_and_run(toml_table_t* item, const char* code, bool debug, bool decompile)
 {
-    uint8_t* bytecode;
-    size_t bytecode_sz;
+    uint8_t* bytecode = NULL;
+    size_t bytecode_sz = 0;
     char err[1024];
 
     Parser* P = parser_init(code);
     bool success = parser_compile(P, &bytecode, &bytecode_sz, err, sizeof err);
+    assert(bytecode_sz > 0);
 
     if (success) {
         TycheVM* T = tyc_new();

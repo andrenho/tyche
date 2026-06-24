@@ -1,0 +1,22 @@
+
+<statements> ::= <statement>
+             |   <statement> <statements>
+             |   "{" <statements> "}"
+
+<statement>  ::= "return" <expr> ";"
+             |   IDENTIFIER ":=" <expr> ";"
+             |   "if" <expr> "{" <statements> "}" ["elseif" <expr> "{" <statements> "}"...] ["else" "{" <statements> "}"]
+             |   <EOF>
+
+<expr> ::= <expr> ["(" function_call_parameters ")"...]
+       |   "func" "(" function_parameters ")" "{" statements "}"
+       |   "true" | "false"
+       |   <expr> "?" <expr> ":" <expr>
+       |   INTEGER
+       |   IDENTIFIER
+
+<function_parameter> ::= IDENTIFIER "," <function_parameter>
+                     |   IDENTIFIER
+
+<function_call_parameters> ::= <expr> "," <expr>
+                           |   <expr>
